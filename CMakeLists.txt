@@ -15,6 +15,14 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     set(SPELT_IS_ROOT_PROJECT TRUE)
 endif()
 
+option(SPELT_VENDORED_DEPS
+        "Use vendored copies of GLFW/Assimp (disable if consuming project provides them)"
+        ON)
+
+option(SPELT_BUILD_TESTS
+        "Build SpeltEngine tests"
+        ${SPELT_IS_ROOT_PROJECT})
+
 # ---------------------------------------------------------------------------
 # System packages
 # ---------------------------------------------------------------------------
@@ -25,33 +33,36 @@ find_package(OpenGL REQUIRED)
 # ---------------------------------------------------------------------------
 
 # 1. Catch2 (Only required if building engine tests)
-if(SPELT_IS_ROOT_PROJECT AND NOT TARGET Catch2::Catch2WithMain)
+if(SPELT_BUILD_TESTS AND NOT TARGET Catch2::Catch2WithMain)
     add_subdirectory(external/catch2)
 endif()
 
-# 2. GLFW
-if(NOT TARGET glfw)
-    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_TESTS    OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_DOCS     OFF CACHE BOOL "" FORCE)
-    set(GLFW_INSTALL        OFF CACHE BOOL "" FORCE)
-    add_subdirectory(external/glfw)
+# 2. GLFW + Assimp — vendored or system-provided
+if(SPELT_VENDORED_DEPS)
+    if(NOT TARGET glfw)
+        set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+        set(GLFW_BUILD_TESTS    OFF CACHE BOOL "" FORCE)
+        set(GLFW_BUILD_DOCS     OFF CACHE BOOL "" FORCE)
+        set(GLFW_INSTALL        OFF CACHE BOOL "" FORCE)
+        add_subdirectory(external/glfw)
+    endif()
+
+    if(NOT TARGET assimp)
+        set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+        set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
+        set(ASSIMP_BUILD_TESTS        OFF CACHE BOOL "" FORCE)
+        set(ASSIMP_INSTALL            OFF CACHE BOOL "" FORCE)
+        set(ASSIMP_BUILD_ZLIB         ON  CACHE BOOL "" FORCE)
+        add_subdirectory(external/assimp)
+    endif()
+else()
+    find_package(glfw3 REQUIRED)
+    find_package(assimp REQUIRED)
 endif()
 
-# 3. Assimp
-if(NOT TARGET assimp)
-    set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_BUILD_TESTS        OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_INSTALL            OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_BUILD_ZLIB         ON  CACHE BOOL "" FORCE)
-    add_subdirectory(external/assimp)
-endif()
-
-# 4. STB (Header-only target creation)
+# 3. STB (Header-only target creation)
 if(NOT TARGET stb_image)
     add_library(stb_image INTERFACE)
-    # Points directly to your local external/stb folder
     target_include_directories(stb_image INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/external/stb)
 endif()
 
@@ -59,7 +70,8 @@ endif()
 # glad
 # ---------------------------------------------------------------------------
 set(GLAD_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/glad/include")
-set(GLAD_SOURCES     "${CMAKE_CURRENT_SOURCE_DIR}/glad/src/glad.c"
+set(GLAD_SOURCES
+        "${CMAKE_CURRENT_SOURCE_DIR}/glad/src/glad.c"
         include/Defaults/Camera/FirstPersonCamera.h
         src/Defaults/Camera/FirstPersonCamera.cpp
         include/Lighting/AmbientLight.h)
@@ -177,10 +189,9 @@ endif()
 if(SPELT_IS_ROOT_PROJECT)
     install(TARGETS ${PROJECT_NAME_VAR}
             EXPORT  ${PROJECT_NAME_VAR}Targets
-            LIBRARY DESTINATION lib
-            ARCHIVE DESTINATION lib
-            RUNTIME DESTINATION bin
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 
     install(DIRECTORY include/
@@ -218,7 +229,11 @@ if(SPELT_IS_ROOT_PROJECT)
             "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_VAR}ConfigVersion.cmake"
             DESTINATION ${${PROJECT_NAME_VAR}_CMAKE_DIR}
     )
+endif()
 
-    # Only compile internal tests if developing the engine directly
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
+if(SPELT_BUILD_TESTS)
     add_subdirectory(test)
 endif()
