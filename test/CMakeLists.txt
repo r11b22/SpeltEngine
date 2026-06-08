@@ -1,22 +1,19 @@
-# CGVCCore tests
-include(FetchContent)
+cmake_minimum_required(VERSION 3.15)
 
-FetchContent_Declare(
-        catch2
-        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG        v3.7.1
-)
-FetchContent_MakeAvailable(catch2)
-
-
+# Create the test executable
 add_executable(tests
         MainTest.cpp
         SceneTest.cpp
 )
 
-# CGVCCore carries all headers and libraries transitively
-target_link_libraries(tests PRIVATE CGVCCore Catch2::Catch2WithMain)
+# Link your engine target (SpeltEngine) and the Catch2 target.
+# Catch2 was already added by the root CMakeLists.txt, so we just use it here!
+target_link_libraries(tests PRIVATE
+        SpeltEngine
+        Catch2::Catch2WithMain
+)
 
+# Enable CTest discovery
 include(CTest)
 include(Catch)
 catch_discover_tests(tests)

@@ -1,0 +1,4 @@
+[submodule "external/assimp"]
+	path = external/assimp
+	url = https://github.com/assimp/assimp.git
+	branch = v6.0.5
