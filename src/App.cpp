@@ -23,8 +23,6 @@ App::App(const std::string &title) :
 
     mRenderer.addShaderProgram("litShader", std::move(litProgram));
 
-    Bloom bloom{};
-    mRenderer.addPostProcessingEffect(bloom);
 }
 
 void App::loadScene(Scene* scene) {

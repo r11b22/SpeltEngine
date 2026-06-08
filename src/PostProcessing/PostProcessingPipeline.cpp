@@ -225,7 +225,7 @@ bool PostProcessingPipeline::isEffectEnabled(EffectHandle handle) const {
 
 bool PostProcessingPipeline::validate() const {
     if (mEntries.empty()) {
-        throw std::runtime_error("PostProcessingPipeline: no effects have been added.");
+        return true;
     }
 
     for (const auto& entry : mEntries) {
@@ -248,6 +248,7 @@ bool PostProcessingPipeline::validate() const {
 
 void PostProcessingPipeline::prepare() {
     validate();
+
 
     for (auto& entry : mEntries) {
         entry.computeUnit = PostProcessingComputeUnit{

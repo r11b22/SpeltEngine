@@ -23,6 +23,10 @@ option(SPELT_BUILD_TESTS
         "Build SpeltEngine tests"
         ${SPELT_IS_ROOT_PROJECT})
 
+option(SPELT_BUILD_TEST_SCENE
+        "Build the interactive SpeltEngine test scene sandbox"
+        ${SPELT_IS_ROOT_PROJECT})
+
 # ---------------------------------------------------------------------------
 # System packages
 # ---------------------------------------------------------------------------
@@ -236,4 +240,9 @@ endif()
 # ---------------------------------------------------------------------------
 if(SPELT_BUILD_TESTS)
     add_subdirectory(test)
+endif()
+
+
+if(SPELT_BUILD_TEST_SCENE)
+    add_subdirectory(test_scene)
 endif()
