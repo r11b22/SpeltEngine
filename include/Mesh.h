@@ -1,0 +1,48 @@
+//
+// Created by joost on 4/12/26.
+//
+
+#ifndef GCVCPROJECT_MESH_H
+#define GCVCPROJECT_MESH_H
+#include <optional>
+
+#include "Buffer/Buffer.h"
+#include "Renderer/IDrawable.h"
+#include "ModelLoader.h"
+#include "Texture.h"
+#include "Transform/Transform.h"
+#include "VertexArray.h"
+
+class Mesh : public IDrawable {
+private:
+    Buffer mVertexBuffer;
+    VertexArray mVAO;
+
+    int mVertexCount;
+
+    std::string mShader = "litShader";
+
+    std::optional<Texture> mTexture;
+
+public:
+    Mesh();
+    ~Mesh() override = default;
+
+    Mesh(const Mesh&) = delete;
+    Mesh& operator=(const Mesh&) = delete;
+
+    Mesh(Mesh&& other) noexcept = default;
+    Mesh& operator=(Mesh&& other) noexcept = default;
+
+    void draw(ShaderProgram &shaderProgram) override;
+    std::string getShaderProgramName() override;
+
+    void setVertices(std::vector<float> vertices);
+    void setIndices(std::vector<unsigned int> indices);
+    void setShader(std::string shader);
+    void setTexture(const TextureData& texData);
+
+private:
+};
+
+#endif //GCVCPROJECT_MESH_H
