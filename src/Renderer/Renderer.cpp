@@ -102,27 +102,14 @@ void Renderer::drawPass(const Scene& scene, const Camera& camera) {
         currentProgram.setUniformMat4x4("uProjectionMatrix", camera.getProjectionMatrix(*mTarget));
         currentProgram.setUniformMat4x4("uViewMatrix", camera.getViewMatrix());
 
-        if (shader == "litShader") {
-            currentProgram.setUniformVec3("uCameraPos", camera.getPosition());
-            currentProgram.setUniformInt("numPointLights", scene.getPointLights().size());
-            if (const auto& ambient = scene.getAmbientLight()) {
-                currentProgram.setUniformVec3("uAmbient", ambient->getAmbient());
-            }
 
-            uploadLightDataToShader(currentProgram, scene.getPointLights());
-        }
-        else if (shader == "sphereShader") {
-            if (lightIndex < scene.getPointLights().size()) {
-                glm::vec3 lightColor = scene.getPointLights()[lightIndex]->getDiffuse();
-                currentProgram.setUniformVec3("uColor", lightColor);
-                lightIndex++;
-            }
-            else {
-                currentProgram.setUniformVec3("uColor", glm::vec3(1.0f, 1.0f, 0.9f));
-            }
+        currentProgram.setUniformVec3("uCameraPos", camera.getPosition());
+        currentProgram.setUniformInt("numPointLights", scene.getPointLights().size());
+        if (const auto& ambient = scene.getAmbientLight()) {
+            currentProgram.setUniformVec3("uAmbient", ambient->getAmbient());
         }
 
-
+        uploadLightDataToShader(currentProgram, scene.getPointLights());
 
         for (const std::shared_ptr<IDrawable>& toDraw : drawables) {
             toDraw->draw(currentProgram);
