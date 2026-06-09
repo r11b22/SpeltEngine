@@ -85,6 +85,10 @@ void Renderer::addShaderProgram(std::string name, std::unique_ptr<ShaderProgram>
 }
 
 
+void Renderer::addPerDrawableRenderPass(std::unique_ptr<IPerDrawableRenderPass> perObjectRenderPass) {
+    mPerDrawableRenderPasses.push_back(std::move(perObjectRenderPass));
+}
+
 void Renderer::prepare() {
     mPostProcessingPipeline->prepare();
 }
@@ -112,8 +116,9 @@ void Renderer::drawPass(const Scene& scene, const Camera& camera) {
         uploadLightDataToShader(currentProgram, scene.getPointLights());
 
         for (const std::shared_ptr<IDrawable>& toDraw : drawables) {
-            toDraw->getMaterial().readyMaterial(currentProgram);
-            toDraw->draw(currentProgram);
+            for (const std::unique_ptr<IPerDrawableRenderPass>& renderPass : mPerDrawableRenderPasses) {
+                renderPass->drawObject(toDraw, currentProgram);
+            }
         }
     }
 

@@ -15,6 +15,7 @@ private:
     Scene* mCurrentScene;
 
     float mDeltaT, mLastT;
+
 public:
     explicit App(const std::string &title);
     void loadScene(Scene* scene);
