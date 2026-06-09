@@ -19,6 +19,7 @@ public:
 
     void draw(ShaderProgram &shaderProgram) override;
     std::string getShaderProgramName() override;
+    Material& getMaterial() override;
 
     void setClickCallback(std::function<void()> callback);
     void onClick() const;

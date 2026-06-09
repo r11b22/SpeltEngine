@@ -112,6 +112,7 @@ void Renderer::drawPass(const Scene& scene, const Camera& camera) {
         uploadLightDataToShader(currentProgram, scene.getPointLights());
 
         for (const std::shared_ptr<IDrawable>& toDraw : drawables) {
+            toDraw->getMaterial().readyMaterial(currentProgram);
             toDraw->draw(currentProgram);
         }
     }

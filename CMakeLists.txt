@@ -152,6 +152,8 @@ add_library(${PROJECT_NAME_VAR} STATIC
         src/Shaders/ComputeShader.cpp
         include/Shaders/ComputeShader.h
         include/Buffer/BufferMap.h
+        include/Material/Material.h
+        src/Material/Material.cpp
 )
 
 target_compile_definitions(${PROJECT_NAME_VAR} PUBLIC

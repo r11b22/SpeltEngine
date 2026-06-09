@@ -18,6 +18,10 @@ std::string MeshObject::getShaderProgramName() {
     return mMesh->getShaderProgramName();
 }
 
+Material & MeshObject::getMaterial() {
+    return mMesh->getMaterial();
+}
+
 void MeshObject::setIndices(std::vector<unsigned int> indices) {
     mMesh->setIndices(std::move(indices));
 }

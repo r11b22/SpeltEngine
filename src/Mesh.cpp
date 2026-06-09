@@ -21,10 +21,6 @@ Mesh::Mesh()
 void Mesh::draw(ShaderProgram &shaderProgram) {
     shaderProgram.setUniformFloat("uSpecularStrength", 0.5f);
     mVAO.bind();
-    shaderProgram.setUniformInt("uTexture", 0);
-    if (mTexture.has_value()) {
-        mTexture.value().bind(0);
-    }
     glDrawElements(GL_TRIANGLES, mVertexCount, GL_UNSIGNED_INT, 0);
 
 }
@@ -35,8 +31,6 @@ std::string Mesh::getShaderProgramName() {
 
 void Mesh::setVertices(std::vector<float> vertices) {
     mVertexBuffer.setDataF(vertices);
-
-
 }
 
 void Mesh::setIndices(std::vector<unsigned int> indices) {
@@ -52,5 +46,9 @@ void Mesh::setShader(std::string shader) {
 }
 
 void Mesh::setTexture(const TextureData& texData) {
-    mTexture = Texture(texData.texData, texData.texWidth, texData.texHeight, texData.channelCount);
+    mMaterial.setTexture(texData);
+}
+
+Material &Mesh::getMaterial() {
+    return mMaterial;
 }

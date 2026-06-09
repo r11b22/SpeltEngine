@@ -22,7 +22,7 @@ private:
 
     std::string mShader = "litShader";
 
-    std::optional<Texture> mTexture;
+    Material mMaterial;
 
 public:
     Mesh();
@@ -36,6 +36,7 @@ public:
 
     void draw(ShaderProgram &shaderProgram) override;
     std::string getShaderProgramName() override;
+    Material& getMaterial() override;
 
     void setVertices(std::vector<float> vertices);
     void setIndices(std::vector<unsigned int> indices);

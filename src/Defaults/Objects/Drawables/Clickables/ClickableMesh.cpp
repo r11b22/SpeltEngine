@@ -30,4 +30,8 @@ void ClickableMesh::onClick() const{
     mClickCallback();
 }
 
+Material &ClickableMesh::getMaterial() {
+    return mMesh.getMaterial();
+}
+
 
