@@ -10,7 +10,7 @@
 #include "FileReader.h"
 #include "Defaults/PostProcessing/Bloom.h"
 #include "glad/glad.h"
-#include "Renderer/BasicPerDrawableRenderPass.h"
+#include "Renderer/BasicRenderPass.h"
 #include "Strings/ShaderSource.h"
 
 App::App(const std::string &title) :
@@ -24,8 +24,8 @@ App::App(const std::string &title) :
 
     mRenderer.addShaderProgram("litShader", std::move(litProgram));
 
-    std::unique_ptr<IPerDrawableRenderPass> basicRenderPass = std::make_unique<BasicPerDrawableRenderPass>();
-    mRenderer.addPerDrawableRenderPass(std::move(basicRenderPass));
+    std::unique_ptr<IRenderPass> basicRenderPass = std::make_unique<BasicRenderPass>();
+    mRenderer.addRenderPass(std::move(basicRenderPass));
 }
 
 void App::loadScene(Scene* scene) {

@@ -4,12 +4,13 @@
 
 #ifndef SPELTENGINE_BASICPERDRAWABLERENDERPASS_H
 #define SPELTENGINE_BASICPERDRAWABLERENDERPASS_H
-#include "IPerDrawableRenderPass.h"
+#include "IRenderPass.h"
 
-class BasicPerDrawableRenderPass : public IPerDrawableRenderPass {
+class BasicRenderPass : public IRenderPass {
 private:
 public:
-     ~BasicPerDrawableRenderPass() override = default;
+     ~BasicRenderPass() override = default;
+
 
      void drawObject(std::shared_ptr<IDrawable> drawable, ShaderProgram& currentProgram) override;
 private:

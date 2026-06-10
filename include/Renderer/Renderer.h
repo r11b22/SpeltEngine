@@ -10,7 +10,7 @@
 
 #include "../Camera.h"
 #include "IDrawable.h"
-#include "IPerDrawableRenderPass.h"
+#include "IRenderPass.h"
 #include "../Mesh.h"
 #include "../PostProcessing/PostProcessingPipeline.h"
 #include "../Scene/Scene.h"
@@ -23,7 +23,7 @@ class Renderer {
 private:
     std::map<std::string, std::unique_ptr<ShaderProgram>> mShaderPrograms;
 
-    std::vector<std::unique_ptr<IPerDrawableRenderPass>> mPerDrawableRenderPasses;
+    std::vector<std::unique_ptr<IRenderPass>> mRenderPasses;
 
     ShaderProgram* mScreenShader;
     Mesh* mScreenQuad;
@@ -42,7 +42,7 @@ public:
 
     void addShaderProgram(std::string name, std::unique_ptr<ShaderProgram> shaderPrograms);
 
-    void addPerDrawableRenderPass(std::unique_ptr<IPerDrawableRenderPass> perObjectRenderPass);
+    void addRenderPass(std::unique_ptr<IRenderPass> perObjectRenderPass);
 
     EffectHandle addPostProcessingEffect(PostProcessingEffect effect);
     EffectHandle addPostProcessingEffect(PostProcessingGroup& effect);

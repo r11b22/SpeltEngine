@@ -154,9 +154,9 @@ add_library(${PROJECT_NAME_VAR} STATIC
         include/Buffer/BufferMap.h
         include/Material/Material.h
         src/Material/Material.cpp
-        include/Renderer/IPerDrawableRenderPass.h
-        include/Renderer/BasicPerDrawableRenderPass.h
-        src/Renderer/BasicPerDrawableRenderPass.cpp
+        include/Renderer/IRenderPass.h
+        include/Renderer/BasicRenderPass.h
+        src/Renderer/BasicRenderPass.cpp
 )
 
 target_compile_definitions(${PROJECT_NAME_VAR} PUBLIC

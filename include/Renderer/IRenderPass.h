@@ -6,11 +6,12 @@
 #define SPELTENGINE_IPERDRAWABLERENDERPASS_H
 #include "IDrawable.h"
 
-class IPerDrawableRenderPass {
+class IRenderPass {
 private:
 public:
-    virtual ~IPerDrawableRenderPass() = default;
+    virtual ~IRenderPass() = default;
 
+    virtual std::optional<std::string> getCustomShaderName() {return std::nullopt;}
     virtual void drawObject(std::shared_ptr<IDrawable> drawable, ShaderProgram& currentProgram) = 0;
 private:
 };

@@ -85,8 +85,8 @@ void Renderer::addShaderProgram(std::string name, std::unique_ptr<ShaderProgram>
 }
 
 
-void Renderer::addPerDrawableRenderPass(std::unique_ptr<IPerDrawableRenderPass> perObjectRenderPass) {
-    mPerDrawableRenderPasses.push_back(std::move(perObjectRenderPass));
+void Renderer::addRenderPass(std::unique_ptr<IRenderPass> perObjectRenderPass) {
+    mRenderPasses.push_back(std::move(perObjectRenderPass));
 }
 
 void Renderer::prepare() {
@@ -97,31 +97,39 @@ void Renderer::drawPass(const Scene& scene, const Camera& camera) {
     mPostProcessingPipeline->bind();
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    int lightIndex = 0;
 
-    for (const auto& [shader, drawables] : scene.getRenderQueue().getDrawables()) {
-        ShaderProgram& currentProgram = *mShaderPrograms.at(shader);
+    for (const auto& pass : mRenderPasses) {
+        std::optional<std::string> customShader = pass->getCustomShaderName();
 
-        currentProgram.use();
-        currentProgram.setUniformMat4x4("uProjectionMatrix", camera.getProjectionMatrix(*mTarget));
-        currentProgram.setUniformMat4x4("uViewMatrix", camera.getViewMatrix());
+        ShaderProgram* currentProgram = nullptr;
 
-
-        currentProgram.setUniformVec3("uCameraPos", camera.getPosition());
-        currentProgram.setUniformInt("numPointLights", scene.getPointLights().size());
-        if (const auto& ambient = scene.getAmbientLight()) {
-            currentProgram.setUniformVec3("uAmbient", ambient->getAmbient());
+        if (customShader.has_value()) {
+            currentProgram = mShaderPrograms.at(customShader.value()).get();
         }
 
-        uploadLightDataToShader(currentProgram, scene.getPointLights());
+        for (const auto& [shader, drawables] : scene.getRenderQueue().getDrawables()) {
+            if (!customShader.has_value()) {
+                currentProgram = mShaderPrograms.at(shader).get();
+            }
 
-        for (const std::shared_ptr<IDrawable>& toDraw : drawables) {
-            for (const std::unique_ptr<IPerDrawableRenderPass>& renderPass : mPerDrawableRenderPasses) {
-                renderPass->drawObject(toDraw, currentProgram);
+            currentProgram->use();
+            currentProgram->setUniformMat4x4("uProjectionMatrix", camera.getProjectionMatrix(*mTarget));
+            currentProgram->setUniformMat4x4("uViewMatrix", camera.getViewMatrix());
+
+
+            currentProgram->setUniformVec3("uCameraPos", camera.getPosition());
+            currentProgram->setUniformInt("numPointLights", scene.getPointLights().size());
+            if (const auto& ambient = scene.getAmbientLight()) {
+                currentProgram->setUniformVec3("uAmbient", ambient->getAmbient());
+            }
+
+            uploadLightDataToShader(*currentProgram, scene.getPointLights());
+
+            for (const std::shared_ptr<IDrawable>& toDraw : drawables) {
+                pass->drawObject(toDraw, *currentProgram);
             }
         }
     }
-
 
 
     mPostProcessingPipeline->unbind();
