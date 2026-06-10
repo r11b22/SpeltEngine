@@ -10,6 +10,7 @@
 Window::Window(const int width, const int height, const std::string& title)
     : mWindow(nullptr), mContext(), mWidth(width), mHeight(height)
 {
+    glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
     if (!glfwInit()) throw std::runtime_error("Failed to initialize glfw!");
 
     mWindow = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);

@@ -95,24 +95,22 @@ std::vector<Texture*> PostProcessingComputeUnit::execute(PostProcessingEffect& e
     bool writeToA = true;
 
     for (std::size_t passIndex = 0; passIndex < passCount; ++passIndex) {
-        FrameBuffer<float>& writeFB  = writeToA ? mFrameBufferA : mFrameBufferB;
+        FrameBuffer<float>& writeFB = writeToA ? mFrameBufferA : mFrameBufferB;
 
-        // On the first pass sample the external inputs supplied by the pipeline.
-        // On every subsequent pass sample whichever bank was just written.
         const std::vector<Texture*>& sampledTextures =
             (passIndex == 0) ? inputTextures
                              : bankPointers(writeToA ? mOutputCount : 0);
 
-        writeFB.bind();
-
+        writeFB.bind();  // bind next, don't unbind previous first
         effect.setupInputTextures(sampledTextures);
         effect.applyPassUniforms(passIndex);
         quadMesh.draw(*effect.getShaderProgram());
 
-        writeFB.unbind();
-
+        // Don't unbind here — just let the next bind() overwrite the state
         writeToA = !writeToA;
     }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glEnable(GL_DEPTH_TEST);
 

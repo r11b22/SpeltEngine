@@ -46,7 +46,6 @@ void PostProcessingPipeline::bind() {
 
 void PostProcessingPipeline::unbind() {
     mSceneFrameBuffer.unbind();
-    glViewport(0, 0, mWindow->getWidth(), mWindow->getHeight());
 }
 
 // ─── Handle lookup ────────────────────────────────────────────────────────────
