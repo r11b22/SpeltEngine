@@ -13,6 +13,9 @@ public:
 
     virtual std::optional<std::string> getCustomShaderName() {return std::nullopt;}
     virtual void drawObject(std::shared_ptr<IDrawable> drawable, ShaderProgram& currentProgram) = 0;
+
+    virtual void setupState() {};
+    virtual void resetState() {};
 private:
 };
 

@@ -42,7 +42,8 @@ public:
 
     void addShaderProgram(std::string name, std::unique_ptr<ShaderProgram> shaderPrograms);
 
-    void addRenderPass(std::unique_ptr<IRenderPass> perObjectRenderPass);
+    void addRenderPass(std::unique_ptr<IRenderPass> renderPass);
+    void setRenderPass(size_t idx, std::unique_ptr<IRenderPass> renderPass);
 
     EffectHandle addPostProcessingEffect(PostProcessingEffect effect);
     EffectHandle addPostProcessingEffect(PostProcessingGroup& effect);

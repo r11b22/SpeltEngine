@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <format>
 
 
 #include "FileReader.h"
@@ -89,6 +90,14 @@ void Renderer::addRenderPass(std::unique_ptr<IRenderPass> perObjectRenderPass) {
     mRenderPasses.push_back(std::move(perObjectRenderPass));
 }
 
+void Renderer::setRenderPass(size_t idx, std::unique_ptr<IRenderPass> renderPass) {
+    if (idx >= mRenderPasses.size()) {
+        throw std::runtime_error(std::format("Can not set render pass at %d, because it does not exist!", idx));
+    }
+
+    mRenderPasses[idx] = std::move(renderPass);
+}
+
 void Renderer::prepare() {
     mPostProcessingPipeline->prepare();
 }
@@ -103,16 +112,20 @@ void Renderer::drawPass(const Scene& scene, const Camera& camera) {
 
         ShaderProgram* currentProgram = nullptr;
 
+        pass->setupState();
+
         if (customShader.has_value()) {
             currentProgram = mShaderPrograms.at(customShader.value()).get();
+            currentProgram->use();
         }
 
         for (const auto& [shader, drawables] : scene.getRenderQueue().getDrawables()) {
             if (!customShader.has_value()) {
                 currentProgram = mShaderPrograms.at(shader).get();
+                currentProgram->use();
             }
 
-            currentProgram->use();
+
             currentProgram->setUniformMat4x4("uProjectionMatrix", camera.getProjectionMatrix(*mTarget));
             currentProgram->setUniformMat4x4("uViewMatrix", camera.getViewMatrix());
 
@@ -129,6 +142,8 @@ void Renderer::drawPass(const Scene& scene, const Camera& camera) {
                 pass->drawObject(toDraw, *currentProgram);
             }
         }
+
+        pass->resetState();
     }
 
 
