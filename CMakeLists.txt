@@ -159,6 +159,9 @@ add_library(${PROJECT_NAME_VAR} STATIC
         src/Renderer/BasicRenderPass.cpp
 )
 
+target_compile_features(${PROJECT_NAME_VAR} PUBLIC cxx_std_20)
+set_target_properties(${PROJECT_NAME_VAR} PROPERTIES CXX_EXTENSIONS OFF)
+
 target_compile_definitions(${PROJECT_NAME_VAR} PUBLIC
         GLM_ENABLE_EXPERIMENTAL
         STB_IMAGE_IMPLEMENTATION

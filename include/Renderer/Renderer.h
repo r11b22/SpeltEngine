@@ -35,7 +35,7 @@ private:
 
     PostProcessingPipeline* mPostProcessingPipeline;
 
-
+    GLbitfield mClearBitField = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 public:
     Renderer(Window* target);
     ~Renderer();
@@ -53,6 +53,8 @@ public:
     void prepare();
 
     void drawScene(const Scene& scene);
+
+    void setClearBits(GLbitfield bits);
 
     std::shared_ptr<IDrawable> getObjectAtPixel(const Scene& scene, int x, int y) const;
 private:

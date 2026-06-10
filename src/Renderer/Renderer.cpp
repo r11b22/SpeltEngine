@@ -105,7 +105,7 @@ void Renderer::prepare() {
 void Renderer::drawPass(const Scene& scene, const Camera& camera) {
     mPostProcessingPipeline->bind();
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(mClearBitField);
 
     for (const auto& pass : mRenderPasses) {
         std::optional<std::string> customShader = pass->getCustomShaderName();
@@ -215,6 +215,10 @@ void Renderer::drawScene(const Scene& scene) {
     pickingPass(scene, *scene.getCamera());
     drawPass(scene, *scene.getCamera());
     renderToScreen();
+}
+
+void Renderer::setClearBits(const GLbitfield bits) {
+    mClearBitField = bits;
 }
 
 void Renderer::uploadLightDataToShader(ShaderProgram& program, const std::vector<std::shared_ptr<PointLight>>& lights) {
