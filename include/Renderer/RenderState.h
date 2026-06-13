@@ -5,6 +5,7 @@
 #ifndef SPELTENGINE_RENDERSTATE_H
 #define SPELTENGINE_RENDERSTATE_H
 #include <cstdint>
+#include <cstring>
 
 enum class CullMode : uint8_t { None, Front, Back, FrontAndBack };
 enum class DepthFunc : uint8_t { Less, Equal, LEqual, Greater, Always };
