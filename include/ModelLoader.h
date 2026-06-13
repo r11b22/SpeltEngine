@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "glm/vec3.hpp"
+#include "Material/Material.h"
 
 
 struct aiScene;
@@ -45,6 +46,8 @@ public:
     std::shared_ptr<Mesh> createMeshScaled(int mesh = 0, glm::vec3 scale = glm::vec3{1.0f});
     std::shared_ptr<Mesh> createMeshScaledUniform(int mesh = 0, float scale = 1.0f);
     std::shared_ptr<Mesh> createMesh(int mesh = 0);
+
+    std::shared_ptr<Material> createMaterial();
 private:
 
 };

@@ -13,17 +13,17 @@
 class MeshObject : virtual public TransformableObject, public IDrawable{
 private:
     std::shared_ptr<Mesh> mMesh;
+    std::shared_ptr<Material> mMaterial;
+    std::string mShader = "litShader";
+
 public:
-    explicit MeshObject(const std::string& name, const std::shared_ptr<Mesh>& mesh);
+    explicit MeshObject(const std::string& name, const std::shared_ptr<Mesh>& mesh, const std::shared_ptr<Material>&  material);
     ~MeshObject() override = default;
-    void draw(ShaderProgram& shaderProgram) override;
-    std::string getShaderProgramName() override;
-    Material& getMaterial() override;
+    std::vector<RenderCommand> getRenderCommands() override;
 
     void setVertices(std::vector<float> vertices);
     void setIndices(std::vector<unsigned int> indices);
     void setShader(std::string shader);
-    void setTexture(const TextureData& texData);
 
 private:
 };

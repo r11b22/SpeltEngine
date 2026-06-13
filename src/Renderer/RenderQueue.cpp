@@ -5,26 +5,18 @@
 #include "Renderer/RenderQueue.h"
 #include <algorithm>
 
-void RenderQueue::addDrawable(std::shared_ptr<IDrawable> drawable) {
-    std::string shaderName = drawable->getShaderProgramName();
+void RenderQueue::submitDrawable(std::shared_ptr<IDrawable> drawable) {
+    std::vector<RenderCommand> commands = drawable->getRenderCommands();
 
-    mDrawables[shaderName].push_back(drawable);
-    mDrawablesOrdered.push_back(std::move(drawable));
+    mRenderCommands.reserve(mRenderCommands.size() + commands.size());
+
+    mRenderCommands.insert(mRenderCommands.end(), std::make_move_iterator(commands.begin()), std::make_move_iterator(commands.end()));
 }
 
-const std::unordered_map<std::string, std::vector<std::shared_ptr<IDrawable> > > &RenderQueue::getDrawables() const{
-    return mDrawables;
+const std::vector<RenderCommand>& RenderQueue::getRenderCommands() const{
+    return mRenderCommands;
 }
 
-const std::vector<std::shared_ptr<IDrawable> > &RenderQueue::getDrawablesOrdered() const{
-    return mDrawablesOrdered;
-}
-
-void RenderQueue::removeDrawable(const std::shared_ptr<IDrawable>& drawable) {
-    std::string shaderName = drawable->getShaderProgramName();
-
-    auto& vec = mDrawables[shaderName];
-    vec.erase(std::remove(vec.begin(), vec.end(), drawable), vec.end());
-
-    mDrawablesOrdered.erase(std::remove(mDrawablesOrdered.begin(), mDrawablesOrdered.end(), drawable), mDrawablesOrdered.end());
+void RenderQueue::clear() {
+    mRenderCommands.clear();
 }

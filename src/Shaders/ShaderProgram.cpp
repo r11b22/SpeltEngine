@@ -126,6 +126,32 @@ void ShaderProgram::setUniformBool(const std::string &name, bool value) {
     glUniform1i(location, value);
 }
 
+void ShaderProgram::setUniform(const ShaderUniform& uniform) {
+    // std::visit inspects the variant and passes its active value to the lambda
+    std::visit([this, &uniform](auto&& arg) {
+        using T = std::decay_t<decltype(arg)>;
+
+        if constexpr (std::is_same_v<T, int>) {
+            this->setUniformInt(uniform.name, arg);
+        }
+        else if constexpr (std::is_same_v<T, float>) {
+            this->setUniformFloat(uniform.name, arg);
+        }
+        else if constexpr (std::is_same_v<T, unsigned int>) {
+            this->setUniformUInt(uniform.name, arg);
+        }
+        else if constexpr (std::is_same_v<T, bool>) {
+            this->setUniformBool(uniform.name, arg);
+        }
+        else if constexpr (std::is_same_v<T, glm::mat4>) {
+            this->setUniformMat4x4(uniform.name, arg);
+        }
+        else if constexpr (std::is_same_v<T, glm::vec3>) {
+            this->setUniformVec3(uniform.name, arg);
+        }
+    }, uniform.data);
+}
+
 GLint ShaderProgram::getUniformLocation(const std::string &name) const{
     const GLint location = glGetUniformLocation(mId, name.c_str());
 

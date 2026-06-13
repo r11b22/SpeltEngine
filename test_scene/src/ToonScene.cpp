@@ -12,6 +12,8 @@ ToonScene::ToonScene() {
 }
 
 void ToonScene::onLoad(Renderer &renderer, Window &window) {
+    window.setVSYNC(false);
+
 
     inputManager = new InputManager(window);
 
@@ -23,7 +25,8 @@ void ToonScene::onLoad(Renderer &renderer, Window &window) {
     tigerLoader.readFile("Models/Animals/tiger/tiger.gltf");
     tigerLoader.loadTexture("Models/Animals/tiger/Texture_1.png");
     std::shared_ptr<Mesh> tigerMesh = tigerLoader.createMesh();
-    mTiger = std::make_shared<MeshObject>("tiger", tigerMesh);
+    std::shared_ptr<Material> tigerMaterial = tigerLoader.createMaterial();
+    mTiger = std::make_shared<MeshObject>("tiger", tigerMesh, tigerMaterial);
     addObject(mTiger);
 
     glm::vec3 diff = mTiger->getPosition() - camera->getPosition();

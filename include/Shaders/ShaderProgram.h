@@ -8,6 +8,7 @@
 #include <vector>
 #include <memory>
 
+#include "ShaderUniform.h"
 #include "Buffer/Buffer.h"
 #include "glad/glad.h"
 #include "glm/mat4x4.hpp"
@@ -60,6 +61,8 @@ public:
     void setUniformBool(const std::string& name, bool value);
 
     void setUniformFloat(const std::string& name, float value);
+
+    void setUniform(const ShaderUniform& uniform);
 
     void bindBufferToUniform(const std::string& name, Buffer& buff);
 private:

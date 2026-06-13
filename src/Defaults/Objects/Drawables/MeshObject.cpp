@@ -4,23 +4,24 @@
 
 #include "Defaults/Objects/Drawables/MeshObject.h"
 
-MeshObject::MeshObject(const std::string &name, const std::shared_ptr<Mesh>& mesh)
-    : TransformableObject(name), mMesh(mesh)
+MeshObject::MeshObject(const std::string &name, const std::shared_ptr<Mesh>& mesh, const std::shared_ptr<Material>& material)
+    : TransformableObject(name), mMesh(mesh), mMaterial(material)
 {
 }
 
-void MeshObject::draw(ShaderProgram &shaderProgram) {
-    shaderProgram.setUniformMat4x4("uModelMatrix", getTransformationMatrix());
-    mMesh->draw(shaderProgram);
+std::vector<RenderCommand> MeshObject::getRenderCommands() {
+    RenderCommand command;
+
+    command.material = mMaterial;
+    command.renderable = mMesh;
+    command.shaderName = mShader;
+
+    glm::mat4 transformationMatrix = getTransformationMatrix();
+    command.uniforms.push_back({"uModelMatrix", transformationMatrix});
+
+    return {command};
 }
 
-std::string MeshObject::getShaderProgramName() {
-    return mMesh->getShaderProgramName();
-}
-
-Material & MeshObject::getMaterial() {
-    return mMesh->getMaterial();
-}
 
 void MeshObject::setIndices(std::vector<unsigned int> indices) {
     mMesh->setIndices(std::move(indices));
@@ -31,9 +32,5 @@ void MeshObject::setVertices(std::vector<float> vertices) {
 }
 
 void MeshObject::setShader(std::string shader) {
-    mMesh->setShader(shader);
-}
-
-void MeshObject::setTexture(const TextureData &texData) {
-    mMesh->setTexture(texData);
+    mShader = std::move(shader);
 }

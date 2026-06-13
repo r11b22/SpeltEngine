@@ -10,7 +10,6 @@
 #include "FileReader.h"
 #include "Defaults/PostProcessing/Bloom.h"
 #include "glad/glad.h"
-#include "Renderer/BasicRenderPass.h"
 #include "Strings/ShaderSource.h"
 
 App::App(const std::string &title) :
@@ -23,9 +22,6 @@ App::App(const std::string &title) :
     litProgram->link();
 
     mRenderer.addShaderProgram("litShader", std::move(litProgram));
-
-    std::unique_ptr<IRenderPass> basicRenderPass = std::make_unique<BasicRenderPass>();
-    mRenderer.addRenderPass(std::move(basicRenderPass));
 }
 
 void App::loadScene(Scene* scene) {
@@ -55,7 +51,7 @@ void App::run() {
 
             mCurrentScene->onUpdate(mRenderer, mWindow, mDeltaT);
             mCurrentScene->updateObjects(mDeltaT);
-            mRenderer.drawScene(*mCurrentScene);
+            mRenderer.draw(mCurrentScene->getRenderQueue(), *mCurrentScene->getCamera(), mCurrentScene->getPointLights(), mCurrentScene->getAmbientLight());
 
             mWindow.swapBuffers();
             mWindow.pollEvents();

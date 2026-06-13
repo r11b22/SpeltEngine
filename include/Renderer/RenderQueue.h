@@ -9,18 +9,18 @@
 #include <unordered_map>
 
 #include "IDrawable.h"
+#include "RenderCommand.h"
 
 class RenderQueue {
 private:
-    std::unordered_map<std::string, std::vector<std::shared_ptr<IDrawable>>> mDrawables = {};
-    std::vector<std::shared_ptr<IDrawable>> mDrawablesOrdered = {};
+    std::vector<RenderCommand> mRenderCommands;
 public:
 
-    const std::unordered_map<std::string, std::vector<std::shared_ptr<IDrawable>>>& getDrawables() const;
-    const std::vector<std::shared_ptr<IDrawable>>& getDrawablesOrdered() const;
+    const std::vector<RenderCommand>& getRenderCommands() const;
 
-    void addDrawable(std::shared_ptr<IDrawable> drawable);
-    void removeDrawable(const std::shared_ptr<IDrawable>& drawable);
+    void submitDrawable(std::shared_ptr<IDrawable> drawable);
+
+    void clear();
 private:
 };
 

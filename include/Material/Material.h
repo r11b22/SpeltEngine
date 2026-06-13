@@ -6,9 +6,11 @@
 #define SPELTENGINE_MATERIAL_H
 #include <optional>
 
-#include "ModelLoader.h"
+
 #include "Texture.h"
 #include "Shaders/ShaderProgram.h"
+
+class TextureData;
 
 class Material {
 private:

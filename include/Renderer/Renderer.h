@@ -10,7 +10,6 @@
 
 #include "../Camera.h"
 #include "IDrawable.h"
-#include "IRenderPass.h"
 #include "../Mesh.h"
 #include "../PostProcessing/PostProcessingPipeline.h"
 #include "../Scene/Scene.h"
@@ -23,13 +22,8 @@ class Renderer {
 private:
     std::map<std::string, std::unique_ptr<ShaderProgram>> mShaderPrograms;
 
-    std::vector<std::unique_ptr<IRenderPass>> mRenderPasses;
-
     ShaderProgram* mScreenShader;
     Mesh* mScreenQuad;
-
-    PickBuffer* mPickBuffer;
-    ShaderProgram* mPickShader;
 
     Window* mTarget;
 
@@ -42,9 +36,6 @@ public:
 
     void addShaderProgram(std::string name, std::unique_ptr<ShaderProgram> shaderPrograms);
 
-    void addRenderPass(std::unique_ptr<IRenderPass> renderPass);
-    void setRenderPass(size_t idx, std::unique_ptr<IRenderPass> renderPass);
-
     EffectHandle addPostProcessingEffect(PostProcessingEffect effect);
     EffectHandle addPostProcessingEffect(PostProcessingGroup& effect);
     void enableEffect(EffectHandle handle);
@@ -52,16 +43,15 @@ public:
 
     void prepare();
 
-    void drawScene(const Scene& scene);
+    void draw(const RenderQueue& queue, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight);
 
     void setClearBits(GLbitfield bits);
 
-    std::shared_ptr<IDrawable> getObjectAtPixel(const Scene& scene, int x, int y) const;
 private:
-    void drawPass(const Scene& scene, const Camera& camera);
-    void pickingPass(const Scene& scene, const Camera& camera);
+    void drawPass(const RenderQueue& queue, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight);
     void renderToScreen();
-    void uploadLightDataToShader(ShaderProgram& program, const std::vector<std::shared_ptr<PointLight>>& lights);
+    void uploadStandardUniforms(ShaderProgram& program, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight);
+    void uploadLightData(ShaderProgram& program, const std::vector<std::shared_ptr<PointLight>>& points, std::shared_ptr<AmbientLight> ambient);
 };
 
 

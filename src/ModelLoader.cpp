@@ -131,9 +131,7 @@ std::shared_ptr<Mesh> ModelLoader::createMeshScaled(int idx, glm::vec3 scale) {
     newMesh->setVertices(getVertices(idx, scale));
     newMesh->setIndices(getIndices(idx));
 
-    if (mTexData.texData) {
-        newMesh->setTexture(mTexData);
-    }
+
 
     return newMesh;
 }
@@ -144,6 +142,16 @@ std::shared_ptr<Mesh> ModelLoader::createMeshScaledUniform(int idx, float scale)
 
 std::shared_ptr<Mesh> ModelLoader::createMesh(int idx) {
     return createMeshScaled(idx, glm::vec3{1.0f});
+}
+
+std::shared_ptr<Material> ModelLoader::createMaterial() {
+    if (mTexData.texData) {
+        std::shared_ptr<Material> material = std::make_shared<Material>();
+        material->setTexture(mTexData);
+        return std::move(material);
+    }else {
+        throw std::runtime_error("No texture data available!");
+    }
 }
 
 TextureData ModelLoader::loadTextureStatic(const std::filesystem::path &path, bool flipVertical) {

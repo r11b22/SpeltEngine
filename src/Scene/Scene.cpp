@@ -41,7 +41,14 @@ void Scene::updateObjects(float deltaT) {
 // Drawables / lights / camera
 // ---------------------------------------------------------------------------
 
-const RenderQueue& Scene::getRenderQueue() const {
+const RenderQueue& Scene::getRenderQueue() {
+    // TODO move this to somewhere else
+    mRenderQueue.clear();
+
+    for (const auto& drawable : mDrawables) {
+        mRenderQueue.submitDrawable(drawable);
+    }
+
     return mRenderQueue;
 }
 
@@ -52,6 +59,15 @@ void Scene::addPointLight(std::shared_ptr<PointLight> light) {
 void Scene::removePointLight(std::shared_ptr<PointLight> light) {
     mPointLights.erase(std::remove(mPointLights.begin(), mPointLights.end(), light), mPointLights.end());
 }
+
+void Scene::addDrawable(std::shared_ptr<IDrawable> drawable) {
+    mDrawables.push_back(std::move(drawable));
+}
+
+void Scene::removeDrawable(std::shared_ptr<IDrawable> drawable) {
+    mDrawables.erase(std::remove(mDrawables.begin(), mDrawables.end(), drawable), mDrawables.end());
+}
+
 
 const std::vector<std::shared_ptr<PointLight>>& Scene::getPointLights() const {
     return mPointLights;
@@ -88,7 +104,7 @@ void Scene::addObject(std::shared_ptr<Object> object) {
     // If it is Drawable add it to the drawables list
     // We use polymorphism because no object should be added or removed every frame
     if (std::shared_ptr<IDrawable> drawable = std::dynamic_pointer_cast<IDrawable>(object)) {
-        mRenderQueue.addDrawable(drawable);
+        addDrawable(std::move(drawable));
     }
 
     if (std::shared_ptr<PointLight> light = std::dynamic_pointer_cast<PointLight>(object)) {
@@ -137,7 +153,7 @@ void Scene::destroyObject(const std::shared_ptr<Object>& object) {
 
     // Remove it from drawables if it was a drawable
     if (std::shared_ptr<IDrawable> drawable = std::dynamic_pointer_cast<IDrawable>(object)) {
-        mRenderQueue.removeDrawable(drawable);
+        removeDrawable(std::move(drawable));
     }
 
     if (std::shared_ptr<PointLight> light = std::dynamic_pointer_cast<PointLight>(object)) {

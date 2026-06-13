@@ -13,16 +13,13 @@
 #include "Transform/Transform.h"
 #include "VertexArray.h"
 
-class Mesh : public IDrawable {
+class Mesh : public IRenderable {
 private:
     Buffer mVertexBuffer;
     VertexArray mVAO;
 
     int mVertexCount;
 
-    std::string mShader = "litShader";
-
-    Material mMaterial;
 
 public:
     Mesh();
@@ -34,14 +31,11 @@ public:
     Mesh(Mesh&& other) noexcept = default;
     Mesh& operator=(Mesh&& other) noexcept = default;
 
-    void draw(ShaderProgram &shaderProgram) override;
-    std::string getShaderProgramName() override;
-    Material& getMaterial() override;
+
+    void draw(ShaderProgram& shaderProgram) override;
 
     void setVertices(std::vector<float> vertices);
     void setIndices(std::vector<unsigned int> indices);
-    void setShader(std::string shader);
-    void setTexture(const TextureData& texData);
 
 private:
 };

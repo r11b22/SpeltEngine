@@ -15,8 +15,6 @@
 Renderer::Renderer(Window* target)
     :
     mShaderPrograms(),
-    mPickBuffer(nullptr),
-    mPickShader{nullptr},
     mTarget(target)
 {
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -33,12 +31,6 @@ Renderer::Renderer(Window* target)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    mPickShader = new ShaderProgram{};
-    mPickShader->addShader(pickingVertex, GL_VERTEX_SHADER);
-    mPickShader->addShader(pickingFragment, GL_FRAGMENT_SHADER);
-    mPickShader->link();
-
-    mPickBuffer = new PickBuffer(target);
 
     mScreenShader = new ShaderProgram{};
     mScreenShader->addShader(straightToScreenVertexShader, GL_VERTEX_SHADER);
@@ -86,105 +78,50 @@ void Renderer::addShaderProgram(std::string name, std::unique_ptr<ShaderProgram>
 }
 
 
-void Renderer::addRenderPass(std::unique_ptr<IRenderPass> perObjectRenderPass) {
-    mRenderPasses.push_back(std::move(perObjectRenderPass));
-}
-
-void Renderer::setRenderPass(size_t idx, std::unique_ptr<IRenderPass> renderPass) {
-    if (idx >= mRenderPasses.size()) {
-        throw std::runtime_error(std::format("Can not set render pass at %d, because it does not exist!", idx));
-    }
-
-    mRenderPasses[idx] = std::move(renderPass);
-}
 
 void Renderer::prepare() {
     mPostProcessingPipeline->prepare();
 }
 
-void Renderer::drawPass(const Scene& scene, const Camera& camera) {
+void Renderer::drawPass(const RenderQueue& queue, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight) {
     mPostProcessingPipeline->bind();
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(mClearBitField);
 
-    for (const auto& pass : mRenderPasses) {
-        std::optional<std::string> customShader = pass->getCustomShaderName();
 
-        ShaderProgram* currentProgram = nullptr;
+    ShaderProgram* currentProgram = nullptr;
+    for (const auto& command : queue.getRenderCommands()) {
+        const std::string& shaderName = command.shaderName;
+        const std::shared_ptr<IRenderable>& toRender = command.renderable;
+        const std::shared_ptr<Material>& material = command.material;
 
-        pass->setupState();
-
-        if (customShader.has_value()) {
-            currentProgram = mShaderPrograms.at(customShader.value()).get();
+        ShaderProgram* newProgram = mShaderPrograms.at(shaderName).get();
+        if (newProgram != currentProgram) {
+            // Set the new shader as the currently active shader
+            // RenderQueue optimizes the order as much as possible
+            currentProgram = newProgram;
             currentProgram->use();
         }
 
-        for (const auto& [shader, drawables] : scene.getRenderQueue().getDrawables()) {
-            if (!customShader.has_value()) {
-                currentProgram = mShaderPrograms.at(shader).get();
-                currentProgram->use();
-            }
+        uploadStandardUniforms(*currentProgram, camera, pointLights, ambientLight);
 
-
-            currentProgram->setUniformMat4x4("uProjectionMatrix", camera.getProjectionMatrix(*mTarget));
-            currentProgram->setUniformMat4x4("uViewMatrix", camera.getViewMatrix());
-
-
-            currentProgram->setUniformVec3("uCameraPos", camera.getPosition());
-            currentProgram->setUniformInt("numPointLights", scene.getPointLights().size());
-            if (const auto& ambient = scene.getAmbientLight()) {
-                currentProgram->setUniformVec3("uAmbient", ambient->getAmbient());
-            }
-
-            uploadLightDataToShader(*currentProgram, scene.getPointLights());
-
-            for (const std::shared_ptr<IDrawable>& toDraw : drawables) {
-                pass->drawObject(toDraw, *currentProgram);
-            }
+        for (const auto& uniform : command.uniforms) {
+            currentProgram->setUniform(uniform);
         }
 
-        pass->resetState();
+        material->readyMaterial(*currentProgram);
+        toRender->draw(*currentProgram);
     }
-
 
     mPostProcessingPipeline->unbind();
 }
 
-void Renderer::pickingPass(const Scene& scene, const Camera& camera) {
-    glDisable(GL_BLEND);
-    mPickBuffer->bind();
-
-
-    uint32_t clearID = 0;
-    uint32_t clearValues[4] = { clearID, 0, 0, 0 };
-    glClearBufferuiv(GL_COLOR, 0, clearValues);
-    glClear( GL_DEPTH_BUFFER_BIT);
-
-    mPickShader->use();
-    mPickShader->setUniformMat4x4("uProjectionMatrix", camera.getProjectionMatrix(*mTarget));
-    mPickShader->setUniformMat4x4("uViewMatrix", camera.getViewMatrix());
-
-    const auto& drawables = scene.getRenderQueue().getDrawablesOrdered();
-    for (int i =0; i < drawables.size(); i++) {
-
-            mPickShader->setUniformUInt("uObjectIndex", i+1);
-
-            drawables[i]->draw(*mPickShader);
-
-    }
-
-
-    mPickBuffer->unbind();
-    glEnable(GL_BLEND);
-}
 
 void Renderer::renderToScreen() {
 
     Texture* output = nullptr;
     mPostProcessingPipeline->process();
     output = mPostProcessingPipeline->getOutput();
-
-
 
     glDisable(GL_DEPTH_TEST);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -202,18 +139,17 @@ void Renderer::renderToScreen() {
 
 }
 
-std::shared_ptr<IDrawable> Renderer::getObjectAtPixel(const Scene& scene, int x, int y) const{
-    unsigned int idx = mPickBuffer->getAtPixel(x, y);
-    if (idx > 0) {
-        std::shared_ptr<IDrawable> object = scene.getRenderQueue().getDrawablesOrdered()[idx-1];
-        return object;
-    }
-    return nullptr;
+void Renderer::uploadStandardUniforms(ShaderProgram &program, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight) {
+    program.setUniformMat4x4("uProjectionMatrix", camera.getProjectionMatrix(*mTarget));
+    program.setUniformMat4x4("uViewMatrix", camera.getViewMatrix());
+    program.setUniformVec3("uCameraPos", camera.getPosition());
+
+    uploadLightData(program, pointLights, ambientLight);
 }
 
-void Renderer::drawScene(const Scene& scene) {
-    pickingPass(scene, *scene.getCamera());
-    drawPass(scene, *scene.getCamera());
+
+void Renderer::draw(const RenderQueue& queue, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight) {
+    drawPass(queue, camera, pointLights, ambientLight);
     renderToScreen();
 }
 
@@ -221,24 +157,27 @@ void Renderer::setClearBits(const GLbitfield bits) {
     mClearBitField = bits;
 }
 
-void Renderer::uploadLightDataToShader(ShaderProgram& program, const std::vector<std::shared_ptr<PointLight>>& lights) {
-    program.setUniformInt("numPointLights", static_cast<int>(lights.size()));
+void Renderer::uploadLightData(ShaderProgram& program, const std::vector<std::shared_ptr<PointLight>>& points, std::shared_ptr<AmbientLight> ambient) {
 
-    for (size_t i = 0; i < lights.size(); ++i) {
+    if (ambient) {
+        program.setUniformVec3("uAmbient", ambient->getAmbient());
+    }
+
+    program.setUniformInt("numPointLights", static_cast<int>(points.size()));
+
+    for (size_t i = 0; i < points.size(); ++i) {
         std::string base = "uPointLights[" + std::to_string(i) + "].";
-        program.setUniformVec3(base + "position", lights[i]->getPosition());
-        program.setUniformVec3(base + "diffuse", lights[i]->getDiffuse());
-        program.setUniformVec3(base + "specular", lights[i]->getSpecular());
+        program.setUniformVec3(base + "position", points[i]->getPosition());
+        program.setUniformVec3(base + "diffuse", points[i]->getDiffuse());
+        program.setUniformVec3(base + "specular", points[i]->getSpecular());
 
-        program.setUniformFloat(base + "constant", lights[i]->getConstantFalloff());
-        program.setUniformFloat(base + "lineair", lights[i]->getLinearFalloff());
-        program.setUniformFloat(base + "quadratic", lights[i]->getQuadraticFallof());
+        program.setUniformFloat(base + "constant", points[i]->getConstantFalloff());
+        program.setUniformFloat(base + "lineair", points[i]->getLinearFalloff());
+        program.setUniformFloat(base + "quadratic", points[i]->getQuadraticFallof());
     }
 }
 
 Renderer::~Renderer() {
-    delete mPickBuffer;
-    delete mPickShader;
     delete mScreenShader;
     delete mScreenQuad;
     delete mPostProcessingPipeline;

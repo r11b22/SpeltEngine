@@ -28,6 +28,7 @@ private:
 
     RenderQueue mRenderQueue;
 
+    std::vector<std::shared_ptr<IDrawable>> mDrawables;
     std::vector<std::shared_ptr<PointLight>> mPointLights;
     std::shared_ptr<AmbientLight> mAmbientLight = nullptr;
 
@@ -44,7 +45,7 @@ public:
     /**
      * Get a list of all objects in the scene that can draw
      */
-    const RenderQueue& getRenderQueue() const;
+    const RenderQueue& getRenderQueue();
 
     /**
      * Get the list of PointLights in the scene
@@ -159,6 +160,9 @@ private:
 
     void addPointLight(std::shared_ptr<PointLight> light);
     void removePointLight(std::shared_ptr<PointLight> light);
+
+    void addDrawable(std::shared_ptr<IDrawable> drawable);
+    void removeDrawable(std::shared_ptr<IDrawable> drawable);
 };
 
 #endif //CGVCPROJECT_SCENE_H

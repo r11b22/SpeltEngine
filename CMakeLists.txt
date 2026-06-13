@@ -140,23 +140,21 @@ add_library(${PROJECT_NAME_VAR} STATIC
         include/Defaults/Objects/TransformableObject.h
         src/Defaults/Objects/TransformableObject.cpp
         src/Defaults/Objects/Drawables/MeshObject.cpp
-        include/Defaults/Objects/Drawables/Clickables/ClickableObject.h
-        src/Defaults/Objects/Drawables/Clickables/ClickableObject.cpp
         src/Lighting/PointLight.cpp
         src/Lighting/AmbientLight.cpp
         src/Renderer/RenderQueue.cpp
         include/Renderer/RenderQueue.h
-        include/Defaults/Objects/Drawables/Clickables/ClickableMesh.h
-        src/Defaults/Objects/Drawables/Clickables/ClickableMesh.cpp
         include/Utilities/Random.h
         src/Shaders/ComputeShader.cpp
         include/Shaders/ComputeShader.h
         include/Buffer/BufferMap.h
         include/Material/Material.h
         src/Material/Material.cpp
-        include/Renderer/IRenderPass.h
-        include/Renderer/BasicRenderPass.h
-        src/Renderer/BasicRenderPass.cpp
+        include/Renderer/RenderCommand.h
+        src/Renderer/RenderCommand.cpp
+        include/Renderer/IRenderable.h
+        include/Shaders/ShaderUniform.h
+        src/Shaders/ShaderUniform.cpp
 )
 
 target_compile_features(${PROJECT_NAME_VAR} PUBLIC cxx_std_20)
