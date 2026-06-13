@@ -34,3 +34,15 @@ void MeshObject::setVertices(std::vector<float> vertices) {
 void MeshObject::setShader(std::string shader) {
     mShader = std::move(shader);
 }
+
+std::shared_ptr<Mesh> MeshObject::getMesh() {
+    return mMesh;
+}
+
+std::shared_ptr<Material> MeshObject::getMaterial() {
+    return mMaterial;
+}
+
+std::string MeshObject::getShader() {
+    return mShader;
+}

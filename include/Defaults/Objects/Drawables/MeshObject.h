@@ -25,6 +25,11 @@ public:
     void setIndices(std::vector<unsigned int> indices);
     void setShader(std::string shader);
 
+protected:
+    std::shared_ptr<Mesh> getMesh();
+    std::shared_ptr<Material> getMaterial();
+    std::string getShader();
+
 private:
 };
 
