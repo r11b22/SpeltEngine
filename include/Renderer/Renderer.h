@@ -10,10 +10,10 @@
 
 #include "../Camera.h"
 #include "IDrawable.h"
+#include "RenderStateManager.h"
 #include "../Mesh.h"
 #include "../PostProcessing/PostProcessingPipeline.h"
 #include "../Scene/Scene.h"
-#include "../PickBuffer.h"
 #include "../Window.h"
 #include "../Lighting/PointLight.h"
 #include "../PostProcessing/PostProcessingGroup.h"
@@ -28,6 +28,8 @@ private:
     Window* mTarget;
 
     PostProcessingPipeline* mPostProcessingPipeline;
+
+    RenderStateManager mStateManager = {};
 
     GLbitfield mClearBitField = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 public:

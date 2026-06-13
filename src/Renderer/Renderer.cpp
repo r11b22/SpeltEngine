@@ -109,6 +109,8 @@ void Renderer::drawPass(const RenderQueue& queue, const Camera& camera, const st
             currentProgram->setUniform(uniform);
         }
 
+        mStateManager.applyState(command.state);
+
         material->readyMaterial(*currentProgram);
         toRender->draw(*currentProgram);
     }

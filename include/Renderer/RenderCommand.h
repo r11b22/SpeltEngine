@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "IRenderable.h"
+#include "RenderState.h"
 #include "Material/Material.h"
 
 struct RenderCommand {
@@ -14,6 +15,7 @@ struct RenderCommand {
     std::shared_ptr<IRenderable> renderable = nullptr;
     std::shared_ptr<Material> material = nullptr;
     std::vector<ShaderUniform> uniforms = {};
+    RenderState state;
 };
 
 #endif //SPELTENGINE_RENDERENGINE_H

@@ -155,6 +155,10 @@ add_library(${PROJECT_NAME_VAR} STATIC
         include/Renderer/IRenderable.h
         include/Shaders/ShaderUniform.h
         src/Shaders/ShaderUniform.cpp
+        include/Renderer/RenderState.h
+        src/Renderer/RenderState.cpp
+        src/Renderer/RenderStateManager.cpp
+        include/Renderer/RenderStateManager.h
 )
 
 target_compile_features(${PROJECT_NAME_VAR} PUBLIC cxx_std_20)
