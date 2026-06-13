@@ -114,6 +114,9 @@ void Renderer::drawPass(const RenderQueue& queue, const Camera& camera, const st
         material->readyMaterial(*currentProgram);
         toRender->draw(*currentProgram);
     }
+    // reset state
+    // THIS IS A HOTFIX AND SHOULD BE REPLACED WITH EVERY RENDER SETTING THE STATE INSTEAD OF ONLY THESE ONES
+    mStateManager.applyState(RenderState{});
 
     mPostProcessingPipeline->unbind();
 }
