@@ -7,8 +7,6 @@
 
 #include <iostream>
 
-#include "FileReader.h"
-#include "Defaults/PostProcessing/Bloom.h"
 #include "glad/glad.h"
 #include "Strings/ShaderSource.h"
 
@@ -61,5 +59,3 @@ void App::run() {
 
     }
 }
-
-

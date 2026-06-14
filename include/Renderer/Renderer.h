@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "../Camera.h"
-#include "IDrawable.h"
 #include "RenderStateManager.h"
 #include "../Mesh.h"
 #include "../PostProcessing/PostProcessingPipeline.h"
@@ -17,6 +16,8 @@
 #include "../Window.h"
 #include "../Lighting/PointLight.h"
 #include "../PostProcessing/PostProcessingGroup.h"
+#include "Renderer/RenderCommand.h"
+#include "Shaders/ShaderProgram.h"
 
 class Renderer {
 private:
@@ -30,11 +31,13 @@ private:
     PostProcessingPipeline* mPostProcessingPipeline;
 
     RenderStateManager mStateManager = {};
+    ShaderProgram* mCurrentProgram = nullptr;
 
     GLbitfield mClearBitField = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 public:
     Renderer(Window* target);
     ~Renderer();
+
 
     void addShaderProgram(std::string name, std::unique_ptr<ShaderProgram> shaderPrograms);
 
@@ -52,6 +55,12 @@ public:
 private:
     void drawPass(const RenderQueue& queue, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight);
     void renderToScreen();
+
+    void executeRenderCommand(const RenderCommand& command, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight);
+    void executeDrawCommand(const DrawCommand& command, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight);
+    void executeStateChangeCommand(const StateChangeCommand& command);
+    void executeClearCommand(const ClearCommand& command);
+
     void uploadStandardUniforms(ShaderProgram& program, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight);
     void uploadLightData(ShaderProgram& program, const std::vector<std::shared_ptr<PointLight>>& points, std::shared_ptr<AmbientLight> ambient);
 };

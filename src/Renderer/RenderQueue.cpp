@@ -3,7 +3,7 @@
 //
 
 #include "Renderer/RenderQueue.h"
-#include <algorithm>
+#include "Renderer/RenderCommand.h"
 
 void RenderQueue::submitDrawable(std::shared_ptr<IDrawable> drawable) {
     std::vector<RenderCommand> commands = drawable->getRenderCommands();

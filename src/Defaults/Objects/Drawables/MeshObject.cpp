@@ -3,6 +3,7 @@
 //
 
 #include "Defaults/Objects/Drawables/MeshObject.h"
+#include "Renderer/RenderCommand.h"
 
 MeshObject::MeshObject(const std::string &name, const std::shared_ptr<Mesh>& mesh, const std::shared_ptr<Material>& material)
     : TransformableObject(name), mMesh(mesh), mMaterial(material)
@@ -10,7 +11,7 @@ MeshObject::MeshObject(const std::string &name, const std::shared_ptr<Mesh>& mes
 }
 
 std::vector<RenderCommand> MeshObject::getRenderCommands() {
-    RenderCommand command;
+    DrawCommand command;
 
     command.material = mMaterial;
     command.renderable = mMesh;

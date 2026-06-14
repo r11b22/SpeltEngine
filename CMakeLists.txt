@@ -1,6 +1,8 @@
 # SpeltEngine — static engine library with vendored dependencies
 cmake_minimum_required(VERSION 3.15)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(PROJECT_NAME_VAR SpeltEngine)
 project(${PROJECT_NAME_VAR} VERSION 1.0)
 

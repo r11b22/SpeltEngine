@@ -5,8 +5,6 @@
 #ifndef CGVCPROJECT_RENDERQUEUE_H
 #define CGVCPROJECT_RENDERQUEUE_H
 #include <memory>
-#include <string>
-#include <unordered_map>
 
 #include "IDrawable.h"
 #include "RenderCommand.h"

@@ -7,8 +7,7 @@
 #include "Mesh.h"
 #include "../TransformableObject.h"
 #include "Renderer/IDrawable.h"
-#include "Scene/Object.h"
-#include "Transform/ITransformable.h"
+#include "Renderer/RenderCommand.h"
 
 class MeshObject : virtual public TransformableObject, public IDrawable{
 private:

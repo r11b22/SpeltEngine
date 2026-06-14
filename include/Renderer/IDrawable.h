@@ -5,11 +5,8 @@
 #ifndef GCVCPROJECT_DRAWABLE_H
 #define GCVCPROJECT_DRAWABLE_H
 
-#include <string>
-
 #include "RenderCommand.h"
-#include "../Shaders/ShaderProgram.h"
-#include "Material/Material.h"
+
 
 class IDrawable{
 public:

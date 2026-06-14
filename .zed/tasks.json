@@ -1,0 +1,24 @@
+[
+  {
+    "label": "CMake: Configure",
+    "command": "cmake -B build -DCMAKE_BUILD_TYPE=Debug",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+  },
+  {
+    "label": "CMake: Build Target",
+    "command": "cmake --build build",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "save": "current",
+  },
+  {
+    "label": "CMake: Run Test Scene",
+    // We use ../build because we are executing from inside the test_scene folder
+    "command": "cmake --build ../build && ../build/test_scene/SpeltEngineTestScene",
+    "cwd": "$ZED_WORKTREE_ROOT/test_scene",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "save": "current",
+  },
+]

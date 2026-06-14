@@ -5,11 +5,9 @@
 #include "../../include/Renderer/Renderer.h"
 
 #include <iostream>
-#include <algorithm>
-#include <format>
+#include <type_traits>
 
-
-#include "FileReader.h"
+#include "Renderer/RenderCommand.h"
 #include "Strings/ShaderSource.h"
 
 Renderer::Renderer(Window* target)
@@ -88,31 +86,12 @@ void Renderer::drawPass(const RenderQueue& queue, const Camera& camera, const st
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(mClearBitField);
 
+    if (mCurrentProgram != nullptr){
+        mCurrentProgram->use();
+    }
 
-    ShaderProgram* currentProgram = nullptr;
     for (const auto& command : queue.getRenderCommands()) {
-        const std::string& shaderName = command.shaderName;
-        const std::shared_ptr<IRenderable>& toRender = command.renderable;
-        const std::shared_ptr<Material>& material = command.material;
-
-        ShaderProgram* newProgram = mShaderPrograms.at(shaderName).get();
-        if (newProgram != currentProgram) {
-            // Set the new shader as the currently active shader
-            // RenderQueue optimizes the order as much as possible
-            currentProgram = newProgram;
-            currentProgram->use();
-        }
-
-        uploadStandardUniforms(*currentProgram, camera, pointLights, ambientLight);
-
-        for (const auto& uniform : command.uniforms) {
-            currentProgram->setUniform(uniform);
-        }
-
-        mStateManager.applyState(command.state);
-
-        material->readyMaterial(*currentProgram);
-        toRender->draw(*currentProgram);
+        executeRenderCommand(command, camera, pointLights, ambientLight);
     }
     // reset state
     // THIS IS A HOTFIX AND SHOULD BE REPLACED WITH EVERY RENDER SETTING THE STATE INSTEAD OF ONLY THESE ONES
@@ -160,6 +139,71 @@ void Renderer::draw(const RenderQueue& queue, const Camera& camera, const std::v
 
 void Renderer::setClearBits(const GLbitfield bits) {
     mClearBitField = bits;
+}
+
+void Renderer::executeRenderCommand(const RenderCommand& command, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight) {
+    std::visit([this, &camera, &pointLights, &ambientLight](auto&& arg) {
+        using T = std::decay_t<decltype(arg)>;
+
+        if constexpr (std::is_same_v<T, DrawCommand>) {
+            this->executeDrawCommand(arg, camera, pointLights, ambientLight);
+        }else if constexpr (std::is_same_v<T, StateChangeCommand>) {
+            this->executeStateChangeCommand(arg);
+        }else if constexpr (std::is_same_v<T, ClearCommand>) {
+            this->executeClearCommand(arg);
+        }
+    }, command);
+}
+
+void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight) {
+    const std::string& shaderName = command.shaderName;
+    const std::shared_ptr<IRenderable>& toRender = command.renderable;
+    const std::shared_ptr<Material>& material = command.material;
+
+    ShaderProgram* newProgram = mShaderPrograms.at(shaderName).get();
+    if (newProgram != mCurrentProgram) {
+        // Set the new shader as the currently active shader
+        // RenderQueue optimizes the order as much as possible
+        mCurrentProgram = newProgram;
+        mCurrentProgram->use();
+    }
+
+    uploadStandardUniforms(*mCurrentProgram, camera, pointLights, ambientLight);
+
+    for (const auto& uniform : command.uniforms) {
+        mCurrentProgram->setUniform(uniform);
+    }
+
+    material->readyMaterial(*mCurrentProgram);
+    toRender->draw(*mCurrentProgram);
+}
+
+void Renderer::executeStateChangeCommand(const StateChangeCommand& command) {
+    mStateManager.applyState(command.state);
+}
+
+void Renderer::executeClearCommand(const ClearCommand& command) {
+    GLbitfield mask = 0;
+
+    if (command.clearColor) {
+        glClearColor(command.color[0], command.color[1], command.color[2], command.color[3]);
+        mask |= GL_COLOR_BUFFER_BIT;
+    }
+
+    if (command.clearDepth) {
+        glClearDepth(command.depth);
+        mask |= GL_DEPTH_BUFFER_BIT;
+    }
+
+    if (command.clearStencil) {
+        glClearStencil(command.stencil);
+        mask |= GL_STENCIL_BUFFER_BIT;
+    }
+
+    // Execute the clear if any flags were set
+    if (mask != 0) {
+        glClear(mask);
+    }
 }
 
 void Renderer::uploadLightData(ShaderProgram& program, const std::vector<std::shared_ptr<PointLight>>& points, std::shared_ptr<AmbientLight> ambient) {

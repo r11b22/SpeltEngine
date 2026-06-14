@@ -3,7 +3,6 @@
 //
 
 #include "../../include/Shaders/ShaderProgram.h"
-#include "Lighting/PointLight.h"
 #include <stdexcept>
 
 ShaderProgram::ShaderProgram()
