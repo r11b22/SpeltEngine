@@ -11,6 +11,8 @@ MeshObject::MeshObject(const std::string &name, const std::shared_ptr<Mesh>& mes
 }
 
 std::vector<RenderCommand> MeshObject::getRenderCommands() {
+    StateChangeCommand defaultState;
+
     DrawCommand command;
 
     command.material = mMaterial;
@@ -20,7 +22,7 @@ std::vector<RenderCommand> MeshObject::getRenderCommands() {
     glm::mat4 transformationMatrix = getTransformationMatrix();
     command.uniforms.push_back({"uModelMatrix", transformationMatrix});
 
-    return {command};
+    return {defaultState, command};
 }
 
 
