@@ -4,6 +4,7 @@
 
 #ifndef CGVCPROJECT_SCENE_H
 #define CGVCPROJECT_SCENE_H
+#include "Lighting/ILight.h"
 #include "Object.h"
 #include "SceneHierarchyComponent.h"
 #include "../Camera.h"
@@ -12,6 +13,9 @@
 #include "Lighting/AmbientLight.h"
 #include "Lighting/PointLight.h"
 #include "Renderer/RenderQueue.h"
+#include "Lighting/LightData.h"
+#include <memory>
+#include <vector>
 
 class Renderer;
 
@@ -29,8 +33,7 @@ private:
     RenderQueue mRenderQueue;
 
     std::vector<std::shared_ptr<IDrawable>> mDrawables;
-    std::vector<std::shared_ptr<PointLight>> mPointLights;
-    std::shared_ptr<AmbientLight> mAmbientLight = nullptr;
+    std::vector<std::shared_ptr<ILight>> mLights;
 
     std::shared_ptr<Camera> mCurrentCamera = nullptr;
 
@@ -48,14 +51,9 @@ public:
     const RenderQueue& getRenderQueue();
 
     /**
-     * Get the list of PointLights in the scene
+     *
      */
-    const std::vector<std::shared_ptr<PointLight>>& getPointLights() const;
-
-    /**
-     * Get the ambient light in the scene
-     */
-    const std::shared_ptr<AmbientLight>& getAmbientLight() const;
+    std::vector<LightData> getLightData();
 
     /**
      * This function is called when the scene is loaded into the app
@@ -158,8 +156,8 @@ private:
     void unlinkFromParent(ObjectID id);
     void appendToParent(ObjectID id, ObjectID parentID);
 
-    void addPointLight(std::shared_ptr<PointLight> light);
-    void removePointLight(std::shared_ptr<PointLight> light);
+    void addLight(std::shared_ptr<ILight> light);
+    void removeLight(std::shared_ptr<ILight> light);
 
     void addDrawable(std::shared_ptr<IDrawable> drawable);
     void removeDrawable(std::shared_ptr<IDrawable> drawable);

@@ -14,10 +14,10 @@
 #include "../PostProcessing/PostProcessingPipeline.h"
 #include "../Scene/Scene.h"
 #include "../Window.h"
-#include "../Lighting/PointLight.h"
 #include "../PostProcessing/PostProcessingGroup.h"
 #include "Renderer/RenderCommand.h"
 #include "Shaders/ShaderProgram.h"
+#include "Lighting/LightManager.h"
 
 class Renderer {
 private:
@@ -31,6 +31,7 @@ private:
     PostProcessingPipeline* mPostProcessingPipeline;
 
     RenderStateManager mStateManager = {};
+    LightManager mLightManager = {};
     ShaderProgram* mCurrentProgram = nullptr;
 
     GLbitfield mClearBitField = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
@@ -48,21 +49,20 @@ public:
 
     void prepare();
 
-    void draw(const RenderQueue& queue, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight);
+    void draw(const RenderQueue& queue, const Camera& camera, const std::vector<LightData>& lights);
 
     void setClearBits(GLbitfield bits);
 
 private:
-    void drawPass(const RenderQueue& queue, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight);
+    void drawPass(const RenderQueue& queue, const Camera& camera, const std::vector<LightData>& lights);
     void renderToScreen();
 
-    void executeRenderCommand(const RenderCommand& command, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight);
-    void executeDrawCommand(const DrawCommand& command, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight);
+    void executeRenderCommand(const RenderCommand& command, const Camera& camera, const std::vector<LightData>& lights);
+    void executeDrawCommand(const DrawCommand& command, const Camera& camera, const std::vector<LightData>& lights);
     void executeStateChangeCommand(const StateChangeCommand& command);
     void executeClearCommand(const ClearCommand& command);
 
-    void uploadStandardUniforms(ShaderProgram& program, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight);
-    void uploadLightData(ShaderProgram& program, const std::vector<std::shared_ptr<PointLight>>& points, std::shared_ptr<AmbientLight> ambient);
+    void uploadStandardUniforms(ShaderProgram& program, const Camera& camera, const std::vector<LightData>& lights);
 };
 
 

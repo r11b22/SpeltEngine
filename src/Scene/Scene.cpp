@@ -3,8 +3,11 @@
 //
 
 #include "Scene/Scene.h"
+#include "Lighting/ILight.h"
+#include "Lighting/LightData.h"
 #include <algorithm>
 #include <iostream>
+#include <vector>
 
 // ---------------------------------------------------------------------------
 // Constructor — seed the sentinel root node
@@ -52,12 +55,12 @@ const RenderQueue& Scene::getRenderQueue() {
     return mRenderQueue;
 }
 
-void Scene::addPointLight(std::shared_ptr<PointLight> light) {
-    mPointLights.push_back(std::move(light));
+void Scene::addLight(std::shared_ptr<ILight> light) {
+    mLights.push_back(light);
 }
 
-void Scene::removePointLight(std::shared_ptr<PointLight> light) {
-    mPointLights.erase(std::remove(mPointLights.begin(), mPointLights.end(), light), mPointLights.end());
+void Scene::removeLight(std::shared_ptr<ILight> light) {
+    mLights.erase(std::remove(mLights.begin(), mLights.end(), light), mLights.end());
 }
 
 void Scene::addDrawable(std::shared_ptr<IDrawable> drawable) {
@@ -69,12 +72,17 @@ void Scene::removeDrawable(std::shared_ptr<IDrawable> drawable) {
 }
 
 
-const std::vector<std::shared_ptr<PointLight>>& Scene::getPointLights() const {
-    return mPointLights;
-}
+std::vector<LightData> Scene::getLightData() {
+    std::vector<LightData> result;
 
-const std::shared_ptr<AmbientLight>& Scene::getAmbientLight() const {
-    return mAmbientLight;
+    // This is a patch between the new light system and an older Object system
+    // When a propper non heap object system is created this should be replaced by that
+    for (const auto& light : mLights)
+    {
+        result.push_back(light->getLightData());
+    }
+
+    return std::move(result);
 }
 
 void Scene::setCamera(const std::shared_ptr<Camera>& camera) {
@@ -107,21 +115,13 @@ void Scene::addObject(std::shared_ptr<Object> object) {
         addDrawable(std::move(drawable));
     }
 
-    if (std::shared_ptr<PointLight> light = std::dynamic_pointer_cast<PointLight>(object)) {
-        addPointLight(std::move(light));
+    if (std::shared_ptr<ILight> light = std::dynamic_pointer_cast<ILight>(object)) {
+        addLight(std::move(light));
     }
 
     if (!mCurrentCamera) {
         if (std::shared_ptr<Camera> camera = std::dynamic_pointer_cast<Camera>(object)) {
             setCamera(camera);
-        }
-    }
-
-    if (std::shared_ptr<AmbientLight> ambientLight = std::dynamic_pointer_cast<AmbientLight>(object)) {
-        if (!mAmbientLight) {
-            mAmbientLight = std::move(ambientLight);
-        }else {
-            throw std::runtime_error("Scenes can not contain multiple ambient lights!");
         }
     }
 
@@ -156,8 +156,8 @@ void Scene::destroyObject(const std::shared_ptr<Object>& object) {
         removeDrawable(std::move(drawable));
     }
 
-    if (std::shared_ptr<PointLight> light = std::dynamic_pointer_cast<PointLight>(object)) {
-        removePointLight(std::move(light));
+    if (std::shared_ptr<ILight> light = std::dynamic_pointer_cast<ILight>(object)) {
+        removeLight(std::move(light));
     }
 
 

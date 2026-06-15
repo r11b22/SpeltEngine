@@ -1,32 +1,21 @@
 #pragma once
 
-#include <vector>
 #include <string>
-#include "../Shaders/ShaderProgram.h"
 #include <glm/glm.hpp>
+#include <vector>
 #include "../Defaults/Objects/TransformableObject.h"
+#include "Lighting/ILight.h"
+#include "Lighting/LightData.h"
+#include "Lighting/PointLightData.h"
 
 
-class PointLight : public TransformableObject{
+class PointLight : public TransformableObject, public ILight{
 
 private:
-    glm::vec3 mAmbient;
-    glm::vec3 mDiffuse;
-    glm::vec3 mSpecular;
-    float mConstant = 1.0f;
-    float mLinear = 1.0f;
-    float mQuadratic = 1.0f;
+    PointLightData mLightData;
 
 public:
     PointLight(const std::string& name, glm::vec3 color);
 
-    glm::vec3 getAmbient() const;
-    glm::vec3 getDiffuse() const;
-    glm::vec3 getSpecular() const;
-
-    float getConstantFalloff() const;
-    float getLinearFalloff() const;
-    float getQuadraticFallof() const;
-
-
+    LightData getLightData() const override;
 };

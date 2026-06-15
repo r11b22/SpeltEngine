@@ -49,7 +49,7 @@ void App::run() {
 
             mCurrentScene->onUpdate(mRenderer, mWindow, mDeltaT);
             mCurrentScene->updateObjects(mDeltaT);
-            mRenderer.draw(mCurrentScene->getRenderQueue(), *mCurrentScene->getCamera(), mCurrentScene->getPointLights(), mCurrentScene->getAmbientLight());
+            mRenderer.draw(mCurrentScene->getRenderQueue(), *mCurrentScene->getCamera(), mCurrentScene->getLightData());
 
             mWindow.swapBuffers();
             mWindow.pollEvents();

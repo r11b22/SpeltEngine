@@ -3,15 +3,15 @@
 //
 
 #include "Lighting/AmbientLight.h"
+#include "Lighting/LightData.h"
 
 AmbientLight::AmbientLight(const std::string& name, glm::vec3 ambient)
     : TransformableObject(name),
-    mAmbient(ambient)
+    mLightData(ambient)
 {
 
 }
 
-
-glm::vec3 AmbientLight::getAmbient() {
-    return mAmbient;
+LightData AmbientLight::getLightData() const{
+    return mLightData;
 }

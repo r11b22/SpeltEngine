@@ -81,7 +81,7 @@ void Renderer::prepare() {
     mPostProcessingPipeline->prepare();
 }
 
-void Renderer::drawPass(const RenderQueue& queue, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight) {
+void Renderer::drawPass(const RenderQueue& queue, const Camera& camera, const std::vector<LightData>& lights) {
     mPostProcessingPipeline->bind();
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(mClearBitField);
@@ -91,7 +91,7 @@ void Renderer::drawPass(const RenderQueue& queue, const Camera& camera, const st
     }
 
     for (const auto& command : queue.getRenderCommands()) {
-        executeRenderCommand(command, camera, pointLights, ambientLight);
+        executeRenderCommand(command, camera, lights);
     }
     // reset state
     // THIS IS A HOTFIX AND SHOULD BE REPLACED WITH EVERY RENDER SETTING THE STATE INSTEAD OF ONLY THESE ONES
@@ -123,17 +123,17 @@ void Renderer::renderToScreen() {
 
 }
 
-void Renderer::uploadStandardUniforms(ShaderProgram &program, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight) {
+void Renderer::uploadStandardUniforms(ShaderProgram &program, const Camera& camera, const std::vector<LightData>& lights) {
     program.setUniformMat4x4("uProjectionMatrix", camera.getProjectionMatrix(*mTarget));
     program.setUniformMat4x4("uViewMatrix", camera.getViewMatrix());
     program.setUniformVec3("uCameraPos", camera.getPosition());
 
-    uploadLightData(program, pointLights, ambientLight);
+    mLightManager.applyLightData(program, lights);
 }
 
 
-void Renderer::draw(const RenderQueue& queue, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight) {
-    drawPass(queue, camera, pointLights, ambientLight);
+void Renderer::draw(const RenderQueue& queue, const Camera& camera, const std::vector<LightData>& lights) {
+    drawPass(queue, camera, lights);
     renderToScreen();
 }
 
@@ -141,12 +141,12 @@ void Renderer::setClearBits(const GLbitfield bits) {
     mClearBitField = bits;
 }
 
-void Renderer::executeRenderCommand(const RenderCommand& command, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight) {
-    std::visit([this, &camera, &pointLights, &ambientLight](auto&& arg) {
+void Renderer::executeRenderCommand(const RenderCommand& command, const Camera& camera, const std::vector<LightData>& lights) {
+    std::visit([this, &camera, &lights](auto&& arg) {
         using T = std::decay_t<decltype(arg)>;
 
         if constexpr (std::is_same_v<T, DrawCommand>) {
-            this->executeDrawCommand(arg, camera, pointLights, ambientLight);
+            this->executeDrawCommand(arg, camera, lights);
         }else if constexpr (std::is_same_v<T, StateChangeCommand>) {
             this->executeStateChangeCommand(arg);
         }else if constexpr (std::is_same_v<T, ClearCommand>) {
@@ -155,7 +155,7 @@ void Renderer::executeRenderCommand(const RenderCommand& command, const Camera& 
     }, command);
 }
 
-void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& camera, const std::vector<std::shared_ptr<PointLight>>& pointLights, std::shared_ptr<AmbientLight> ambientLight) {
+void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& camera, const std::vector<LightData>& lights) {
     const std::string& shaderName = command.shaderName;
     const std::shared_ptr<IRenderable>& toRender = command.renderable;
     const std::shared_ptr<Material>& material = command.material;
@@ -168,7 +168,7 @@ void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& came
         mCurrentProgram->use();
     }
 
-    uploadStandardUniforms(*mCurrentProgram, camera, pointLights, ambientLight);
+    uploadStandardUniforms(*mCurrentProgram, camera, lights);
 
     for (const auto& uniform : command.uniforms) {
         mCurrentProgram->setUniform(uniform);
@@ -203,26 +203,6 @@ void Renderer::executeClearCommand(const ClearCommand& command) {
     // Execute the clear if any flags were set
     if (mask != 0) {
         glClear(mask);
-    }
-}
-
-void Renderer::uploadLightData(ShaderProgram& program, const std::vector<std::shared_ptr<PointLight>>& points, std::shared_ptr<AmbientLight> ambient) {
-
-    if (ambient) {
-        program.setUniformVec3("uAmbient", ambient->getAmbient());
-    }
-
-    program.setUniformInt("numPointLights", static_cast<int>(points.size()));
-
-    for (size_t i = 0; i < points.size(); ++i) {
-        std::string base = "uPointLights[" + std::to_string(i) + "].";
-        program.setUniformVec3(base + "position", points[i]->getPosition());
-        program.setUniformVec3(base + "diffuse", points[i]->getDiffuse());
-        program.setUniformVec3(base + "specular", points[i]->getSpecular());
-
-        program.setUniformFloat(base + "constant", points[i]->getConstantFalloff());
-        program.setUniformFloat(base + "lineair", points[i]->getLinearFalloff());
-        program.setUniformFloat(base + "quadratic", points[i]->getQuadraticFallof());
     }
 }
 
