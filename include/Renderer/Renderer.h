@@ -18,6 +18,7 @@
 #include "Renderer/RenderCommand.h"
 #include "Shaders/ShaderProgram.h"
 #include "Lighting/LightManager.h"
+#include "glm/ext/vector_float4.hpp"
 
 class Renderer {
 private:
@@ -33,6 +34,8 @@ private:
     RenderStateManager mStateManager = {};
     LightManager mLightManager = {};
     ShaderProgram* mCurrentProgram = nullptr;
+
+    glm::vec4 mScreenClearColor{0.0f, 0.0f, 0.0f, 1.0f};
 
     GLbitfield mClearBitField = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 public:
@@ -52,6 +55,8 @@ public:
     void draw(const RenderQueue& queue, const Camera& camera, const std::vector<LightData>& lights);
 
     void setClearBits(GLbitfield bits);
+
+    void setClearColor(glm::vec4 color);
 
 private:
     void drawPass(const RenderQueue& queue, const Camera& camera, const std::vector<LightData>& lights);

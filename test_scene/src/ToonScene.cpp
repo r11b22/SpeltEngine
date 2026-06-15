@@ -8,7 +8,7 @@
 #include "Defaults/Objects/Drawables/MeshObject.h"
 #include "Defaults/Objects/Lighting/AmbientLight.h"
 #include "Defaults/Objects/Lighting/DirectionalLight.h"
-#include "Defaults/Objects/Lighting/PointLight.h"
+#include "Renderer/Renderer.h"
 #include "glm/ext/vector_float3.hpp"
 #include <memory>
 
@@ -46,6 +46,8 @@ void ToonScene::onLoad(Renderer &renderer, Window &window) {
 
     std::shared_ptr<DirectionalLight> directionalLight = std::make_shared<DirectionalLight>("directional light", glm::vec3{1.0f}, glm::vec3{1.0f});
     addObject(directionalLight);
+
+    renderer.setClearColor({0.0f, 0.2f, 0.2f, 1.0f});
 }
 
 void ToonScene::onUpdate(Renderer &renderer, Window &window, float deltaT) {

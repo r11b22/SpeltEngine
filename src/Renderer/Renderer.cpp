@@ -9,6 +9,7 @@
 
 #include "Renderer/RenderCommand.h"
 #include "Strings/ShaderSource.h"
+#include "glm/ext/vector_float4.hpp"
 
 Renderer::Renderer(Window* target)
     :
@@ -83,7 +84,7 @@ void Renderer::prepare() {
 
 void Renderer::drawPass(const RenderQueue& queue, const Camera& camera, const std::vector<LightData>& lights) {
     mPostProcessingPipeline->bind();
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(mScreenClearColor.x, mScreenClearColor.y, mScreenClearColor.z, mScreenClearColor.a);
     glClear(mClearBitField);
 
     if (mCurrentProgram != nullptr){
@@ -139,6 +140,10 @@ void Renderer::draw(const RenderQueue& queue, const Camera& camera, const std::v
 
 void Renderer::setClearBits(const GLbitfield bits) {
     mClearBitField = bits;
+}
+
+void Renderer::setClearColor(glm::vec4 color){
+    mScreenClearColor = color;
 }
 
 void Renderer::executeRenderCommand(const RenderCommand& command, const Camera& camera, const std::vector<LightData>& lights) {
