@@ -7,6 +7,10 @@
 #include "Defaults/Camera/FirstPersonCamera.h"
 #include "Defaults/Objects/Drawables/MeshObject.h"
 #include "Defaults/Objects/Lighting/AmbientLight.h"
+#include "Defaults/Objects/Lighting/DirectionalLight.h"
+#include "Defaults/Objects/Lighting/PointLight.h"
+#include "glm/ext/vector_float3.hpp"
+#include <memory>
 
 ToonScene::ToonScene() {
 
@@ -33,8 +37,15 @@ void ToonScene::onLoad(Renderer &renderer, Window &window) {
     glm::vec3 diff = mTiger->getPosition() - camera->getPosition();
     camera->lookAt(glm::normalize(diff));
 
-    std::shared_ptr<AmbientLight> ambientLight = std::make_shared<AmbientLight>("ambient light", glm::vec3{0.5f, 0.5f, 0.5f});
+    std::shared_ptr<AmbientLight> ambientLight = std::make_shared<AmbientLight>("ambient light", glm::vec3{0.2f});
     addObject(ambientLight);
+
+   /*  std::shared_ptr<PointLight> pointLight = std::make_shared<PointLight>("point light", glm::vec3{3.0f});
+    pointLight->setPosition(glm::vec3{2.0f, 0.0f, 0.0f});
+    addObject(pointLight);*/
+
+    std::shared_ptr<DirectionalLight> directionalLight = std::make_shared<DirectionalLight>("directional light", glm::vec3{1.0f}, glm::vec3{1.0f});
+    addObject(directionalLight);
 }
 
 void ToonScene::onUpdate(Renderer &renderer, Window &window, float deltaT) {

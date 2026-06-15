@@ -87,13 +87,13 @@ void main()
 }
 )glsl";
 
-constexpr const char* litFragmentShader = R"glsl(
+constexpr const char *litFragmentShader = R"glsl(
 #version 330 core
 layout (location = 0) out vec4 FragColor;
 
-#define MAX_POINT_LIGHTS 5
+#define MAX_POINT_LIGHTS 64
 
-struct Light{
+struct PointLight{
     vec3 position;
     vec3 diffuse;
     vec3 specular;
@@ -103,11 +103,23 @@ struct Light{
     float lineair;
     float quadratic;
 };
+uniform PointLight uPointLights[MAX_POINT_LIGHTS];
+uniform int uNumPointLights;
+
+#define MAX_DIRECTIONAL_LIGHTS 5
+
+struct DirectionalLight{
+    vec3 direction;
+    vec3 diffuse;
+    vec3 specular;
+};
+
+uniform DirectionalLight uDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
+uniform int uNumDirectionalLights;
 
 uniform vec3 uAmbient;
 
-uniform Light uPointLights[MAX_POINT_LIGHTS];
-uniform int numPointLights;
+
 
 uniform sampler2D uTexture;
 uniform float uSpecularStrength;
@@ -129,8 +141,8 @@ void main()
     vec3 viewDir = normalize(uCameraPos - FragPos);
     vec3 totalLight = uAmbient*vec3(texColor);
 
-    for (int i = 0; i < numPointLights; i++){
-        Light light = uPointLights[i];
+    for (int i = 0; i < uNumPointLights; i++){
+        PointLight light = uPointLights[i];
 
         vec3 lightDirection = normalize(light.position - FragPos);
         float distance = length(light.position - FragPos);
@@ -147,14 +159,25 @@ void main()
         totalLight += ((diffuse + specular) * attenuation);
     }
 
+    for (int i = 0; i < uNumDirectionalLights; i++){
+        DirectionalLight light = uDirectionalLights[i];
+
+        vec3 lightDirection = normalize(light.direction);
+
+        float diff = max(dot(norm, lightDirection), 0.0);
+
+        vec3 reflectDir = reflect(-lightDirection, norm);
+        float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+
+
+        vec3 diffuse = light.diffuse * diff * vec3(texColor);
+        vec3 specular = light.specular * spec * uSpecularStrength;
+
+        totalLight += (diffuse + specular);
+    }
+
     vec4 outColor = vec4(totalLight, texColor.a);
     FragColor = outColor;
-
-    /*float brightness = dot(outColor.rgb, vec3(0.216, 0.7152, 0.0722));
-    if(brightness > 1.0)
-        BrightColor = vec4(outColor.rgb, 1.0);
-    else
-        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);*/
 }
 )glsl";
 

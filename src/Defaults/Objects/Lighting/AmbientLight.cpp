@@ -4,9 +4,10 @@
 
 #include "Defaults/Objects/Lighting/AmbientLight.h"
 #include "Lighting/LightData.h"
+#include "Scene/Object.h"
 
 AmbientLight::AmbientLight(const std::string& name, glm::vec3 ambient)
-    : TransformableObject(name),
+    : Object(name),
     mLightData(ambient)
 {
 
