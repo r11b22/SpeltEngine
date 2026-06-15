@@ -10,8 +10,6 @@
 #include "../Camera.h"
 #include "../Renderer/IDrawable.h"
 #include "../Window.h"
-#include "Lighting/AmbientLight.h"
-#include "Lighting/PointLight.h"
 #include "Renderer/RenderQueue.h"
 #include "Lighting/LightData.h"
 #include <memory>

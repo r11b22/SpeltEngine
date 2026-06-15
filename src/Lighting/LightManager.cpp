@@ -1,10 +1,7 @@
 
 
 #include "Lighting/LightManager.h"
-#include "Lighting/AmbientLight.h"
-#include "Lighting/PointLight.h"
 #include "Shaders/ShaderProgram.h"
-#include <memory>
 #include <variant>
 #include <vector>
 

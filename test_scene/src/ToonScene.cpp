@@ -6,6 +6,7 @@
 
 #include "Defaults/Camera/FirstPersonCamera.h"
 #include "Defaults/Objects/Drawables/MeshObject.h"
+#include "Defaults/Objects/Lighting/AmbientLight.h"
 
 ToonScene::ToonScene() {
 

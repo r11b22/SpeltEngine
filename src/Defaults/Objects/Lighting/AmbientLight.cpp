@@ -2,7 +2,7 @@
 // Created by joost on 6/4/26.
 //
 
-#include "Lighting/AmbientLight.h"
+#include "Defaults/Objects/Lighting/AmbientLight.h"
 #include "Lighting/LightData.h"
 
 AmbientLight::AmbientLight(const std::string& name, glm::vec3 ambient)

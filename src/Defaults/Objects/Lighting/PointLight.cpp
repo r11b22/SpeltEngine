@@ -2,7 +2,7 @@
 // Created by joost on 6/3/26.
 //
 
-#include "Lighting/PointLight.h"
+#include "Defaults/Objects/Lighting/PointLight.h"
 #include "Lighting/LightData.h"
 #include "Lighting/PointLightData.h"
 

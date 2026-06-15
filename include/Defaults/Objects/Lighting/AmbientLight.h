@@ -4,11 +4,10 @@
 
 #ifndef CGVCPROJECT_AMBIENTLIGHT_H
 #define CGVCPROJECT_AMBIENTLIGHT_H
-#include "../Defaults/Objects/TransformableObject.h"
+#include "Defaults/Objects/TransformableObject.h"
 #include "Lighting/AmbientLightData.h"
 #include "Lighting/ILight.h"
 #include "Lighting/LightData.h"
-#include "glm/vec3.hpp"
 
 class AmbientLight : public TransformableObject, public ILight {
 private:

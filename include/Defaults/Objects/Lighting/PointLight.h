@@ -2,8 +2,7 @@
 
 #include <string>
 #include <glm/glm.hpp>
-#include <vector>
-#include "../Defaults/Objects/TransformableObject.h"
+#include "Defaults/Objects/TransformableObject.h"
 #include "Lighting/ILight.h"
 #include "Lighting/LightData.h"
 #include "Lighting/PointLightData.h"

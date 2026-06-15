@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Lighting/AmbientLight.h"
-#include "Lighting/PointLight.h"
+
 #include "Shaders/ShaderProgram.h"
 #include "LightData.h"
 
