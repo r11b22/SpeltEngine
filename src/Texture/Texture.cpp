@@ -2,7 +2,7 @@
 // Created by joost on 4/16/26.
 //
 
-#include "Texture.h"
+#include "Texture/Texture.h"
 
 #include <iostream>
 #include <ostream>
@@ -68,7 +68,8 @@ void Texture::bind(int unit){
 }
 
 Texture::Texture(Texture&& other) noexcept
-    : mId(other.mId), mWidth(other.mWidth), mHeight(other.mHeight) {
+    : mId(other.mId), mWidth(other.mWidth), mHeight(other.mHeight), mInternalFormat(other.mInternalFormat), mFormat(other.mFormat), mDatatype(other.mDatatype)
+{
     other.mId = 0;
 }
 
@@ -79,6 +80,9 @@ Texture& Texture::operator=(Texture&& other) noexcept {
         mId = other.mId;
         mWidth = other.mWidth;
         mHeight = other.mHeight;
+        mDatatype = other.mDatatype;
+        mFormat = other.mFormat;
+        mInternalFormat = other.mInternalFormat;
         other.mId = 0;
     }
     return *this;

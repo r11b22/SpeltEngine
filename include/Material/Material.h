@@ -7,8 +7,8 @@
 #include <optional>
 
 
-#include "Texture.h"
-#include "Shaders/ShaderProgram.h"
+#include "Texture/Texture.h"
+#include "Shader/ShaderProgram.h"
 
 class TextureData;
 

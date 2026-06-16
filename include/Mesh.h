@@ -4,13 +4,10 @@
 
 #ifndef GCVCPROJECT_MESH_H
 #define GCVCPROJECT_MESH_H
-#include <optional>
 
 #include "Buffer/Buffer.h"
-#include "Renderer/IDrawable.h"
+#include "Renderer/IRenderable.h"
 #include "ModelLoader.h"
-#include "Texture.h"
-#include "Transform/Transform.h"
 #include "VertexArray.h"
 
 class Mesh : public IRenderable {

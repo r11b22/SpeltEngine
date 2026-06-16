@@ -4,7 +4,7 @@
 
 #ifndef SPELTENGINE_IRENDERABLE_H
 #define SPELTENGINE_IRENDERABLE_H
-#include "Shaders/ShaderProgram.h"
+#include "Shader/ShaderProgram.h"
 
 class IRenderable{
 public:

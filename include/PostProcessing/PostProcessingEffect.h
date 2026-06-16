@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "../Shaders/ShaderProgram.h"
-#include "Texture.h"
+#include "Shader/ShaderProgram.h"
+#include "Texture/Texture.h"
 
 
 /**

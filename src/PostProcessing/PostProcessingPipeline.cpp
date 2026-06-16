@@ -3,6 +3,7 @@
 //
 
 #include "PostProcessing/PostProcessingPipeline.h"
+#include "FrameBuffer/MultisampledFrameBuffer.h"
 
 #include <algorithm>
 #include <limits>
@@ -42,6 +43,21 @@ void PostProcessingPipeline::bind() {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
     mSceneFrameBuffer.bind();
+}
+
+void PostProcessingPipeline::blitToInput(MultisampledFrameBuffer& msaaFBO){
+    msaaFBO.bindRead();
+    mSceneFrameBuffer.bindDraw();
+
+    glBlitFramebuffer(
+        0, 0, msaaFBO.getWidth(), msaaFBO.getHeight(),
+        0, 0, mSceneFrameBuffer.getWidth(), mSceneFrameBuffer.getHeight(),
+        GL_COLOR_BUFFER_BIT,
+        GL_NEAREST
+    );
+
+    msaaFBO.unbindRead();
+    mSceneFrameBuffer.unbindDraw();
 }
 
 void PostProcessingPipeline::unbind() {

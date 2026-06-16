@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "../Camera.h"
+#include "FrameBuffer/MultisampledFrameBuffer.h"
 #include "RenderStateManager.h"
 #include "../Mesh.h"
 #include "../PostProcessing/PostProcessingPipeline.h"
@@ -16,8 +17,9 @@
 #include "../Window.h"
 #include "../PostProcessing/PostProcessingGroup.h"
 #include "Renderer/RenderCommand.h"
-#include "Shaders/ShaderProgram.h"
+#include "Shader/ShaderProgram.h"
 #include "Lighting/LightManager.h"
+#include "Texture/MultisampledTexture.h"
 #include "glm/ext/vector_float4.hpp"
 
 class Renderer {
@@ -29,6 +31,9 @@ private:
 
     Window* mTarget;
 
+    MultisampledTexture* mInputTexture; // This should someday be replaced with a frame buffer that does not draw to a texture
+                            // For now this works
+    MultisampledFrameBuffer* mInputFrameBuffer;
     PostProcessingPipeline* mPostProcessingPipeline;
 
     RenderStateManager mStateManager = {};

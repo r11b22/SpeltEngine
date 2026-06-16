@@ -2,7 +2,7 @@
 
 
 #include "Lighting/DirectionalLightData.h"
-#include "Shaders/ShaderProgram.h"
+#include "Shader/ShaderProgram.h"
 #include "LightData.h"
 
 struct LightVisitor {

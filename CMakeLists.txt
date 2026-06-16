@@ -76,12 +76,12 @@ endif()
 # Automatically Gather Source and Include Files
 # ---------------------------------------------------------------------------
 # Collects all source files (.cpp, .c) and header files (.h, .hpp) recursively
-file(GLOB_RECURSE ENGINE_SOURCES
+file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
     "src/*.cpp"
     "src/*.c"
 )
 
-file(GLOB_RECURSE ENGINE_HEADERS
+file(GLOB_RECURSE ENGINE_HEADERS CONFIGURE_DEPENDS
     "include/*.h"
     "include/*.hpp"
 )

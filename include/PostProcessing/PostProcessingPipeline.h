@@ -11,11 +11,12 @@
 #include <unordered_map>
 #include <vector>
 
+#include "FrameBuffer/MultisampledFrameBuffer.h"
 #include "PostProcessingComputeUnit.h"
 #include "PostProcessingEffect.h"
-#include "FrameBuffer.h"
+#include "FrameBuffer/FrameBuffer.h"
 #include "Mesh.h"
-#include "Texture.h"
+#include "Texture/Texture.h"
 #include "Window.h"
 
 
@@ -126,6 +127,11 @@ public:
      * Bind the input texture for this pipeline.
      */
     void bind();
+
+    /**
+     * Blit from a multisampled frame buffer into the input FBO
+     */
+    void blitToInput(MultisampledFrameBuffer& msaaFBO);
 
     /**
      * Unbind the input texture for this pipeline.

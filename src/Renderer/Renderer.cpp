@@ -7,8 +7,10 @@
 #include <iostream>
 #include <type_traits>
 
+#include "FrameBuffer/MultisampledFrameBuffer.h"
 #include "Renderer/RenderCommand.h"
 #include "Strings/ShaderSource.h"
+#include "Texture/MultisampledTexture.h"
 #include "glm/ext/vector_float4.hpp"
 
 Renderer::Renderer(Window* target)
@@ -53,6 +55,12 @@ Renderer::Renderer(Window* target)
     mScreenQuad->setIndices(indices);
 
     mPostProcessingPipeline = new PostProcessingPipeline{mTarget};
+
+    mInputTexture = new MultisampledTexture{mTarget->getWidth(), mTarget->getHeight(), GL_RGB16F, 4};
+    mInputFrameBuffer = new MultisampledFrameBuffer{mTarget, 4};
+
+    mInputFrameBuffer->attachTexture(mInputTexture, GL_COLOR_ATTACHMENT0);
+    mInputFrameBuffer->setAttachments({GL_COLOR_ATTACHMENT0});
 }
 
 EffectHandle Renderer::addPostProcessingEffect(PostProcessingEffect effect) {
@@ -83,7 +91,7 @@ void Renderer::prepare() {
 }
 
 void Renderer::drawPass(const RenderQueue& queue, const Camera& camera, const std::vector<LightData>& lights) {
-    mPostProcessingPipeline->bind();
+    mInputFrameBuffer->bind();
     glClearColor(mScreenClearColor.x, mScreenClearColor.y, mScreenClearColor.z, mScreenClearColor.a);
     glClear(mClearBitField);
 
@@ -98,7 +106,8 @@ void Renderer::drawPass(const RenderQueue& queue, const Camera& camera, const st
     // THIS IS A HOTFIX AND SHOULD BE REPLACED WITH EVERY RENDER SETTING THE STATE INSTEAD OF ONLY THESE ONES
     mStateManager.applyState(RenderState{});
 
-    mPostProcessingPipeline->unbind();
+    mInputFrameBuffer->unbind();
+    mPostProcessingPipeline->blitToInput(*mInputFrameBuffer);
 }
 
 
@@ -215,4 +224,6 @@ Renderer::~Renderer() {
     delete mScreenShader;
     delete mScreenQuad;
     delete mPostProcessingPipeline;
+    delete mInputFrameBuffer;
+    delete mInputTexture;
 }

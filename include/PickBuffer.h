@@ -5,8 +5,8 @@
 #ifndef CGVCPROJECT_PICKBUFFER_H
 #define CGVCPROJECT_PICKBUFFER_H
 
-#include "FrameBuffer.h"
-#include "Texture.h"
+#include "FrameBuffer/FrameBuffer.h"
+#include "Texture/Texture.h"
 #include "Window.h"
 
 class PickBuffer {

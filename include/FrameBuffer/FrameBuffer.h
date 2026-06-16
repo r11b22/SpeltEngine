@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "Texture.h"
+#include "Texture/Texture.h"
 #include "Window.h"
 #include "glad/glad.h"
 
@@ -130,9 +130,27 @@ public:
     void bind() {
         glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffer);
     }
+
+    void bindRead() {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, mFrameBuffer);
+    }
+
+    void bindDraw() {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFrameBuffer);
+    }
+
     void unbind() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+
+    void unbindRead() {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    }
+
+    void unbindDraw() {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    }
+
     void attachTexture(Texture *tex, GLenum attachment) {
         bind();
         if (tex) {
@@ -149,7 +167,7 @@ public:
     void clearAttachments() {
         bind();
         for (int i = 0; i < 4; ++i) {
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, 0, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, 0, 0, 0);
         }
         unbind();
         mAttachedTextures.clear();
@@ -173,6 +191,14 @@ public:
             return result;
         }
         throw std::runtime_error("Can not get pixel data from incomplete FrameBuffer, attach a texture before calling getPixelAt!");
+    }
+
+    int getWidth() const {
+        return mWidth;
+    }
+
+    int getHeight() const{
+        return mHeight;
     }
 
 private:

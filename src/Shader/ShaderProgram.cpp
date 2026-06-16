@@ -2,7 +2,7 @@
 // Created by joost on 4/9/26.
 //
 
-#include "../../include/Shaders/ShaderProgram.h"
+#include "Shader/ShaderProgram.h"
 #include <stdexcept>
 
 ShaderProgram::ShaderProgram()

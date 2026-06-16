@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "FrameBuffer.h"
-#include "Texture.h"
+#include "FrameBuffer/FrameBuffer.h"
+#include "Texture/Texture.h"
 #include "Mesh.h"
 
 class PostProcessingEffect;
