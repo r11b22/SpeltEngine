@@ -73,17 +73,107 @@ if(NOT TARGET stb_image)
 endif()
 
 # ---------------------------------------------------------------------------
-# Automatically Gather Source and Include Files
+# Explicitly List Source and Include Files
 # ---------------------------------------------------------------------------
-# Collects all source files (.cpp, .c) and header files (.h, .hpp) recursively
-file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
-    "src/*.cpp"
-    "src/*.c"
+# Manually list engine source/header files to avoid globbing.
+set(ENGINE_SOURCES
+        src/App.cpp
+        src/Buffer/Buffer.cpp
+        src/Camera.cpp
+        src/Defaults/Camera/FirstPersonCamera.cpp
+        src/Defaults/Objects/Drawables/MeshObject.cpp
+        src/Defaults/Objects/Lighting/AmbientLight.cpp
+        src/Defaults/Objects/Lighting/DirectionalLight.cpp
+        src/Defaults/Objects/Lighting/PointLight.cpp
+        src/Defaults/Objects/TransformableObject.cpp
+        src/Defaults/PostProcessing/Bloom.cpp
+        src/Defaults/PostProcessing/Blur.cpp
+        src/FileReader.cpp
+        src/FrameBuffer/MultisampledFrameBuffer.cpp
+        src/InputManager.cpp
+        src/Lighting/LightManager.cpp
+        src/Material/Material.cpp
+        src/Mesh.cpp
+        src/ModelLoader.cpp
+        src/PickBuffer.cpp
+        src/PostProcessing/PostProcessingComputeUnit.cpp
+        src/PostProcessing/PostProcessingEffect.cpp
+        src/PostProcessing/PostProcessingGroup.cpp
+        src/PostProcessing/PostProcessingPipeline.cpp
+        src/Renderer/RenderCommand.cpp
+        src/Renderer/Renderer.cpp
+        src/Renderer/RenderQueue.cpp
+        src/Renderer/RenderState.cpp
+        src/Renderer/RenderStateManager.cpp
+        src/Scene/Object.cpp
+        src/Scene/Scene.cpp
+        src/Scene/SceneHierarchyComponent.cpp
+        src/Shader/ComputeShader.cpp
+        src/Shader/ShaderProgram.cpp
+        src/Shader/ShaderUniform.cpp
+        src/Texture/MultisamledTexture.cpp
+        src/Texture/Texture.cpp
+        src/Transform/Transform.cpp
+        src/VertexArray.cpp
+        src/Window.cpp
 )
 
-file(GLOB_RECURSE ENGINE_HEADERS CONFIGURE_DEPENDS
-    "include/*.h"
-    "include/*.hpp"
+set(ENGINE_HEADERS
+        include/App.h
+        include/Buffer/Buffer.h
+        include/Buffer/BufferMap.h
+        include/Camera.h
+        include/DataStructures/SparseSet.hpp
+        include/Defaults/Camera/FirstPersonCamera.h
+        include/Defaults/Objects/Drawables/MeshObject.h
+        include/Defaults/Objects/Lighting/AmbientLight.h
+        include/Defaults/Objects/Lighting/DirectionalLight.h
+        include/Defaults/Objects/Lighting/PointLight.h
+        include/Defaults/Objects/TransformableObject.h
+        include/Defaults/PostProcessing/Bloom.h
+        include/Defaults/PostProcessing/Blur.h
+        include/FileReader.h
+        include/FrameBuffer/FrameBuffer.h
+        include/FrameBuffer/MultisampledFrameBuffer.h
+        include/InputManager.h
+        include/Lighting/AmbientLightData.h
+        include/Lighting/DirectionalLightData.h
+        include/Lighting/ILight.h
+        include/Lighting/LightData.h
+        include/Lighting/LightManager.h
+        include/Lighting/PointLightData.h
+        include/Material/Material.h
+        include/Mesh.h
+        include/ModelLoader.h
+        include/Object/ObjectID.h
+        include/Object/ObjectType.h
+        include/PickBuffer.h
+        include/PostProcessing/PostProcessingComputeUnit.h
+        include/PostProcessing/PostProcessingEffect.h
+        include/PostProcessing/PostProcessingGroup.h
+        include/PostProcessing/PostProcessingPipeline.h
+        include/Renderer/IDrawable.h
+        include/Renderer/IRenderable.h
+        include/Renderer/RenderCommand.h
+        include/Renderer/Renderer.h
+        include/Renderer/RenderQueue.h
+        include/Renderer/RenderState.h
+        include/Renderer/RenderStateManager.h
+        include/Scene/Object.h
+        include/Scene/ObjectID.h
+        include/Scene/Scene.h
+        include/Scene/SceneHierarchyComponent.h
+        include/Shader/ComputeShader.h
+        include/Shader/ShaderProgram.h
+        include/Shader/ShaderUniform.h
+        include/Strings/ShaderSource.h
+        include/Texture/MultisampledTexture.h
+        include/Texture/Texture.h
+        include/Transform/ITransformable.h
+        include/Transform/Transform.h
+        include/Utilities/Random.h
+        include/VertexArray.h
+        include/Window.h
 )
 
 # Keep the manually configured glad components separate as per original structure
