@@ -1,6 +1,8 @@
 # SpeltEngine — static engine library with vendored dependencies
 cmake_minimum_required(VERSION 3.15)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(PROJECT_NAME_VAR SpeltEngine)
@@ -105,7 +107,11 @@ set(ENGINE_SOURCES
         src/Renderer/RenderQueue.cpp
         src/Renderer/RenderState.cpp
         src/Renderer/RenderStateManager.cpp
+
         src/Object/Object.cpp
+        src/Object/ObjectRepository.cpp
+        str/Object/ObjectReference.cpp
+
         src/Scene/Scene.cpp
         src/Scene/SceneHierarchyComponent.cpp
         src/Shader/ComputeShader.cpp
@@ -149,6 +155,8 @@ set(ENGINE_HEADERS
         include/Object/Object.h
         include/Object/ObjectID.h
         include/Object/ObjectType.h
+        include/Object/ObjectRepository.h
+        include/Object/ObjectReference.h
 
         include/PickBuffer.h
 
