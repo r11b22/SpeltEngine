@@ -4,7 +4,7 @@
 
 #ifndef CGVCPROJECT_TRANSFORMABLEOBJECT_H
 #define CGVCPROJECT_TRANSFORMABLEOBJECT_H
-#include "Scene/Object.h"
+#include "Object/Object.h"
 #include "Transform/ITransformable.h"
 #include "Transform/Transform.h"
 

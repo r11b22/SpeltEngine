@@ -3,7 +3,7 @@
 
 #include "Lighting/DirectionalLightData.h"
 #include "Lighting/ILight.h"
-#include "Scene/Object.h"
+#include "Object/Object.h"
 #include "glm/ext/vector_float3.hpp"
 class DirectionalLight : public Object, public ILight {
   private:

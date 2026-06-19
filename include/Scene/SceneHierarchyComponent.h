@@ -4,7 +4,7 @@
 
 #ifndef CGVCPROJECT_SCENEHIERARCHYCOMPONENT_H
 #define CGVCPROJECT_SCENEHIERARCHYCOMPONENT_H
-#include "ObjectID.h"
+#include "Object/ObjectID.h"
 
 struct SceneHierarchyComponent {
     ObjectID parent = 0;

@@ -105,7 +105,7 @@ set(ENGINE_SOURCES
         src/Renderer/RenderQueue.cpp
         src/Renderer/RenderState.cpp
         src/Renderer/RenderStateManager.cpp
-        src/Scene/Object.cpp
+        src/Object/Object.cpp
         src/Scene/Scene.cpp
         src/Scene/SceneHierarchyComponent.cpp
         src/Shader/ComputeShader.cpp
@@ -145,13 +145,18 @@ set(ENGINE_HEADERS
         include/Material/Material.h
         include/Mesh.h
         include/ModelLoader.h
+
+        include/Object/Object.h
         include/Object/ObjectID.h
         include/Object/ObjectType.h
+
         include/PickBuffer.h
+
         include/PostProcessing/PostProcessingComputeUnit.h
         include/PostProcessing/PostProcessingEffect.h
         include/PostProcessing/PostProcessingGroup.h
         include/PostProcessing/PostProcessingPipeline.h
+
         include/Renderer/IDrawable.h
         include/Renderer/IRenderable.h
         include/Renderer/RenderCommand.h
@@ -159,20 +164,26 @@ set(ENGINE_HEADERS
         include/Renderer/RenderQueue.h
         include/Renderer/RenderState.h
         include/Renderer/RenderStateManager.h
-        include/Scene/Object.h
-        include/Scene/ObjectID.h
+
         include/Scene/Scene.h
         include/Scene/SceneHierarchyComponent.h
+
         include/Shader/ComputeShader.h
         include/Shader/ShaderProgram.h
         include/Shader/ShaderUniform.h
+
         include/Strings/ShaderSource.h
+
         include/Texture/MultisampledTexture.h
         include/Texture/Texture.h
+
         include/Transform/ITransformable.h
         include/Transform/Transform.h
+
         include/Utilities/Random.h
+
         include/VertexArray.h
+
         include/Window.h
 )
 

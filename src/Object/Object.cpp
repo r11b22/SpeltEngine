@@ -3,7 +3,7 @@
 //
 
 
-#include "Scene/Object.h"
+#include "Object/Object.h"
 
 #include <atomic>
 #include <iostream>
@@ -50,6 +50,3 @@ void Object::destroy() {
 
     mScene->destroyObject(shared_from_this());
 }
-
-
-

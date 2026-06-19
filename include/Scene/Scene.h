@@ -5,7 +5,7 @@
 #ifndef CGVCPROJECT_SCENE_H
 #define CGVCPROJECT_SCENE_H
 #include "Lighting/ILight.h"
-#include "Object.h"
+#include "Object/Object.h"
 #include "SceneHierarchyComponent.h"
 #include "../Camera.h"
 #include "../Renderer/IDrawable.h"

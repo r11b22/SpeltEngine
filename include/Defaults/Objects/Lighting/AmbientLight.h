@@ -7,7 +7,7 @@
 #include "Lighting/AmbientLightData.h"
 #include "Lighting/ILight.h"
 #include "Lighting/LightData.h"
-#include "Scene/Object.h"
+#include "Object/Object.h"
 
 class AmbientLight : public Object, public ILight {
 private:
