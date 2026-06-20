@@ -20,10 +20,10 @@ private:
 
     float mSpeed;
 
-    InputManager& mInputManager;
-    Window& mWindow;
+    InputManager* mInputManager;
+    Window* mWindow;
 public:
-    FirstPersonCamera(const std::string& name, InputManager& inputManager, Window& window, float speed = 5.0f);
+    FirstPersonCamera(const std::string& name, InputManager* inputManager, Window* window, float speed = 5.0f);
     ~FirstPersonCamera() = default;
 
     void onLoad() override;

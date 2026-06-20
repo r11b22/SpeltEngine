@@ -9,7 +9,8 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "Scene/Scene.h"
+#include "Object/ObjectRepository.h"
+#include "Scene/Scene.hpp"
 
 Object::Object(std::string name)
     : mID(0), mName(std::move(name)), mScene(nullptr)
@@ -26,8 +27,8 @@ const std::string& Object::getName() const{
     return mName;
 }
 
-void Object::setParent(const std::shared_ptr<Object> &obj) {
-    getScene().setParent(shared_from_this(), obj);
+void Object::setParent(IObjectReference& obj) {
+    getScene().setParentByID(getID(), obj.getUntyped()->getID());
 }
 
 void Object::setScene(Scene *scene) {
@@ -48,5 +49,5 @@ void Object::destroy() {
         throw std::runtime_error("You can not destroy an object that is not yet part of a scene!");
     }
 
-    mScene->destroyObject(shared_from_this());
+    mScene->destroyObjectByID(getID());
 }

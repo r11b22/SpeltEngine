@@ -5,9 +5,7 @@
 #include "Renderer/RenderQueue.h"
 #include "Renderer/RenderCommand.h"
 
-void RenderQueue::submitDrawable(std::shared_ptr<IDrawable> drawable) {
-    std::vector<RenderCommand> commands = drawable->getRenderCommands();
-
+void RenderQueue::submitRenderCommands(std::vector<RenderCommand> commands) {
     mRenderCommands.reserve(mRenderCommands.size() + commands.size());
 
     mRenderCommands.insert(mRenderCommands.end(), std::make_move_iterator(commands.begin()), std::make_move_iterator(commands.end()));

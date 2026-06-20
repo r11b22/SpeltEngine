@@ -11,12 +11,15 @@
 
 #include "ObjectID.h"
 
+
+class IObjectReference;
+
 class Scene;
 
 /**
  * An abstract object interface for use in scenes
  */
-class Object : public std::enable_shared_from_this<Object>{
+class Object {
 private:
     ObjectID mID;
     std::string mName;
@@ -35,7 +38,7 @@ public:
 
     void destroy();
 
-    void setParent(const std::shared_ptr<Object>& obj);
+    void setParent(IObjectReference& obj);
 
     void setScene(Scene* scene);
     Scene& getScene() const;

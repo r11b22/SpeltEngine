@@ -5,6 +5,7 @@
 #ifndef CGVCPROJECT_RENDERQUEUE_H
 #define CGVCPROJECT_RENDERQUEUE_H
 #include <memory>
+#include <vector>
 
 #include "IDrawable.h"
 #include "RenderCommand.h"
@@ -16,7 +17,7 @@ public:
 
     const std::vector<RenderCommand>& getRenderCommands() const;
 
-    void submitDrawable(std::shared_ptr<IDrawable> drawable);
+    void submitRenderCommands(std::vector<RenderCommand> commands);
 
     void clear();
 private:

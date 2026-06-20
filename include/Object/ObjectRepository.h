@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Object/Object.h"
+#include "Object/ObjectID.h"
 #include <vector>
 #include <unordered_map>
 #include <typeindex>
@@ -9,55 +10,31 @@
 #include <memory>
 #include <cassert>
 #include <cstdint>
+#include <iterator>
+#include <utility>
 
 template<typename T> class ObjectReference;
 
-// ---------------------------------------------------------------------------
-// Slot — shared state between ObjectRepository and ObjectReference.
-//
-// The repository owns one slot per live object (shared_ptr).
-// ObjectReferences hold a weak_ptr to the slot.
-//
-// `ptr` points directly at the live object, so dereferencing a reference is
-// a single pointer read — no virtual call through TypedPool. `pool` is kept
-// only for the type-erased pool operations that ObjectRepository::remove()
-// needs (swap_and_pop); it is never touched on the hot read path anymore.
-//
-// On swap-and-pop / pool growth the repo updates `ptr` (and `dense`) in
-// place; on removal it sets `valid = false` and drops its shared_ptr.
-// Either way every existing ObjectReference automatically reflects the
-// change on next dereference.
-// ---------------------------------------------------------------------------
-struct TypedPool; // forward — Slot needs it, TypedPool is defined below
+struct TypedPool;
 
 struct Slot
 {
     std::type_index  type  { typeid(void) };
-    Object*          ptr   { nullptr };
+    Object* ptr   { nullptr };
     std::size_t      dense { 0 };
     bool             valid { false };
-    TypedPool*       pool  { nullptr };
+    TypedPool* pool  { nullptr };
 };
 
-// ---------------------------------------------------------------------------
-// TypedPool — type-erased interface for a contiguous array of one Object type.
-// Only used by ObjectRepository's own bookkeeping (add/remove); never on the
-// ObjectReference read path.
-// ---------------------------------------------------------------------------
 struct TypedPool
 {
-    virtual Object*       get(std::size_t i)          = 0;
+    virtual Object* get(std::size_t i)          = 0;
     virtual const Object* get(std::size_t i) const    = 0;
-    virtual std::size_t   emplace()                   = 0;
-    virtual std::size_t   swap_and_pop(std::size_t i) = 0; // returns old last index
+    virtual std::size_t   swapAndPop(std::size_t i) = 0;
     virtual std::size_t   size() const                = 0;
     virtual              ~TypedPool()                 = default;
 };
 
-// ---------------------------------------------------------------------------
-// ConcretePool<T> — objects stored by value in a contiguous std::vector<T>.
-// Must stay in the header because it is a template.
-// ---------------------------------------------------------------------------
 template<typename T>
 struct ConcretePool final : TypedPool
 {
@@ -66,16 +43,11 @@ struct ConcretePool final : TypedPool
 
     std::vector<T> data;
 
-    Object*       get(std::size_t i)       override { return &data[i]; }
+    Object* get(std::size_t i)       override { return &data[i]; }
     const Object* get(std::size_t i) const override { return &data[i]; }
 
-    std::size_t emplace() override
-    {
-        data.emplace_back();
-        return data.size() - 1;
-    }
 
-    std::size_t swap_and_pop(std::size_t i) override
+    std::size_t swapAndPop(std::size_t i) override
     {
         const std::size_t last = data.size() - 1;
         if (i != last)
@@ -87,70 +59,115 @@ struct ConcretePool final : TypedPool
     std::size_t size() const override { return data.size(); }
 };
 
-// ---------------------------------------------------------------------------
-// ObjectReference<T> — stable, typed handle to a T living in an
-// ObjectRepository.
-//
-// Remains valid (and auto-updates) across swap-and-pop moves and pool
-// growth. Returns nullptr / is_valid()==false once the object is removed.
-//
-// get() uses a static_cast, never a dynamic_cast: the invariant is that a
-// non-default ObjectReference<T> only ever exists if T is genuinely correct
-// for the object it points to. That's enforced once, at construction time —
-// either by ObjectRepository::make_reference<T>() matching the exact
-// registered type, or by as<U>() having already verified the relationship
-// with a real dynamic_cast — so the frequently-called accessor itself stays
-// branch-free and free of RTTI dispatch.
-// ---------------------------------------------------------------------------
-template<typename T>
-class ObjectReference
+class IObjectReference
 {
 public:
+    virtual ~IObjectReference() = default;
+    virtual Object* getUntyped() = 0;
+};
+
+// ---------------------------------------------------------------------------
+// ObjectReference<T>
+// ---------------------------------------------------------------------------
+template<typename T>
+class ObjectReference : public IObjectReference
+{
+public:
+    // Default constructor naturally represents the "NoReference" state
     ObjectReference() = default;
 
-    T*       get()       const;
-    T*       operator->() const { return get(); }
-    T&       operator*()  const { return *get(); }
+    // Explicit named state factory for readability
+    static ObjectReference<T> noReference() { return ObjectReference<T>(); }
 
-    // Attempt to view this reference as a different type. Unlike get(), the
-    // relationship between T and U genuinely isn't known at compile time
-    // here (U might be a base, a sibling, or unrelated) — this is the one
-    // place in the whole repository that legitimately needs dynamic_cast.
-    // Returns a default-constructed (invalid) ObjectReference<U> if the
-    // underlying object isn't actually a U.
+    Object* getUntyped() override;
+
+    T* get()       const;
+    T* operator->() const { return get(); }
+
+    // Warning: Dereferencing a NoReference will return a reference to nullptr.
+    // Ensure you check isValid() or operator bool() first!
+    T& operator*()  const { return *get(); }
+
     template<typename U>
     ObjectReference<U> as() const;
 
-    bool is_valid()               const;
-    explicit operator bool()      const { return is_valid(); }
+    bool isValid()               const;
+    explicit operator bool()      const { return isValid(); }
 
+    // Check explicitly for NoReference state
+    bool isNoReference()         const { return !isValid(); }
+
+
+    bool operator==(const ObjectReference<T>& other) const {
+        return !mSlot.owner_before(other.mSlot) && !other.mSlot.owner_before(mSlot);
+    }
+
+    bool operator!=(const ObjectReference<T>& other) const {
+        return !(*this == other);
+    }
+
+    // Compare with a reference of a DIFFERENT type (e.g., Base vs Derived)
+    template<typename U>
+    bool operator==(const ObjectReference<U>& other) const {
+        return !mSlot.owner_before(other.mSlot) && !other.mSlot.owner_before(mSlot);
+    }
+
+    template<typename U>
+    bool operator!=(const ObjectReference<U>& other) const {
+        return !(*this == other);
+    }
 private:
     friend class ObjectRepository;
     template<typename> friend class ObjectReference;
 
-    explicit ObjectReference(std::weak_ptr<Slot> slot) : m_slot(std::move(slot)) {}
+    explicit ObjectReference(std::weak_ptr<Slot> slot) : mSlot(std::move(slot)) {}
 
-    std::weak_ptr<Slot> m_slot;
+    std::weak_ptr<Slot> mSlot;
 };
+
+template<typename T>
+Object* ObjectReference<T>::getUntyped() {
+    auto slot = mSlot.lock();
+
+    if(!slot || !slot->valid)
+        return nullptr;
+
+    return slot->ptr;
+}
 
 template<typename T>
 T* ObjectReference<T>::get() const
 {
-    auto slot = m_slot.lock();
+    auto slot = mSlot.lock();
     if (!slot || !slot->valid)
         return nullptr;
 
-    assert((std::is_same_v<T, Object> || slot->type == std::type_index(typeid(T))) &&
-           "ObjectReference<T>::get(): T does not match the stored type — "
-           "use as<U>() if you genuinely need a runtime-checked cast");
-
-    return static_cast<T*>(slot->ptr);
+    if constexpr (std::is_base_of_v<Object, T>) {
+        // EXACT MATCH PATH: Only compile static_cast if T is exactly Object.
+        // This avoids compiler errors with virtual base classes.
+        if constexpr (std::is_same_v<T, Object>) {
+            return static_cast<T*>(slot->ptr);
+        }
+        else {
+            // HIERARCHY PATH: Handles complex multiple / virtual inheritance setups safely
+            if (slot->type == std::type_index(typeid(T))) {
+                // Optional optimization: If you are 100% sure the types match exactly
+                // AND T doesn't use virtual inheritance, you could try to optimize here.
+                // But for virtual inheritance, dynamic_cast is mandatory.
+            }
+            return dynamic_cast<T*>(slot->ptr);
+        }
+    }
+    else {
+        // INDEPENDENT INTERFACE PATH
+        return dynamic_cast<T*>(slot->ptr);
+    }
 }
 
 template<typename T>
-bool ObjectReference<T>::is_valid() const
+bool ObjectReference<T>::isValid() const
 {
-    auto slot = m_slot.lock();
+    auto slot = mSlot.lock();
     return slot && slot->valid;
 }
 
@@ -158,15 +175,20 @@ template<typename T>
 template<typename U>
 ObjectReference<U> ObjectReference<T>::as() const
 {
-    auto slot = m_slot.lock();
+    auto slot = mSlot.lock();
     if (!slot || !slot->valid)
-        return ObjectReference<U>();
+        return ObjectReference<U>::noReference();
 
-    if (dynamic_cast<U*>(slot->ptr) == nullptr)
-        return ObjectReference<U>();
+    // Use our updated logic: if the target type U cannot be cast from this object's
+    // underlying pointer, get() will return nullptr, validating the conversion.
+    ObjectReference<U> targetRef(mSlot);
+    if (targetRef.get() == nullptr) {
+        return ObjectReference<U>::noReference();
+    }
 
-    return ObjectReference<U>(m_slot);
+    return targetRef;
 }
+
 
 // ---------------------------------------------------------------------------
 // ObjectRepository
@@ -174,53 +196,45 @@ ObjectReference<U> ObjectReference<T>::as() const
 class ObjectRepository
 {
 public:
-    using ObjectID = uint32_t;
-
-    // -----------------------------------------------------------------------
-    // Add a default-constructed T under id.
-    // Returns a raw T* for immediate initialisation.
-    // For a long-lived stable handle call make_reference<T>(id) afterwards.
-    // Template: must stay in header.
-    // -----------------------------------------------------------------------
-    template<typename T>
-    T* add(ObjectID id)
+    template<typename T, typename... Args>
+    ObjectID add(Args&&... args)
     {
         static_assert(std::is_base_of_v<Object, T>,
                       "ObjectRepository::add<T>: T must inherit from Object");
-        assert(!contains(id) && "ObjectID already registered");
 
-        auto& pool = get_or_create_pool<T>();
+        auto& pool = getOrCreatePool<T>();
         const std::size_t old_capacity = pool.data.capacity();
 
-        pool.data.emplace_back();
+        pool.data.emplace_back(std::forward<Args>(args)...);
         const std::size_t dense = pool.data.size() - 1;
 
-        if (id >= m_sparse.size())
-            m_sparse.resize(id + 1);
+        const ObjectID id = pool.data[dense].getID();
+
+        // Return an invalid ID or handle gracefully if already registered
+        if (contains(id)) return id;
+
+        if (id >= mSparse.size())
+            mSparse.resize(id + 1);
 
         auto slot   = std::make_shared<Slot>();
         slot->type  = std::type_index(typeid(T));
         slot->dense = dense;
         slot->valid = true;
         slot->pool  = &pool;
-        m_sparse[id] = slot;
+        mSparse[id] = slot;
 
-        auto& back = m_back_map[std::type_index(typeid(T))];
+        auto& back = mBackMap[std::type_index(typeid(T))];
         if (dense >= back.size())
             back.resize(dense + 1);
         back[dense] = id;
 
         if (pool.data.capacity() != old_capacity)
         {
-            // The vector reallocated, so every existing pointer into this
-            // pool is now stale. Refresh them all directly off pool.data —
-            // we already have the concrete pool right here, so this is
-            // plain array indexing, no virtual dispatch involved.
             for (std::size_t i = 0; i < back.size(); ++i)
             {
                 const ObjectID owner = back[i];
-                if (owner < m_sparse.size() && m_sparse[owner])
-                    m_sparse[owner]->ptr = &pool.data[i];
+                if (owner < mSparse.size() && mSparse[owner])
+                    mSparse[owner]->ptr = &pool.data[i];
             }
         }
         else
@@ -228,56 +242,151 @@ public:
             slot->ptr = &pool.data[dense];
         }
 
-        return &pool.data[dense];
+        return id;
     }
 
-    // Typed convenience getter — template, must stay in header.
+    template <typename T>
+    bool isOfType(ObjectID id) const{
+        if (!contains(id)) return false;
+        Slot& slot = *mSparse[id];
+        return std::is_same_v<T, Object> || slot.type == std::type_index(typeid(T));
+    }
+
+    // Removed assert: safely returns nullptr if mismatch or not found
     template<typename T>
-    T* get_as(ObjectID id)
+    T* getAs(ObjectID id)
     {
         if (!contains(id))
             return nullptr;
 
-        Slot& slot = *m_sparse[id];
-        assert((std::is_same_v<T, Object> || slot.type == std::type_index(typeid(T))) &&
-               "ObjectRepository::get_as<T>(): T does not match the stored type");
+        Slot& slot = *mSparse[id];
+        if (!(std::is_same_v<T, Object> || slot.type == std::type_index(typeid(T))))
+            return nullptr;
 
         return static_cast<T*>(slot.ptr);
     }
 
-    // Template: must stay in header.
     template<typename T>
-    ObjectReference<T> make_reference(ObjectID id)
+    ObjectReference<T> makeReference(ObjectID id) const
     {
-        assert(contains(id) && "ObjectID not registered");
-        assert((std::is_same_v<T, Object> ||
-                m_sparse[id]->type == std::type_index(typeid(T))) &&
-               "ObjectRepository::make_reference<T>(): T does not match the stored type");
-        return ObjectReference<T>(m_sparse[id]);
+        if (!contains(id))
+            return ObjectReference<T>::noReference();
+
+        if constexpr (std::is_base_of_v<Object, T>) {
+            if (!(std::is_same_v<T, Object> || mSparse[id]->type == std::type_index(typeid(T)))) {
+                // Double check via dynamic_cast if it's a valid inheritance hierarchy up-cast/down-cast
+                if (dynamic_cast<T*>(mSparse[id]->ptr) == nullptr) {
+                    return ObjectReference<T>::noReference();
+                }
+            }
+        } else {
+            // It's a stand-alone interface. Verify at runtime that the concrete object actually implements it.
+            if (dynamic_cast<T*>(mSparse[id]->ptr) == nullptr) {
+                return ObjectReference<T>::noReference();
+            }
+        }
+
+        return ObjectReference<T>(mSparse[id]);
     }
 
-    Object*       get(ObjectID id);
+    Object* get(ObjectID id);
     const Object* get(ObjectID id) const;
 
     void        remove(ObjectID id);
     bool        contains(ObjectID id) const;
     std::size_t size()          const;
 
-private:
-    std::vector<std::shared_ptr<Slot>>                              m_sparse;
-    std::unordered_map<std::type_index, std::unique_ptr<TypedPool>> m_pools;
-    std::unordered_map<std::type_index, std::vector<ObjectID>>      m_back_map;
+    // Iteration types remain unchanged...
+    class iterator
+    {
+    public:
+        using iterator_category = std::input_iterator_tag;
+        using value_type        = std::pair<ObjectID, Object*>;
+        using difference_type   = std::ptrdiff_t;
+        using pointer           = void;
+        using reference         = value_type;
 
-    // Template: must stay in header.
+        iterator() = default;
+
+        value_type operator*() const;
+        iterator&  operator++();
+        iterator   operator++(int);
+
+        bool operator==(const iterator& other) const;
+        bool operator!=(const iterator& other) const { return !(*this == other); }
+
+    private:
+        friend class ObjectRepository;
+
+        using PoolMapIt   = std::unordered_map<std::type_index, std::unique_ptr<TypedPool>>::iterator;
+        using BackMapType = std::unordered_map<std::type_index, std::vector<ObjectID>>;
+
+        iterator(PoolMapIt it, PoolMapIt end, const BackMapType* back_map);
+
+        void advance_to_valid();
+
+        PoolMapIt          m_pool_it{};
+        PoolMapIt          m_pool_end{};
+        std::size_t        m_index{0};
+        const BackMapType* m_back_map{nullptr};
+    };
+
+    class const_iterator
+    {
+    public:
+        using iterator_category = std::input_iterator_tag;
+        using value_type        = std::pair<ObjectID, const Object*>;
+        using difference_type   = std::ptrdiff_t;
+        using pointer           = void;
+        using reference         = value_type;
+
+        const_iterator() = default;
+
+        value_type      operator*() const;
+        const_iterator& operator++();
+        const_iterator  operator++(int);
+
+        bool operator==(const const_iterator& other) const;
+        bool operator!=(const const_iterator& other) const { return !(*this == other); }
+
+    private:
+        friend class ObjectRepository;
+
+        using PoolMapIt   = std::unordered_map<std::type_index, std::unique_ptr<TypedPool>>::const_iterator;
+        using BackMapType = std::unordered_map<std::type_index, std::vector<ObjectID>>;
+
+        const_iterator(PoolMapIt it, PoolMapIt end, const BackMapType* back_map);
+
+        void advance_to_valid();
+
+        PoolMapIt          mPoolIt{};
+
+        PoolMapIt          mPoolEnd{};
+        std::size_t        mIndex{0};
+        const BackMapType* mBackMap{nullptr};
+    };
+
+    iterator       begin();
+    iterator       end();
+    const_iterator begin()  const;
+    const_iterator end()    const;
+    const_iterator cbegin() const { return begin(); }
+    const_iterator cend()   const { return end(); }
+
+private:
+    std::vector<std::shared_ptr<Slot>>                              mSparse;
+    std::unordered_map<std::type_index, std::unique_ptr<TypedPool>> mPools;
+    std::unordered_map<std::type_index, std::vector<ObjectID>>      mBackMap;
+
     template<typename T>
-    ConcretePool<T>& get_or_create_pool()
+    ConcretePool<T>& getOrCreatePool()
     {
         auto key = std::type_index(typeid(T));
-        if (m_pools.find(key) == m_pools.end())
+        if (mPools.find(key) == mPools.end())
         {
-            m_pools[key]    = std::make_unique<ConcretePool<T>>();
-            m_back_map[key] = {};
+            mPools[key]    = std::make_unique<ConcretePool<T>>();
+            mBackMap[key] = {};
         }
-        return static_cast<ConcretePool<T>&>(*m_pools[key]);
+        return static_cast<ConcretePool<T>&>(*mPools[key]);
     }
 };

@@ -4,7 +4,10 @@
 
 #include "../../../include/Defaults/Objects/TransformableObject.h"
 
-#include "Scene/Scene.h"
+#include "Object/Object.h"
+#include "Object/ObjectRepository.h"
+#include "Scene/Scene.hpp"
+#include "Transform/ITransformable.h"
 
 TransformableObject::TransformableObject(const std::string &name)
     : Object(name), mTransform()
@@ -35,21 +38,15 @@ glm::mat4 TransformableObject::getTransformationMatrix() const {
 
 glm::mat4 TransformableObject::getParentTransformationMatrix() const {
     // find first ancestor with transform
-
+    // FIXME: this only checks the immediate parent not all parents
     while (true) {
-        std::shared_ptr<Object> current = getScene().getParent(shared_from_this());
-        if (current == nullptr) {
+        ObjectReference<ITransformable> current = getScene().getParentByID<ITransformable>(getID());
+        if (current.isNoReference()) {
             return {1.0f};
-        }
-
-
-        if ( std::shared_ptr<ITransformable> transformable =
-                std::dynamic_pointer_cast<ITransformable>(current)) {
-            return transformable->getTransformationMatrix();
+        }else{
+            return current->getTransformationMatrix();
         }
     }
-
-
 }
 
 glm::vec3 TransformableObject::getPosition() const {

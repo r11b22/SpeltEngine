@@ -110,10 +110,11 @@ set(ENGINE_SOURCES
 
         src/Object/Object.cpp
         src/Object/ObjectRepository.cpp
-        str/Object/ObjectReference.cpp
 
         src/Scene/Scene.cpp
         src/Scene/SceneHierarchyComponent.cpp
+        src/Scene/SceneHierarchy.cpp
+
         src/Shader/ComputeShader.cpp
         src/Shader/ShaderProgram.cpp
         src/Shader/ShaderUniform.cpp
@@ -156,7 +157,6 @@ set(ENGINE_HEADERS
         include/Object/ObjectID.h
         include/Object/ObjectType.h
         include/Object/ObjectRepository.h
-        include/Object/ObjectReference.h
 
         include/PickBuffer.h
 
@@ -173,8 +173,9 @@ set(ENGINE_HEADERS
         include/Renderer/RenderState.h
         include/Renderer/RenderStateManager.h
 
-        include/Scene/Scene.h
+        include/Scene/Scene.hpp
         include/Scene/SceneHierarchyComponent.h
+        include/Scene/SceneHierarchy.h
 
         include/Shader/ComputeShader.h
         include/Shader/ShaderProgram.h

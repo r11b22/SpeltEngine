@@ -13,7 +13,7 @@
 #include "RenderStateManager.h"
 #include "../Mesh.h"
 #include "../PostProcessing/PostProcessingPipeline.h"
-#include "../Scene/Scene.h"
+#include "Scene/Scene.hpp"
 #include "../Window.h"
 #include "../PostProcessing/PostProcessingGroup.h"
 #include "Renderer/RenderCommand.h"

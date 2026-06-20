@@ -5,13 +5,14 @@
 #ifndef TOONSHADER_TOONSCENE_H
 #define TOONSHADER_TOONSCENE_H
 #include "Defaults/Objects/Drawables/MeshObject.h"
-#include "Scene/Scene.h"
+#include "Object/ObjectRepository.h"
+#include "Scene/Scene.hpp"
 
 class ToonScene : public Scene {
 private:
     InputManager* inputManager = nullptr;
 
-    std::shared_ptr<MeshObject> mTiger = nullptr;
+    std::vector<ObjectReference<MeshObject>> mTigers;
 
 public:
     ToonScene();
