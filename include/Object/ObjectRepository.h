@@ -2,6 +2,7 @@
 
 #include "Object/Object.h"
 #include "Object/ObjectID.h"
+#include <iostream>
 #include <vector>
 #include <unordered_map>
 #include <typeindex>
@@ -22,8 +23,8 @@ struct Slot
     std::type_index  type  { typeid(void) };
     Object* ptr   { nullptr };
     std::size_t      dense { 0 };
+    TypedPool*       pool = nullptr;
     bool             valid { false };
-    TypedPool* pool  { nullptr };
 };
 
 struct TypedPool
@@ -63,7 +64,7 @@ class IObjectReference
 {
 public:
     virtual ~IObjectReference() = default;
-    virtual Object* getUntyped() = 0;
+    virtual Object* getUntyped() const = 0;
 };
 
 // ---------------------------------------------------------------------------
@@ -79,7 +80,7 @@ public:
     // Explicit named state factory for readability
     static ObjectReference<T> noReference() { return ObjectReference<T>(); }
 
-    Object* getUntyped() override;
+    Object* getUntyped() const override;
 
     T* get()       const;
     T* operator->() const { return get(); }
@@ -120,48 +121,59 @@ private:
     friend class ObjectRepository;
     template<typename> friend class ObjectReference;
 
-    explicit ObjectReference(std::weak_ptr<Slot> slot) : mSlot(std::move(slot)) {}
+    void updatePointer() const;
+
+    explicit ObjectReference(std::weak_ptr<Slot> slot) : mSlot(std::move(slot)) {
+        updatePointer();
+    }
 
     std::weak_ptr<Slot> mSlot;
+    mutable Object* mInternal = nullptr;
+    mutable T* mAccessPointer = nullptr;
 };
 
-template<typename T>
-Object* ObjectReference<T>::getUntyped() {
+template <typename T>
+void ObjectReference<T>::updatePointer() const{
     auto slot = mSlot.lock();
+    if (!slot || !slot->valid)
+    {
+        mInternal = nullptr;
+        mAccessPointer = nullptr;
+        return;
+    }
 
-    if(!slot || !slot->valid)
-        return nullptr;
+    if (slot->ptr != mInternal){
+        mInternal = slot->ptr;
+        if constexpr (std::is_base_of_v<Object, T>) {
+            // EXACT MATCH PATH: Only compile static_cast if T is exactly Object.
+            // This avoids compiler errors with virtual base classes.
+            if constexpr (std::is_same_v<T, Object>) {
+                mAccessPointer = static_cast<T*>(slot->ptr);
+            }
+            else {
+                // HIERARCHY PATH: Handles complex multiple / virtual inheritance setups safely
+                mAccessPointer = dynamic_cast<T*>(slot->ptr);
+            }
+        }
+        else {
+            // INDEPENDENT INTERFACE PATH
+            mAccessPointer = dynamic_cast<T*>(slot->ptr);
+        }
+    }
 
-    return slot->ptr;
+}
+
+template<typename T>
+Object* ObjectReference<T>::getUntyped() const{
+    updatePointer();
+    return mInternal;
 }
 
 template<typename T>
 T* ObjectReference<T>::get() const
 {
-    auto slot = mSlot.lock();
-    if (!slot || !slot->valid)
-        return nullptr;
-
-    if constexpr (std::is_base_of_v<Object, T>) {
-        // EXACT MATCH PATH: Only compile static_cast if T is exactly Object.
-        // This avoids compiler errors with virtual base classes.
-        if constexpr (std::is_same_v<T, Object>) {
-            return static_cast<T*>(slot->ptr);
-        }
-        else {
-            // HIERARCHY PATH: Handles complex multiple / virtual inheritance setups safely
-            if (slot->type == std::type_index(typeid(T))) {
-                // Optional optimization: If you are 100% sure the types match exactly
-                // AND T doesn't use virtual inheritance, you could try to optimize here.
-                // But for virtual inheritance, dynamic_cast is mandatory.
-            }
-            return dynamic_cast<T*>(slot->ptr);
-        }
-    }
-    else {
-        // INDEPENDENT INTERFACE PATH
-        return dynamic_cast<T*>(slot->ptr);
-    }
+    updatePointer();
+    return mAccessPointer;
 }
 
 template<typename T>
@@ -189,6 +201,38 @@ ObjectReference<U> ObjectReference<T>::as() const
     return targetRef;
 }
 
+
+// ---------------------------------------------------------------------------
+// ObjectView<T>
+// ---------------------------------------------------------------------------
+// A lightweight, non-owning view over a contiguous run of T objects.
+// Returned by ObjectRepository::getObjectsOfType<T>(). Construction is just
+// a pointer + size taken directly from a ConcretePool<T>'s backing vector,
+// so there is no per-object dynamic_cast and no allocation involved.
+//
+// Caveat: like raw pointers into the pool, a view is only valid until the
+// next ObjectRepository::add<T>() (which may reallocate that pool's vector)
+// or remove() of an object of type T (which may move elements around via
+// swap-and-pop). Don't hold on to it across mutations.
+template<typename T>
+class ObjectView
+{
+public:
+    ObjectView() = default;
+    ObjectView(T* data, std::size_t size) : mData(data), mSize(size) {}
+
+    T* begin() const { return mData; }
+    T* end()   const { return mData + mSize; }
+
+    std::size_t size()  const { return mSize; }
+    bool        empty() const { return mSize == 0; }
+
+    T& operator[](std::size_t i) const { return mData[i]; }
+
+private:
+    T*          mData = nullptr;
+    std::size_t mSize = 0;
+};
 
 // ---------------------------------------------------------------------------
 // ObjectRepository
@@ -287,6 +331,46 @@ public:
         }
 
         return ObjectReference<T>(mSparse[id]);
+    }
+
+    // Returns a view over every object whose EXACT (concrete) type is T -
+    // inheritance is not considered, so an object of a type derived from T
+    // will not show up here (use the regular begin()/end() iteration plus
+    // isOfType<T>/dynamic_cast if you need that instead).
+    //
+    // This is O(1) plus the size of the result: the pool for T is keyed by
+    // std::type_index(typeid(T)) and is guaranteed to be a ConcretePool<T>
+    // whenever it exists (it's the only thing getOrCreatePool<T>() ever
+    // stores under that key), so the cast back from TypedPool* is a plain,
+    // provably-safe static_cast - no dynamic_cast, no per-object work, no
+    // allocation. The view just points straight at the pool's contiguous
+    // std::vector<T>.
+    template<typename T>
+    ObjectView<T> getObjectsOfType()
+    {
+        static_assert(std::is_base_of_v<Object, T>,
+                      "ObjectRepository::getObjectsOfType<T>: T must inherit from Object");
+
+        auto it = mPools.find(std::type_index(typeid(T)));
+        if (it == mPools.end())
+            return ObjectView<T>();
+
+        auto* pool = static_cast<ConcretePool<T>*>(it->second.get());
+        return ObjectView<T>(pool->data.data(), pool->data.size());
+    }
+
+    template<typename T>
+    ObjectView<const T> getObjectsOfType() const
+    {
+        static_assert(std::is_base_of_v<Object, T>,
+                      "ObjectRepository::getObjectsOfType<T>: T must inherit from Object");
+
+        auto it = mPools.find(std::type_index(typeid(T)));
+        if (it == mPools.end())
+            return ObjectView<const T>();
+
+        auto* pool = static_cast<const ConcretePool<T>*>(it->second.get());
+        return ObjectView<const T>(pool->data.data(), pool->data.size());
     }
 
     Object* get(ObjectID id);

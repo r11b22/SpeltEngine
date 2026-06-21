@@ -64,8 +64,9 @@ void ToonScene::onLoad(Renderer &renderer, Window &window) {
 
 void ToonScene::onUpdate(Renderer &renderer, Window &window, float deltaT) {
     // rotate the tiger
-    for (auto tiger : mTigers){
-        tiger->rotate(glm::radians(10.0f)*deltaT, glm::vec3{0.0f, 1.0f, 0.0f});
+    int i = 0;
+    for (auto& tiger : getObjectsOfType<MeshObject>()){
+        tiger.rotate(glm::radians(10.0f)*deltaT, glm::vec3{0.0f, 1.0f, 0.0f});
     }
 }
 

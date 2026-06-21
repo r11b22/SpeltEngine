@@ -151,6 +151,24 @@ public:
 
     void setParentByID(ObjectID objID, ObjectID parentID);
 
+
+    /**
+     * Get a list of all objects in the scene of the specified type
+     */
+    template<typename T>
+    ObjectView<T> getObjectsOfType() {
+        return mObjects.getObjectsOfType<T>();
+    }
+
+    /**
+     * Get a list of all objects in the scene of the specified type
+     */
+    template<typename T>
+    ObjectView<const T> getObjectsOfType() const {
+        return mObjects.getObjectsOfType<T>();
+    }
+
+
     /**
      * Get the parent of an object
      * @param obj the object to get the parent of, nullptr if parent is root
