@@ -138,7 +138,7 @@ public:
         }
         else
         {
-            throw std::runtime_error(std::format("Could not find object with name: {}", name));
+            return ObjectReference<T>::noReference();
         }
     }
 
@@ -240,7 +240,7 @@ public:
 
         for (auto sibling : siblings){
             if (mObjects.isOfType<T>(sibling)){
-                ObjectReference<T> ref = mObjects.makeReference<T>(siblings);
+                ObjectReference<T> ref = mObjects.makeReference<T>(sibling);
                 result.push_back(ref);
             }
         }
@@ -257,10 +257,7 @@ public:
     std::vector<ObjectReference<T>> getSiblingsOfType(IObjectReference& obj){
 
         ObjectID id = obj.getUntyped()->getID();
-
-
-
-        return getChildrenOfTypeByID<T>(id);
+        return getSiblingsOfTypeByID<T>(id);
     }
 
     /**

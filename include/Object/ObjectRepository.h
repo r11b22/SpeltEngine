@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <iterator>
 #include <utility>
+#include <functional>
 
 template<typename T> class ObjectReference;
 
@@ -235,6 +236,37 @@ private:
 };
 
 // ---------------------------------------------------------------------------
+// ObjectBaseView<Base>
+// ---------------------------------------------------------------------------
+// The inheritance-aware counterpart to ObjectView<T>. Returned by
+// ObjectRepository::getObjectsOfBase<Base>(). Unlike ObjectView<T>, objects
+// of different concrete types can sit at different byte offsets relative to
+// Base (different pools, possibly different layouts), so this can't be a
+// single contiguous span - it's just a flat list of already-resolved Base*
+// pointers gathered across every pool that qualifies.
+//
+// Same lifetime caveat as ObjectView<T>: only valid until the next add<T>()
+// or remove() touches one of the contributing pools.
+template<typename Base>
+class ObjectBaseView
+{
+public:
+    ObjectBaseView() = default;
+    explicit ObjectBaseView(std::vector<Base*> ptrs) : mPtrs(std::move(ptrs)) {}
+
+    typename std::vector<Base*>::const_iterator begin() const { return mPtrs.begin(); }
+    typename std::vector<Base*>::const_iterator end()   const { return mPtrs.end(); }
+
+    std::size_t size()  const { return mPtrs.size(); }
+    bool        empty() const { return mPtrs.empty(); }
+
+    Base* operator[](std::size_t i) const { return mPtrs[i]; }
+
+private:
+    std::vector<Base*> mPtrs;
+};
+
+// ---------------------------------------------------------------------------
 // ObjectRepository
 // ---------------------------------------------------------------------------
 class ObjectRepository
@@ -246,7 +278,8 @@ public:
         static_assert(std::is_base_of_v<Object, T>,
                       "ObjectRepository::add<T>: T must inherit from Object");
 
-        auto& pool = getOrCreatePool<T>();
+        bool poolWasNew = false;
+        auto& pool = getOrCreatePool<T>(&poolWasNew);
         const std::size_t old_capacity = pool.data.capacity();
 
         pool.data.emplace_back(std::forward<Args>(args)...);
@@ -285,6 +318,13 @@ public:
         {
             slot->ptr = &pool.data[dense];
         }
+
+        // First time we've ever seen type T (i.e. its pool was just
+        // created): test it once against every Base that's been queried
+        // via getObjectsOfBase<Base>() so far, so the base-type cache stays
+        // correct without anyone having to declare "T derives from Base".
+        if (poolWasNew)
+            registerPoolForKnownBases(&pool, &pool.data[dense]);
 
         return id;
     }
@@ -371,6 +411,89 @@ public:
 
         auto* pool = static_cast<const ConcretePool<T>*>(it->second.get());
         return ObjectView<const T>(pool->data.data(), pool->data.size());
+    }
+
+    // Marks Base as a type you want to query later via getObjectsOfBase<Base>().
+    // This is the only place inheritance gets checked "for" a Base - call it
+    // once (e.g. at startup, or wherever you register your types) and from
+    // then on the cache for Base maintains itself automatically:
+    //   - every pool that already exists is sampled once now (a single
+    //     dynamic_cast against one representative object per pool) to see
+    //     whether it qualifies;
+    //   - every concrete type added afterwards via add<T>() is checked
+    //     against Base (and every other watched Base) the moment its pool
+    //     is created, so newly-introduced derived types are picked up with
+    //     no further action on your part.
+    // Calling this more than once for the same Base is a harmless no-op.
+    template<typename Base>
+    void watchInheritance()
+    {
+        const auto baseIdx = std::type_index(typeid(Base));
+        if (mBaseCache.find(baseIdx) != mBaseCache.end())
+            return; // already watching this Base
+
+        mBaseMatchers[baseIdx] = [](const Object* obj) {
+            return dynamic_cast<const Base*>(obj) != nullptr;
+        };
+
+        auto& bucket = mBaseCache[baseIdx];
+        for (auto& [typeIdx, pool] : mPools)
+        {
+            // An empty pool has no instance to sample yet; if it's later
+            // populated, add<T>()'s registerPoolForKnownBases() call will
+            // pick it up then, since the matcher above is now registered.
+            if (pool->size() == 0) continue;
+            if (dynamic_cast<const Base*>(pool->get(0)) != nullptr)
+                bucket.push_back(pool.get());
+        }
+    }
+
+    // Inheritance-aware counterpart to getObjectsOfType<T>(): returns every
+    // object whose concrete type IS Base or DERIVES from Base.
+    //
+    // Requires watchInheritance<Base>() to have been called at least once
+    // first - this function only ever reads the cache it built, it never
+    // builds it. If Base was never watched, this returns an empty view
+    // rather than asserting, so a missing watchInheritance<Base>() call
+    // fails quietly (empty results) rather than crashing.
+    //
+    // Trade-off vs getObjectsOfType<T>: a qualifying pool's elements aren't
+    // necessarily at a uniform Base* offset across different concrete
+    // types, so the result can't be one contiguous span. Pools that don't
+    // qualify are skipped entirely (cached), but building the result still
+    // costs one dynamic_cast per matching object.
+    template<typename Base>
+    ObjectBaseView<Base> getObjectsOfBase()
+    {
+        std::vector<Base*> result;
+        if (const auto* pools = findBaseCache<Base>())
+        {
+            for (TypedPool* pool : *pools)
+            {
+                const std::size_t n = pool->size();
+                for (std::size_t i = 0; i < n; ++i)
+                    if (Base* b = dynamic_cast<Base*>(pool->get(i)))
+                        result.push_back(b);
+            }
+        }
+        return ObjectBaseView<Base>(std::move(result));
+    }
+
+    template<typename Base>
+    ObjectBaseView<const Base> getObjectsOfBase() const
+    {
+        std::vector<const Base*> result;
+        if (const auto* pools = findBaseCache<Base>())
+        {
+            for (TypedPool* pool : *pools)
+            {
+                const std::size_t n = pool->size();
+                for (std::size_t i = 0; i < n; ++i)
+                    if (const Base* b = dynamic_cast<const Base*>(pool->get(i)))
+                        result.push_back(b);
+            }
+        }
+        return ObjectBaseView<const Base>(std::move(result));
     }
 
     Object* get(ObjectID id);
@@ -462,15 +585,54 @@ private:
     std::unordered_map<std::type_index, std::unique_ptr<TypedPool>> mPools;
     std::unordered_map<std::type_index, std::vector<ObjectID>>      mBackMap;
 
+    // --- Base-type (polymorphic) lookup cache --------------------------
+    // mBaseMatchers: for every Base ever passed to getObjectsOfBase<Base>(),
+    //   a type-erased "is this object a Base?" check (built once, from the
+    //   template parameter, the first time Base is queried).
+    // mBaseCache: for every such Base, the list of pools whose concrete
+    //   type qualifies. Pool membership in this list never changes once
+    //   decided (a concrete type's inheritance is fixed), so this never
+    //   needs invalidating - only appending to, in registerPoolForKnownBases.
+    // Populated exclusively by watchInheritance<Base>() and
+    // registerPoolForKnownBases() (both non-const), so no "mutable" needed -
+    // getObjectsOfBase<Base>() only ever reads them via findBaseCache().
+    std::unordered_map<std::type_index, std::function<bool(const Object*)>> mBaseMatchers;
+    std::unordered_map<std::type_index, std::vector<TypedPool*>>            mBaseCache;
+
+    // Called right after a brand-new pool is created for some type T (i.e.
+    // the very first object of that type is added), with a representative
+    // instance. Tests it against every Base watched so far and files the
+    // new pool under any Base it matches.
+    void registerPoolForKnownBases(TypedPool* pool, const Object* sample)
+    {
+        for (auto& [baseIdx, matcher] : mBaseMatchers)
+        {
+            if (matcher(sample))
+                mBaseCache[baseIdx].push_back(pool);
+        }
+    }
+
+    // Read-only lookup into the cache watchInheritance<Base>() built. Returns
+    // nullptr if Base was never watched.
+    template<typename Base>
+    const std::vector<TypedPool*>* findBaseCache() const
+    {
+        auto it = mBaseCache.find(std::type_index(typeid(Base)));
+        return it != mBaseCache.end() ? &it->second : nullptr;
+    }
+
     template<typename T>
-    ConcretePool<T>& getOrCreatePool()
+    ConcretePool<T>& getOrCreatePool(bool* wasNew = nullptr)
     {
         auto key = std::type_index(typeid(T));
-        if (mPools.find(key) == mPools.end())
+        auto it  = mPools.find(key);
+        const bool isNew = (it == mPools.end());
+        if (isNew)
         {
-            mPools[key]    = std::make_unique<ConcretePool<T>>();
-            mBackMap[key] = {};
+            it             = mPools.emplace(key, std::make_unique<ConcretePool<T>>()).first;
+            mBackMap[key]  = {};
         }
-        return static_cast<ConcretePool<T>&>(*mPools[key]);
+        if (wasNew) *wasNew = isNew;
+        return static_cast<ConcretePool<T>&>(*it->second);
     }
 };

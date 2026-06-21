@@ -21,4 +21,12 @@
     "allow_concurrent_runs": false,
     "save": "current",
   },
+  {
+    "label": "CMake: Run Tests",
+    // We use ../build because we are executing from inside the test_scene folder
+    "command": "cmake --build build && ./build/test/tests",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "save": "current",
+  },
 ]
