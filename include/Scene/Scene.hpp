@@ -4,7 +4,10 @@
 
 #ifndef CGVCPROJECT_SCENE_H
 #define CGVCPROJECT_SCENE_H
+#include "Asset/AssetManager.hpp"
 #include "Lighting/ILight.h"
+#include "Mesh/MeshAsset.hpp"
+#include "Mesh/MeshReference.hpp"
 #include "Object/Object.h"
 #include "Object/ObjectID.h"
 #include "Object/ObjectRepository.h"
@@ -33,6 +36,8 @@ private:
 
     RenderQueue mRenderQueue;
 
+    AssetManager* mAssetManager = nullptr;
+
     std::vector<ObjectReference<IDrawable>> mDrawables;
     std::vector<ObjectReference<ILight>> mLights;
 
@@ -40,6 +45,7 @@ private:
 
     bool mRunning = false;
 
+    std::vector<MeshAsset> mMeshAssets;
 
 
 public:
@@ -279,6 +285,13 @@ public:
 
         return result;
     }
+
+    void setAssetManager(AssetManager* assetManager);
+
+    void addMeshAsset(MeshAsset asset);
+    MeshReference getMeshByName(const std::string& name);
+
+    const std::vector<MeshAsset>& getMeshAssets() const;
 
 private:
 

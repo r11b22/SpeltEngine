@@ -20,6 +20,7 @@ App::App(const std::string &title) :
     litProgram->link();
 
     mRenderer.addShaderProgram("litShader", std::move(litProgram));
+    mRenderer.setAssetManager(&mAssetManager);
 }
 
 void App::loadScene(Scene* scene) {
@@ -27,7 +28,10 @@ void App::loadScene(Scene* scene) {
         delete mCurrentScene;
     }
 
+    loadSceneAssets(*scene);
+
     mCurrentScene = scene;
+    mCurrentScene->setAssetManager(&mAssetManager);
     mCurrentScene->onLoad(mRenderer, mWindow);
 
     mDeltaT = 0;
@@ -57,5 +61,11 @@ void App::run() {
             std::cout << "Runtime error: " << e.what() << std::endl;
         }
 
+    }
+}
+
+void App::loadSceneAssets(const Scene& scene){
+    for (auto& asset : scene.getMeshAssets()){
+        mAssetManager.loadMesh(asset);
     }
 }

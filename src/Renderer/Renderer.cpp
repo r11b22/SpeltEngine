@@ -7,6 +7,7 @@
 #include <iostream>
 #include <type_traits>
 
+#include "Asset/AssetManager.hpp"
 #include "FrameBuffer/MultisampledFrameBuffer.h"
 #include "Renderer/RenderCommand.h"
 #include "Strings/ShaderSource.h"
@@ -50,7 +51,7 @@ Renderer::Renderer(Window* target)
         0, 2, 3
     };
 
-    mScreenQuad = new Mesh();
+    mScreenQuad = new Mesh("nonameneeded");
     mScreenQuad->setVertices(vertices);
     mScreenQuad->setIndices(indices);
 
@@ -155,6 +156,10 @@ void Renderer::setClearColor(glm::vec4 color){
     mScreenClearColor = color;
 }
 
+void Renderer::setAssetManager(AssetManager* assetManager){
+    mAssetManager = assetManager;
+}
+
 void Renderer::executeRenderCommand(const RenderCommand& command, const Camera& camera, const std::vector<LightData>& lights) {
     std::visit([this, &camera, &lights](auto&& arg) {
         using T = std::decay_t<decltype(arg)>;
@@ -171,7 +176,7 @@ void Renderer::executeRenderCommand(const RenderCommand& command, const Camera& 
 
 void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& camera, const std::vector<LightData>& lights) {
     const std::string& shaderName = command.shaderName;
-    const std::shared_ptr<IRenderable>& toRender = command.renderable;
+    IRenderable* toRender = mAssetManager->getMesh(command.mesh);
     const std::shared_ptr<Material>& material = command.material;
 
     ShaderProgram* newProgram = mShaderPrograms.at(shaderName).get();

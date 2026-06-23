@@ -8,13 +8,14 @@
 #include <variant>
 
 #include "IRenderable.h"
+#include "Mesh/MeshReference.hpp"
 #include "RenderState.h"
 #include "Material/Material.h"
 
 
 struct DrawCommand {
     std::string shaderName = "";
-    std::shared_ptr<IRenderable> renderable = nullptr;
+    MeshReference mesh;
     std::shared_ptr<Material> material = nullptr;
     std::vector<ShaderUniform> uniforms = {};
 };

@@ -15,7 +15,7 @@
 #include <memory>
 
 ToonScene::ToonScene() {
-
+    addMeshAsset({"tiger", "Models/Animals/tiger/tiger.gltf"});
 }
 
 void ToonScene::onLoad(Renderer &renderer, Window &window) {
@@ -27,15 +27,16 @@ void ToonScene::onLoad(Renderer &renderer, Window &window) {
     camera->setPosition(glm::vec3{10.0f, 5.0f, 10.0f});
 
     ModelLoader tigerLoader= {};
-    tigerLoader.readFile("Models/Animals/tiger/tiger.gltf");
     tigerLoader.loadTexture("Models/Animals/tiger/Texture_1.png");
-    std::shared_ptr<Mesh> tigerMesh = tigerLoader.createMesh();
     std::shared_ptr<Material> tigerMaterial = tigerLoader.createMaterial();
+
+    // use get by name to test the system
+    mTigerMesh = getMeshByName("tiger");
 
     // Spawn 100 tigers using your utility functions
     for (int i = 0; i < 1000; ++i) {
         std::string name = "tiger_" + std::to_string(i);
-        ObjectReference<MeshObject> tiger = createObject<MeshObject>(name, tigerMesh, tigerMaterial);
+        ObjectReference<MeshObject> tiger = createObject<MeshObject>(name, mTigerMesh, tigerMaterial);
 
         // Using your basic uniform random distribution over a 100x100 area
         float x = getRandomFloat(-50.0f, 50.0f);

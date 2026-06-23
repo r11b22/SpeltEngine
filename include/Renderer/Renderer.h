@@ -9,10 +9,11 @@
 #include <vector>
 
 #include "../Camera.h"
+#include "Asset/AssetManager.hpp"
 #include "FrameBuffer/MultisampledFrameBuffer.h"
 #include "RenderStateManager.h"
-#include "../Mesh.h"
-#include "../PostProcessing/PostProcessingPipeline.h"
+#include "Mesh/Mesh.h"
+#include "PostProcessing/PostProcessingPipeline.h"
 #include "Scene/Scene.hpp"
 #include "../Window.h"
 #include "../PostProcessing/PostProcessingGroup.h"
@@ -30,6 +31,8 @@ private:
     Mesh* mScreenQuad;
 
     Window* mTarget;
+
+    AssetManager* mAssetManager;
 
     MultisampledTexture* mInputTexture; // This should someday be replaced with a frame buffer that does not draw to a texture
                             // For now this works
@@ -62,6 +65,8 @@ public:
     void setClearBits(GLbitfield bits);
 
     void setClearColor(glm::vec4 color);
+
+    void setAssetManager(AssetManager* assetManager);
 
 private:
     void drawPass(const RenderQueue& queue, const Camera& camera, const std::vector<LightData>& lights);

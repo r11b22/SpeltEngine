@@ -5,6 +5,7 @@
 #ifndef CGVCPROJECT_APP_H
 #define CGVCPROJECT_APP_H
 
+#include "Asset/AssetManager.hpp"
 #include "Renderer/Renderer.h"
 #include "Window.h"
 
@@ -13,6 +14,7 @@ private:
     Window mWindow;
     Renderer mRenderer;
     Scene* mCurrentScene;
+    AssetManager mAssetManager;
 
     float mDeltaT, mLastT;
 
@@ -21,6 +23,8 @@ public:
     void loadScene(Scene* scene);
     void run();
 private:
+
+    void loadSceneAssets(const Scene& scene);
 };
 
 #endif //CGVCPROJECT_APP_H

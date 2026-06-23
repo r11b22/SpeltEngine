@@ -2,14 +2,14 @@
 // Created by joost on 4/12/26.
 //
 
-#include "Mesh.h"
+#include "Mesh/Mesh.h"
 
 #include <iostream>
 
 #include "ModelLoader.h"
 
-Mesh::Mesh()
-    : mVertexBuffer(GL_ARRAY_BUFFER), mVAO()
+Mesh::Mesh(std::string name)
+    : Asset(name), mVertexBuffer(GL_ARRAY_BUFFER), mVAO()
 {
     mVAO.addVertexBuffer(mVertexBuffer, {
         VertexAttribute{0, 3, 3 * sizeof(float), GL_FLOAT},
@@ -31,7 +31,3 @@ void Mesh::setIndices(std::vector<unsigned int> indices) {
     mVAO.getElementBuffer().setDataUI(indices);
     mVertexCount = indices.size();
 }
-
-
-
-

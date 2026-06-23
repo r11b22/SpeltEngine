@@ -9,7 +9,7 @@
 
 #include "FrameBuffer/FrameBuffer.h"
 #include "Texture/Texture.h"
-#include "Mesh.h"
+#include "Mesh/Mesh.h"
 
 class PostProcessingEffect;
 

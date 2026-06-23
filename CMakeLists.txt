@@ -80,8 +80,11 @@ endif()
 # Manually list engine source/header files to avoid globbing.
 set(ENGINE_SOURCES
         src/App.cpp
+
         src/Buffer/Buffer.cpp
+
         src/Camera.cpp
+
         src/Defaults/Camera/FirstPersonCamera.cpp
         src/Defaults/Objects/Drawables/MeshObject.cpp
         src/Defaults/Objects/Lighting/AmbientLight.cpp
@@ -90,18 +93,26 @@ set(ENGINE_SOURCES
         src/Defaults/Objects/TransformableObject.cpp
         src/Defaults/PostProcessing/Bloom.cpp
         src/Defaults/PostProcessing/Blur.cpp
+
         src/FileReader.cpp
+
         src/FrameBuffer/MultisampledFrameBuffer.cpp
+
         src/InputManager.cpp
+
         src/Lighting/LightManager.cpp
+
         src/Material/Material.cpp
-        src/Mesh.cpp
+
         src/ModelLoader.cpp
+
         src/PickBuffer.cpp
+
         src/PostProcessing/PostProcessingComputeUnit.cpp
         src/PostProcessing/PostProcessingEffect.cpp
         src/PostProcessing/PostProcessingGroup.cpp
         src/PostProcessing/PostProcessingPipeline.cpp
+
         src/Renderer/RenderCommand.cpp
         src/Renderer/Renderer.cpp
         src/Renderer/RenderQueue.cpp
@@ -118,39 +129,64 @@ set(ENGINE_SOURCES
         src/Shader/ComputeShader.cpp
         src/Shader/ShaderProgram.cpp
         src/Shader/ShaderUniform.cpp
+
         src/Texture/MultisamledTexture.cpp
         src/Texture/Texture.cpp
+
         src/Transform/Transform.cpp
+
         src/VertexArray.cpp
+
         src/Window.cpp
+
+        src/Asset/AssetManager.cpp
+        src/Asset/Asset.cpp
+
+        src/Mesh/MeshReference.cpp
+        src/Mesh/MeshAsset.cpp
+        src/Mesh/Mesh.cpp
+        src/Mesh/MeshLoader.cpp
+
 )
 
 set(ENGINE_HEADERS
         include/App.h
+
         include/Buffer/Buffer.h
         include/Buffer/BufferMap.h
+
         include/Camera.h
+
         include/DataStructures/SparseSet.hpp
+
         include/Defaults/Camera/FirstPersonCamera.h
+
         include/Defaults/Objects/Drawables/MeshObject.h
         include/Defaults/Objects/Lighting/AmbientLight.h
         include/Defaults/Objects/Lighting/DirectionalLight.h
         include/Defaults/Objects/Lighting/PointLight.h
         include/Defaults/Objects/TransformableObject.h
+
         include/Defaults/PostProcessing/Bloom.h
         include/Defaults/PostProcessing/Blur.h
+
         include/FileReader.h
+
         include/FrameBuffer/FrameBuffer.h
         include/FrameBuffer/MultisampledFrameBuffer.h
+
         include/InputManager.h
+
         include/Lighting/AmbientLightData.h
         include/Lighting/DirectionalLightData.h
         include/Lighting/ILight.h
         include/Lighting/LightData.h
         include/Lighting/LightManager.h
         include/Lighting/PointLightData.h
+
         include/Material/Material.h
-        include/Mesh.h
+
+
         include/ModelLoader.h
 
         include/Object/Object.h
@@ -194,6 +230,17 @@ set(ENGINE_HEADERS
         include/VertexArray.h
 
         include/Window.h
+
+        include/Asset/AssetManager.hpp
+        include/Asset/AssetRepository.hpp
+        include/Asset/AssetReference.hpp
+        include/Asset/Asset.hpp
+
+        include/Mesh/MeshReference.hpp
+        include/Mesh/MeshAsset.hpp
+        include/Mesh/Mesh.h
+        include/Mesh/MeshLoader.hpp
+
 )
 
 # Keep the manually configured glad components separate as per original structure

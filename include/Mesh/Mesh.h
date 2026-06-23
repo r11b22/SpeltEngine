@@ -5,12 +5,13 @@
 #ifndef GCVCPROJECT_MESH_H
 #define GCVCPROJECT_MESH_H
 
+#include "Asset/Asset.hpp"
 #include "Buffer/Buffer.h"
 #include "Renderer/IRenderable.h"
 #include "ModelLoader.h"
 #include "VertexArray.h"
 
-class Mesh : public IRenderable {
+class Mesh : public IRenderable, public Asset {
 private:
     Buffer mVertexBuffer;
     VertexArray mVAO;
@@ -19,7 +20,7 @@ private:
 
 
 public:
-    Mesh();
+    Mesh(std::string name);
     ~Mesh() override = default;
 
     Mesh(const Mesh&) = delete;

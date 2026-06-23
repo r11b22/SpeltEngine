@@ -5,12 +5,15 @@
 #ifndef TOONSHADER_TOONSCENE_H
 #define TOONSHADER_TOONSCENE_H
 #include "Defaults/Objects/Drawables/MeshObject.h"
+#include "Mesh/MeshReference.hpp"
 #include "Object/ObjectRepository.h"
 #include "Scene/Scene.hpp"
 
 class ToonScene : public Scene {
 private:
     InputManager* inputManager = nullptr;
+
+    MeshReference mTigerMesh;
 
     std::vector<ObjectReference<MeshObject>> mTigers;
 

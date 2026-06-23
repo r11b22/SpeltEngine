@@ -12,7 +12,7 @@
 
 PostProcessingPipeline::PostProcessingPipeline(Window* window)
     : mWindow(window),
-      mQuadMesh(),
+      mQuadMesh("nonameneeded"),
       mSceneFrameBuffer(window),
       mSceneInputTexture(window->getWidth(), window->getHeight(), GL_RGB, GL_RGB16F, GL_FLOAT)
 {

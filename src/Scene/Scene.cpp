@@ -3,13 +3,17 @@
 //
 
 #include "Scene/Scene.hpp"
+#include "Asset/AssetManager.hpp"
 #include "Lighting/ILight.h"
 #include "Lighting/LightData.h"
+#include "Mesh/MeshAsset.hpp"
+#include "Mesh/MeshReference.hpp"
 #include "Object/Object.h"
 #include "Object/ObjectID.h"
 #include "Object/ObjectRepository.h"
 #include <algorithm>
 #include <iostream>
+#include <stdexcept>
 #include <vector>
 
 // ---------------------------------------------------------------------------
@@ -153,4 +157,29 @@ void Scene::setParent(IObjectReference& obj, IObjectReference& parent) {
 
 void Scene::setParentByID(ObjectID objID, ObjectID parentID) {
     mHierarchy.setParent(objID, parentID);
+}
+
+/*
+ * Assets
+ *
+ */
+
+void Scene::setAssetManager(AssetManager* assetManager){
+    mAssetManager = assetManager;
+}
+
+void Scene::addMeshAsset(MeshAsset asset){
+    mMeshAssets.push_back(asset);
+}
+
+MeshReference Scene::getMeshByName(const std::string& name){
+    if (mAssetManager){
+        return mAssetManager->getMeshByName(name);
+    }else{
+        throw std::runtime_error("The Scene was not yet loaded! Getting assets can only be done after the scene is loaded!");
+    }
+}
+
+const std::vector<MeshAsset>& Scene::getMeshAssets() const {
+    return mMeshAssets;
 }

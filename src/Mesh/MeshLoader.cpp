@@ -1,27 +1,18 @@
-//
-// Created by joost on 4/12/26.
-//
-
-#include "ModelLoader.h"
-
-#include <iostream>
+#include "Mesh/MeshLoader.hpp"
+#include "Mesh/MeshAsset.hpp"
+#include "glm/ext/vector_float3.hpp"
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include <Mesh/Mesh.h>
-#include "stb_image.h"
-#include "assimp/Importer.hpp"
 
-
-ModelLoader::ModelLoader() {
+MeshLoader::MeshLoader() {
     mImporter = new Assimp::Importer();
 }
 
-ModelLoader::~ModelLoader() {
+MeshLoader::~MeshLoader() {
     delete mImporter;
-    freeTextureData(mTexData);
 }
 
-void ModelLoader::readFile(const std::filesystem::path &path, bool collapse) {
+void MeshLoader::readFile(const std::filesystem::path &path, bool collapse) {
 
     if (collapse) {
         mScene = mImporter->ReadFile(path.string().c_str(),
@@ -36,30 +27,14 @@ void ModelLoader::readFile(const std::filesystem::path &path, bool collapse) {
                 aiProcess_FlipUVs );
     }
 
-
-    mTexData.texData = nullptr;
-
     if (!mScene || mScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !mScene->mRootNode) {
         throw std::runtime_error(mImporter->GetErrorString());
     }
 
 }
 
-void ModelLoader::loadTexture(const std::filesystem::path &path, bool flipVertical) {
-    if (mTexData.texData != nullptr) {
-        freeTextureData(mTexData);
-    }
 
-    mTexData = loadTextureStatic(path, flipVertical);
-
-    if (!mTexData.texData) {
-        throw std::runtime_error("Could not load texture at: " + path.string());
-    }
-}
-
-
-
-std::vector<float> ModelLoader::getVertices(int idx, glm::vec3 scale) {
+std::vector<float> MeshLoader::getVertices(int idx, glm::vec3 scale) {
 
     if (!mScene) {
         throw std::runtime_error("Could not get vertices: No file was read!");
@@ -105,7 +80,7 @@ std::vector<float> ModelLoader::getVertices(int idx, glm::vec3 scale) {
     return std::move(vertices);
 }
 
-std::vector<unsigned int> ModelLoader::getIndices(int idx) {
+std::vector<unsigned int> MeshLoader::getIndices(int idx) {
     if (!mScene) {
         throw std::runtime_error("Could not get vertices: No file was read!");
     }
@@ -125,48 +100,11 @@ std::vector<unsigned int> ModelLoader::getIndices(int idx) {
     return std::move(indices);
 }
 
-std::shared_ptr<Mesh> ModelLoader::createMeshScaled(int idx, glm::vec3 scale) {
-    std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>("nonameneeded");
+Mesh MeshLoader::createMesh(std::string name, int idx, glm::vec3 scale){
+    Mesh newMesh{name};
 
-    newMesh->setVertices(getVertices(idx, scale));
-    newMesh->setIndices(getIndices(idx));
+    newMesh.setVertices(getVertices(idx, scale));
+    newMesh.setIndices(getIndices(idx));
 
-
-
-    return newMesh;
-}
-
-std::shared_ptr<Mesh> ModelLoader::createMeshScaledUniform(int idx, float scale) {
-    return createMeshScaled(idx, glm::vec3{scale});
-}
-
-std::shared_ptr<Mesh> ModelLoader::createMesh(int idx) {
-    return createMeshScaled(idx, glm::vec3{1.0f});
-}
-
-std::shared_ptr<Material> ModelLoader::createMaterial() {
-    if (mTexData.texData) {
-        std::shared_ptr<Material> material = std::make_shared<Material>();
-        material->setTexture(mTexData);
-        return std::move(material);
-    }else {
-        throw std::runtime_error("No texture data available!");
-    }
-}
-
-TextureData ModelLoader::loadTextureStatic(const std::filesystem::path &path, bool flipVertical) {
-    stbi_set_flip_vertically_on_load(flipVertical);
-    int texWidth, texHeight, channelCount;
-    unsigned char* texData = stbi_load(path.string().c_str(), &texWidth, &texHeight, &channelCount, 0);
-
-    if (!texData) {
-        throw std::runtime_error("Could not load texture at: " + path.string());
-    }
-
-    return {texData, texWidth, texHeight, channelCount};
-}
-
-void ModelLoader::freeTextureData(TextureData &data) {
-    stbi_image_free(data.texData);
-    data.texData = nullptr;
+    return std::move(newMesh);
 }
