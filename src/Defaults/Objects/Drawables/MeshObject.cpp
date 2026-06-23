@@ -3,6 +3,7 @@
 //
 
 #include "Defaults/Objects/Drawables/MeshObject.h"
+#include "Mesh/MeshReference.hpp"
 #include "Renderer/RenderCommand.h"
 
 MeshObject::MeshObject(const std::string &name, MeshReference mesh, const std::shared_ptr<Material>& material)
@@ -33,6 +34,10 @@ std::shared_ptr<Material> MeshObject::getMaterial() {
     return mMaterial;
 }
 
-std::string MeshObject::getShader() {
+MeshReference MeshObject::getMesh() const {
+    return mMesh;
+}
+
+std::string MeshObject::getShader() const{
     return mShader;
 }

@@ -4,7 +4,6 @@
 
 #ifndef CGVCPROJECT_MESHOBJECT_H
 #define CGVCPROJECT_MESHOBJECT_H
-#include "Mesh/Mesh.h"
 #include "../TransformableObject.h"
 #include "Mesh/MeshReference.hpp"
 #include "Renderer/IDrawable.h"
@@ -25,7 +24,8 @@ public:
 
 protected:
     std::shared_ptr<Material> getMaterial();
-    std::string getShader();
+    MeshReference getMesh() const;
+    std::string getShader() const;
 
 private:
 };
