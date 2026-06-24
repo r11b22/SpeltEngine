@@ -3,6 +3,7 @@
 //
 
 #include "Defaults/Objects/Drawables/MeshObject.h"
+#include "Mesh/Mesh.h"
 #include "Mesh/MeshReference.hpp"
 #include "Renderer/RenderCommand.h"
 
@@ -28,6 +29,10 @@ std::vector<RenderCommand> MeshObject::getRenderCommands() {
 
 void MeshObject::setShader(std::string shader) {
     mShader = std::move(shader);
+}
+
+void MeshObject::setMesh(MeshReference mesh){
+    mMesh = mesh;
 }
 
 Material MeshObject::getMaterial() {

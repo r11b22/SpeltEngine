@@ -21,6 +21,7 @@ public:
     std::vector<RenderCommand> getRenderCommands() override;
 
     void setShader(std::string shader);
+    void setMesh(MeshReference mesh);
 
 protected:
     Material getMaterial();
