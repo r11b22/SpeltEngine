@@ -176,25 +176,28 @@ void Renderer::executeRenderCommand(const RenderCommand& command, const Camera& 
 
 void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& camera, const std::vector<LightData>& lights) {
     const std::string& shaderName = command.shaderName;
-    IRenderable* toRender = mAssetManager->getMesh(command.mesh);
-    Material material = command.material;
+    if(!command.mesh.isNoReference()){
+        IRenderable* toRender = mAssetManager->getMesh(command.mesh);
+        Material material = command.material;
 
-    ShaderProgram* newProgram = mShaderPrograms.at(shaderName).get();
-    if (newProgram != mCurrentProgram) {
-        // Set the new shader as the currently active shader
-        // RenderQueue optimizes the order as much as possible
-        mCurrentProgram = newProgram;
-        mCurrentProgram->use();
+        ShaderProgram* newProgram = mShaderPrograms.at(shaderName).get();
+        if (newProgram != mCurrentProgram) {
+            // Set the new shader as the currently active shader
+            // RenderQueue optimizes the order as much as possible
+            mCurrentProgram = newProgram;
+            mCurrentProgram->use();
+        }
+
+        uploadStandardUniforms(*mCurrentProgram, camera, lights);
+
+        for (const auto& uniform : command.uniforms) {
+            mCurrentProgram->setUniform(uniform);
+        }
+
+        material.readyMaterial(*mCurrentProgram, *mAssetManager);
+        toRender->draw(*mCurrentProgram);
     }
 
-    uploadStandardUniforms(*mCurrentProgram, camera, lights);
-
-    for (const auto& uniform : command.uniforms) {
-        mCurrentProgram->setUniform(uniform);
-    }
-
-    material.readyMaterial(*mCurrentProgram, *mAssetManager);
-    toRender->draw(*mCurrentProgram);
 }
 
 void Renderer::executeStateChangeCommand(const StateChangeCommand& command) {

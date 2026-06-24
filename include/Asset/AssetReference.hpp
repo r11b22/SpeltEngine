@@ -11,7 +11,7 @@ class AssetReference {
             return mID;
         }
 
-        bool isNoReference() {
+        bool isNoReference() const {
             return mID == 0;
         }
     private:
