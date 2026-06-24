@@ -21,7 +21,7 @@ PostProcessingComputeUnit::PostProcessingComputeUnit(Window* window, int inputCo
     // Bank B: indices [outputCount .. 2*outputCount-1]
     mTextures.reserve(2 * outputCount);
     for (int i = 0; i < 2 * outputCount; ++i) {
-        mTextures.emplace_back(window->getWidth(), window->getHeight(), GL_RGB, GL_RGB16F, GL_FLOAT);
+        mTextures.emplace_back("noname", window->getWidth(), window->getHeight(), GL_RGB, GL_RGB16F, GL_FLOAT);
         mTextures[i].setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         mTextures[i].setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         mTextures[i].setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

@@ -7,21 +7,23 @@
 #include <optional>
 
 
-#include "Texture/Texture.h"
+#include "Asset/Asset.hpp"
+#include "Asset/AssetManager.hpp"
 #include "Shader/ShaderProgram.h"
+#include "Texture/TextureReference.hpp"
 
 class TextureData;
 
-class Material {
+class Material : public Asset{
 private:
-    std::optional<Texture> mTexture;
+    TextureReference mTexture;
     float mDiffuse = 1.0f;
     float mSpecular = 1.0f;
     float mShininess = 32.0f;
 public:
-    void readyMaterial(ShaderProgram &shaderProgram);
+    Material(std::string name, TextureReference texture = {});
 
-    void setTexture(const TextureData& texData);
+    void readyMaterial(ShaderProgram &shaderProgram, AssetManager& assetManager);
 
     void setDiffuse(float diffuse);
     void setSpecular(float specular);

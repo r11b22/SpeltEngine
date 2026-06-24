@@ -4,24 +4,30 @@
 
 
 #include "Material/Material.h"
-#include "ModelLoader.h"
+#include "Texture/Texture.h"
+#include "Texture/TextureReference.hpp"
 
-void Material::readyMaterial(ShaderProgram &shaderProgram) {
+Material::Material(std::string name, TextureReference texture)
+    : Asset(name), mTexture(texture)
+{
+
+}
+
+void Material::readyMaterial(ShaderProgram &shaderProgram,  AssetManager& assetManager) {
 
     shaderProgram.setUniformInt("uTexture", 0);
-    if (mTexture.has_value()) {
-        mTexture.value().bind(0);
+
+    if (!mTexture.isNoReference()){
+        Texture* tex = assetManager.getTexture(mTexture);
+        if(tex){
+            tex->bind(0);
+        }
     }
 
     shaderProgram.setUniformFloat("uMaterialProperties.diffuse", mDiffuse);
     shaderProgram.setUniformFloat("uMaterialProperties.specular", mSpecular);
     shaderProgram.setUniformFloat("uMaterialProperties.shininess", mShininess);
 }
-
-void Material::setTexture(const TextureData &texData) {
-    mTexture = Texture(texData.texData, texData.texWidth, texData.texHeight, texData.channelCount);
-}
-
 
 void Material::setDiffuse(float diffuse){
     mDiffuse = diffuse;

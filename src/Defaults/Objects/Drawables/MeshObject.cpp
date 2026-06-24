@@ -6,7 +6,7 @@
 #include "Mesh/MeshReference.hpp"
 #include "Renderer/RenderCommand.h"
 
-MeshObject::MeshObject(const std::string &name, MeshReference mesh, const std::shared_ptr<Material>& material)
+MeshObject::MeshObject(const std::string &name, MeshReference mesh, Material material)
     : TransformableObject(name), mMesh(mesh), mMaterial(material)
 {
 }
@@ -30,7 +30,7 @@ void MeshObject::setShader(std::string shader) {
     mShader = std::move(shader);
 }
 
-std::shared_ptr<Material> MeshObject::getMaterial() {
+Material MeshObject::getMaterial() {
     return mMaterial;
 }
 

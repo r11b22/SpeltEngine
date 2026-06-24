@@ -16,6 +16,7 @@
 
 ToonScene::ToonScene() {
     addMeshAsset({"tiger", "Models/Animals/tiger/tiger.gltf"});
+    addTextureAsset({"tiger", "Models/Animals/tiger/Texture_1.png"});
 }
 
 void ToonScene::onLoad(Renderer &renderer, Window &window) {
@@ -26,9 +27,8 @@ void ToonScene::onLoad(Renderer &renderer, Window &window) {
     ObjectReference<FirstPersonCamera> camera = createObject<FirstPersonCamera>("main camera", inputManager, &window);
     camera->setPosition(glm::vec3{10.0f, 5.0f, 10.0f});
 
-    ModelLoader tigerLoader= {};
-    tigerLoader.loadTexture("Models/Animals/tiger/Texture_1.png");
-    std::shared_ptr<Material> tigerMaterial = tigerLoader.createMaterial();
+
+    Material tigerMaterial = {"tigerMaterial", getTextureByName("tiger")};
 
     // use get by name to test the system
     mTigerMesh = getMeshByName("tiger");

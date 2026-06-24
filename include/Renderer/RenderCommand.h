@@ -12,11 +12,10 @@
 #include "RenderState.h"
 #include "Material/Material.h"
 
-
 struct DrawCommand {
     std::string shaderName = "";
     MeshReference mesh;
-    std::shared_ptr<Material> material = nullptr;
+    Material material{"noname"};
     std::vector<ShaderUniform> uniforms = {};
 };
 

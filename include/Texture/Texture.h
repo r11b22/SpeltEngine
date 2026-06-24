@@ -4,16 +4,19 @@
 
 #ifndef CGVCPROJECT_TEXTURE_H
 #define CGVCPROJECT_TEXTURE_H
+#include "Asset/Asset.hpp"
+#include "Texture/TextureData.h"
 #include "glad/glad.h"
 
-class Texture {
+class Texture : public Asset {
 private:
     int mWidth, mHeight;
     GLuint mId;
     GLenum mInternalFormat, mFormat, mDatatype;
 public:
-    Texture(int width, int height, GLenum format, GLenum internalFormat, GLenum datatype);
-    Texture(const unsigned char *texData, int width, int height, int channelCount);
+    Texture(std::string name, TextureData data);
+    Texture(std::string name, int width, int height, GLenum format, GLenum internalFormat, GLenum datatype);
+    Texture(std::string name, const unsigned char *texData, int width, int height, int channelCount);
     ~Texture();
 
     // Disable copying (prevents accidental deletions)

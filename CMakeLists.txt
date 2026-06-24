@@ -104,10 +104,6 @@ set(ENGINE_SOURCES
 
         src/Material/Material.cpp
 
-        src/ModelLoader.cpp
-
-        src/PickBuffer.cpp
-
         src/PostProcessing/PostProcessingComputeUnit.cpp
         src/PostProcessing/PostProcessingEffect.cpp
         src/PostProcessing/PostProcessingGroup.cpp
@@ -132,6 +128,8 @@ set(ENGINE_SOURCES
 
         src/Texture/MultisamledTexture.cpp
         src/Texture/Texture.cpp
+        src/Texture/TextureLoader.cpp
+        src/Texture/TextureAsset.cpp
 
         src/Transform/Transform.cpp
 
@@ -186,15 +184,10 @@ set(ENGINE_HEADERS
 
         include/Material/Material.h
 
-
-        include/ModelLoader.h
-
         include/Object/Object.h
         include/Object/ObjectID.h
         include/Object/ObjectType.h
         include/Object/ObjectRepository.h
-
-        include/PickBuffer.h
 
         include/PostProcessing/PostProcessingComputeUnit.h
         include/PostProcessing/PostProcessingEffect.h
@@ -221,6 +214,10 @@ set(ENGINE_HEADERS
 
         include/Texture/MultisampledTexture.h
         include/Texture/Texture.h
+        include/Texture/TextureLoader.h
+        include/Texture/TextureData.h
+        include/Texture/TextureReference.hpp
+        include/Texture/TextureAsset.hpp
 
         include/Transform/ITransformable.h
         include/Transform/Transform.h

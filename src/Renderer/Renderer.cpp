@@ -177,7 +177,7 @@ void Renderer::executeRenderCommand(const RenderCommand& command, const Camera& 
 void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& camera, const std::vector<LightData>& lights) {
     const std::string& shaderName = command.shaderName;
     IRenderable* toRender = mAssetManager->getMesh(command.mesh);
-    const std::shared_ptr<Material>& material = command.material;
+    Material material = command.material;
 
     ShaderProgram* newProgram = mShaderPrograms.at(shaderName).get();
     if (newProgram != mCurrentProgram) {
@@ -193,7 +193,7 @@ void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& came
         mCurrentProgram->setUniform(uniform);
     }
 
-    material->readyMaterial(*mCurrentProgram);
+    material.readyMaterial(*mCurrentProgram, *mAssetManager);
     toRender->draw(*mCurrentProgram);
 }
 

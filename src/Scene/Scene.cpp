@@ -11,6 +11,8 @@
 #include "Object/Object.h"
 #include "Object/ObjectID.h"
 #include "Object/ObjectRepository.h"
+#include "Texture/TextureAsset.hpp"
+#include "Texture/TextureReference.hpp"
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
@@ -182,4 +184,20 @@ MeshReference Scene::getMeshByName(const std::string& name){
 
 const std::vector<MeshAsset>& Scene::getMeshAssets() const {
     return mMeshAssets;
+}
+
+void Scene::addTextureAsset(TextureAsset asset){
+    mTextureAssets.push_back(asset);
+}
+
+TextureReference Scene::getTextureByName(const std::string& name){
+    if (mAssetManager){
+        return mAssetManager->getTextureByName(name);
+    }else{
+        throw std::runtime_error("The Scene was not yet loaded! Getting assets can only be done after the scene is loaded!");
+    }
+}
+
+const std::vector<TextureAsset>& Scene::getTextureAssets() const {
+    return mTextureAssets;
 }

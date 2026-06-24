@@ -6,8 +6,6 @@
 
 #include <iostream>
 
-#include "ModelLoader.h"
-
 Mesh::Mesh(std::string name)
     : Asset(name), mVertexBuffer(GL_ARRAY_BUFFER), mVAO()
 {

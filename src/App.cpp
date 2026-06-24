@@ -65,7 +65,11 @@ void App::run() {
 }
 
 void App::loadSceneAssets(const Scene& scene){
+    mAssetManager.clear();
     for (auto& asset : scene.getMeshAssets()){
         mAssetManager.loadMesh(asset);
+    }
+    for (auto& asset : scene.getTextureAssets()){
+        mAssetManager.loadTexture(asset);
     }
 }

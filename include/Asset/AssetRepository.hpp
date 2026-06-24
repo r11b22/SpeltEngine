@@ -13,6 +13,12 @@ class AssetRepository {
         SparseSet<T> mData;
         int mCounter = 1;
     public:
+        void clear(){
+            mData.clear();
+            mCounter = 1;
+        }
+
+
         AssetReference<T> pushAsset(T asset){
             mData.insert(mCounter, std::move(asset));
             mCounter++;

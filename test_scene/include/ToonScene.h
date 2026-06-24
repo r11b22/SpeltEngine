@@ -8,12 +8,14 @@
 #include "Mesh/MeshReference.hpp"
 #include "Object/ObjectRepository.h"
 #include "Scene/Scene.hpp"
+#include "Texture/TextureReference.hpp"
 
 class ToonScene : public Scene {
 private:
     InputManager* inputManager = nullptr;
 
     MeshReference mTigerMesh;
+    TextureReference mTigerTexture;
 
     std::vector<ObjectReference<MeshObject>> mTigers;
 

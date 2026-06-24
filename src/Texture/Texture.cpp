@@ -3,12 +3,22 @@
 //
 
 #include "Texture/Texture.h"
+#include "Asset/Asset.hpp"
 
 #include <iostream>
 #include <ostream>
 #include <stdexcept>
+#include <string>
 
-Texture::Texture(const unsigned char *texData, int width, int height, int channelCount) {
+Texture::Texture(std::string name, TextureData data)
+    : Texture(name, data.texData, data.texWidth, data.texHeight, data.channelCount)
+{
+
+}
+
+Texture::Texture(std::string name, const unsigned char *texData, int width, int height, int channelCount)
+    : Asset(name)
+{
     glGenTextures(1, &mId);
 
     if (mId == 0) {
@@ -37,8 +47,8 @@ Texture::Texture(const unsigned char *texData, int width, int height, int channe
     glGenerateMipmap(GL_TEXTURE_2D);
 }
 
-Texture::Texture(int width, int height, GLenum format, GLenum internalFormat, GLenum datatype)
-    : mInternalFormat(internalFormat), mFormat(format), mDatatype(datatype)
+Texture::Texture(std::string name, int width, int height, GLenum format, GLenum internalFormat, GLenum datatype)
+    : Asset(name), mInternalFormat(internalFormat), mFormat(format), mDatatype(datatype)
 {
 
     glGenTextures(1, &mId);
@@ -68,7 +78,7 @@ void Texture::bind(int unit){
 }
 
 Texture::Texture(Texture&& other) noexcept
-    : mId(other.mId), mWidth(other.mWidth), mHeight(other.mHeight), mInternalFormat(other.mInternalFormat), mFormat(other.mFormat), mDatatype(other.mDatatype)
+    : Asset(other.getName()), mId(other.mId), mWidth(other.mWidth), mHeight(other.mHeight), mInternalFormat(other.mInternalFormat), mFormat(other.mFormat), mDatatype(other.mDatatype)
 {
     other.mId = 0;
 }

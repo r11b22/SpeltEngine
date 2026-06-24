@@ -10,5 +10,9 @@ class AssetReference {
         unsigned int getID(){
             return mID;
         }
+
+        bool isNoReference() {
+            return mID == 0;
+        }
     private:
 };

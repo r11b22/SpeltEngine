@@ -75,7 +75,13 @@ public:
     const_iterator cbegin() const { return begin(); }
     const_iterator cend()   const { return end(); }
 
-    // ── Existing API (unchanged) ─────────────────────────────────────────────
+    void clear() {
+        for (int id : mDenseToSparse) {
+            mSparse[id] = null_id;
+        }
+        mDense.clear();
+        mDenseToSparse.clear();
+    }
 
     bool contains(int id) const {
         if (id >= static_cast<int>(mSparse.size())) return false;

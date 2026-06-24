@@ -17,6 +17,8 @@
 #include "../Window.h"
 #include "Renderer/RenderQueue.h"
 #include "Lighting/LightData.h"
+#include "Texture/TextureAsset.hpp"
+#include "Texture/TextureReference.hpp"
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -46,6 +48,7 @@ private:
     bool mRunning = false;
 
     std::vector<MeshAsset> mMeshAssets;
+    std::vector<TextureAsset> mTextureAssets;
 
 
 public:
@@ -291,7 +294,11 @@ public:
     void addMeshAsset(MeshAsset asset);
     MeshReference getMeshByName(const std::string& name);
 
+    void addTextureAsset(TextureAsset asset);
+    TextureReference getTextureByName(const std::string& name);
+
     const std::vector<MeshAsset>& getMeshAssets() const;
+    const std::vector<TextureAsset>& getTextureAssets() const;
 
 private:
 

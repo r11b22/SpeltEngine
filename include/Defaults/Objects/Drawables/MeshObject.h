@@ -12,18 +12,18 @@
 class MeshObject : virtual public TransformableObject, public IDrawable{
 private:
     MeshReference mMesh;
-    std::shared_ptr<Material> mMaterial;
+    Material mMaterial;
     std::string mShader = "litShader";
 
 public:
-    explicit MeshObject(const std::string& name, MeshReference mesh, const std::shared_ptr<Material>&  material);
+    explicit MeshObject(const std::string& name, MeshReference mesh, Material  material);
     ~MeshObject() override = default;
     std::vector<RenderCommand> getRenderCommands() override;
 
     void setShader(std::string shader);
 
 protected:
-    std::shared_ptr<Material> getMaterial();
+    Material getMaterial();
     MeshReference getMesh() const;
     std::string getShader() const;
 

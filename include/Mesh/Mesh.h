@@ -8,7 +8,6 @@
 #include "Asset/Asset.hpp"
 #include "Buffer/Buffer.h"
 #include "Renderer/IRenderable.h"
-#include "ModelLoader.h"
 #include "VertexArray.h"
 
 class Mesh : public IRenderable, public Asset {
