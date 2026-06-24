@@ -9,6 +9,7 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "Asset/AssetManager.hpp"
 #include "Object/ObjectRepository.h"
 #include "Scene/Scene.hpp"
 
@@ -50,4 +51,20 @@ void Object::destroy() {
     }
 
     mScene->destroyObjectByID(getID());
+}
+
+AssetManager& Object::getAssetManager() {
+    if (mScene == nullptr) {
+        throw std::runtime_error("You can not manage assets inside an object that is not yet part of a scene!");
+    }
+
+    return mScene->getAssetManager();
+}
+
+const AssetManager& Object::getAssetManager() const{
+    if (mScene == nullptr) {
+        throw std::runtime_error("You can not manage assets inside an object that is not yet part of a scene!");
+    }
+
+    return mScene->getAssetManager();
 }

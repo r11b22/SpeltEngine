@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "Asset/AssetManager.hpp"
 #include "ObjectID.h"
 
 
@@ -42,5 +43,8 @@ public:
 
     void setScene(Scene* scene);
     Scene& getScene() const;
+
+    AssetManager& getAssetManager();
+    const AssetManager& getAssetManager() const;
 };
 #endif //CGVCPROJECT_OBJECT_H

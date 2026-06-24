@@ -174,22 +174,6 @@ void Scene::addMeshAsset(MeshAsset asset){
     mMeshAssets.push_back(asset);
 }
 
-MeshReference Scene::addMesh(Mesh asset){
-    if(mAssetManager){
-        return mAssetManager->addMesh(std::move(asset));
-    }else{
-        throw std::runtime_error("The Scene was not yet loaded! Adding instantiated assets can only be done after the scene is loaded!");
-    }
-}
-
-MeshReference Scene::getMeshByName(const std::string& name){
-    if (mAssetManager){
-        return mAssetManager->getMeshByName(name);
-    }else{
-        throw std::runtime_error("The Scene was not yet loaded! Getting assets can only be done after the scene is loaded!");
-    }
-}
-
 const std::vector<MeshAsset>& Scene::getMeshAssets() const {
     return mMeshAssets;
 }
@@ -198,22 +182,14 @@ void Scene::addTextureAsset(TextureAsset asset){
     mTextureAssets.push_back(asset);
 }
 
-TextureReference Scene::addTexture(Texture asset){
-    if (mAssetManager){
-        return mAssetManager->addTexture(std::move(asset));
-    }else{
-        throw std::runtime_error("The Scene was not yet loaded! Adding instantiated assets can only be done after the scene is loaded!");
-    }
-}
-
-TextureReference Scene::getTextureByName(const std::string& name){
-    if (mAssetManager){
-        return mAssetManager->getTextureByName(name);
-    }else{
-        throw std::runtime_error("The Scene was not yet loaded! Getting assets can only be done after the scene is loaded!");
-    }
-}
-
 const std::vector<TextureAsset>& Scene::getTextureAssets() const {
     return mTextureAssets;
+}
+
+AssetManager& Scene::getAssetManager() {
+    if(mAssetManager){
+        return *mAssetManager;
+    }else{
+        throw std::runtime_error("The Scene was not yet loaded! Changing assets can only be done after the scene is loaded!");
+    }
 }

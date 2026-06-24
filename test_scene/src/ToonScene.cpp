@@ -29,10 +29,10 @@ void ToonScene::onLoad(Renderer &renderer, Window &window) {
     camera->setPosition(glm::vec3{10.0f, 5.0f, 10.0f});
 
 
-    Material tigerMaterial = {"tigerMaterial", getTextureByName("tiger")};
+    Material tigerMaterial = {"tigerMaterial", getAssetManager().getTextureByName("tiger")};
 
     // use get by name to test the system
-    mTigerMesh = getMeshByName("tiger");
+    mTigerMesh = getAssetManager().getMeshByName("tiger");
 
     // Spawn 100 tigers using your utility functions
     for (int i = 0; i < 1000; ++i) {
@@ -132,7 +132,7 @@ void ToonScene::testCreateMeshAtRuntime() {
     mesh.setVertices(cubeVertices);
     mesh.setIndices(cubeIndices);
 
-    MeshReference ref = addMesh(std::move(mesh));
+    MeshReference ref = getAssetManager().addMesh(std::move(mesh));
     Material mat = {"cubeMaterial", glm::vec3{1.0f, 0.0f, 0.0f}};
 
     // draw the mesh
