@@ -292,9 +292,11 @@ public:
     void setAssetManager(AssetManager* assetManager);
 
     void addMeshAsset(MeshAsset asset);
+    MeshReference addMesh(Mesh asset);
     MeshReference getMeshByName(const std::string& name);
 
     void addTextureAsset(TextureAsset asset);
+    TextureReference addTexture(Texture asset);
     TextureReference getTextureByName(const std::string& name);
 
     const std::vector<MeshAsset>& getMeshAssets() const;

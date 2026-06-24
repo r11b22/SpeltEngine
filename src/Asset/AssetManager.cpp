@@ -23,6 +23,10 @@ MeshReference AssetManager::loadMesh(MeshAsset asset){
     return ref;
 }
 
+MeshReference AssetManager::addMesh(Mesh asset){
+    return mMeshRepo.pushAsset(std::move(asset));
+}
+
 MeshReference AssetManager::getMeshByName(const std::string& name) const{
     return mMeshRepo.getAssetByName(name);
 }
@@ -45,6 +49,10 @@ TextureReference AssetManager::loadTexture(TextureAsset asset){
     TextureReference ref = mTextureRepo.pushAsset(std::move(texture));
 
     return ref;
+}
+
+TextureReference AssetManager::addTexture(Texture texture){
+    return mTextureRepo.pushAsset(std::move(texture));
 }
 
 TextureReference AssetManager::getTextureByName(const std::string& name) const{

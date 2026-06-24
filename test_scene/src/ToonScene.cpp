@@ -8,6 +8,7 @@
 #include "Defaults/Objects/Drawables/MeshObject.h"
 #include "Defaults/Objects/Lighting/AmbientLight.h"
 #include "Defaults/Objects/Lighting/DirectionalLight.h"
+#include "Material/Material.h"
 #include "Object/ObjectRepository.h"
 #include "Renderer/Renderer.h"
 #include "glm/ext/vector_float3.hpp"
@@ -52,6 +53,8 @@ void ToonScene::onLoad(Renderer &renderer, Window &window) {
         camera->lookAt(glm::normalize(diff));
     }
 
+
+
     ObjectReference<AmbientLight> ambientLight = createObject<AmbientLight>("ambient light", glm::vec3{0.2f});
 
     /* std::shared_ptr<PointLight> pointLight = std::make_shared<PointLight>("point light", glm::vec3{3.0f});
@@ -61,6 +64,9 @@ void ToonScene::onLoad(Renderer &renderer, Window &window) {
     ObjectReference<DirectionalLight> directionalLight = createObject<DirectionalLight>("directional light", glm::vec3{1.0f}, glm::vec3{1.0f});
 
     renderer.setClearColor({0.0f, 0.2f, 0.2f, 1.0f});
+
+
+    testCreateMeshAtRuntime();
 }
 
 void ToonScene::onUpdate(Renderer &renderer, Window &window, float deltaT) {
@@ -69,6 +75,70 @@ void ToonScene::onUpdate(Renderer &renderer, Window &window, float deltaT) {
     for (auto& tiger : getObjectsOfType<MeshObject>()){
         tiger.rotate(glm::radians(10.0f)*deltaT, glm::vec3{0.0f, 1.0f, 0.0f});
     }
+}
+
+void ToonScene::testCreateMeshAtRuntime() {
+
+    std::vector<float> cubeVertices = {
+        // Position          // Normals           // UVs
+        // --- Front Face (Z+)
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 1.0f,
+
+        // --- Back Face (Z-)
+         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+
+        // --- Left Face (X-)
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+
+        // --- Right Face (X+)
+         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+
+        // --- Top Face (Y+)
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+
+        // --- Bottom Face (Y-)
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f
+    };
+
+    std::vector<unsigned int> cubeIndices = {
+        0,  1,  2,    2,  3,  0,  // Front
+        4,  5,  6,    6,  7,  4,  // Back
+        8,  9,  10,   10, 11, 8,  // Left
+        12, 13, 14,   14, 15, 12, // Right
+        16, 17, 18,   18, 19, 16, // Top
+        20, 21, 22,   22, 23, 20  // Bottom
+    };
+
+    Mesh mesh{"cube"};
+
+    mesh.setVertices(cubeVertices);
+    mesh.setIndices(cubeIndices);
+
+    MeshReference ref = addMesh(std::move(mesh));
+    Material mat = {"cubeMaterial", getTextureByName("tiger")};
+
+    // draw the mesh
+    ObjectReference<MeshObject> testCube = createObject<MeshObject>("cube", ref, mat);
+
+
 }
 
 ToonScene::~ToonScene() {

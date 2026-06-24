@@ -17,11 +17,13 @@ class AssetManager {
         void clear();
 
         MeshReference loadMesh(MeshAsset asset);
+        MeshReference addMesh(Mesh asset);
         MeshReference getMeshByName(const std::string& name) const;
         Mesh* getMesh(MeshReference ref);
         const Mesh* getMesh(MeshReference ref) const;
 
         TextureReference loadTexture(TextureAsset asset);
+        TextureReference addTexture(Texture asset);
         TextureReference getTextureByName(const std::string& name) const;
         Texture* getTexture(TextureReference ref);
         const Texture* getTexture(TextureReference ref) const;
