@@ -133,7 +133,7 @@ void ToonScene::testCreateMeshAtRuntime() {
     mesh.setIndices(cubeIndices);
 
     MeshReference ref = addMesh(std::move(mesh));
-    Material mat = {"cubeMaterial", getTextureByName("tiger")};
+    Material mat = {"cubeMaterial", glm::vec3{1.0f, 0.0f, 0.0f}};
 
     // draw the mesh
     ObjectReference<MeshObject> testCube = createObject<MeshObject>("cube", ref, mat);

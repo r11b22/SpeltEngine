@@ -120,6 +120,7 @@ uniform int uNumDirectionalLights;
 uniform vec3 uAmbient;
 
 struct MaterialProperties{
+    int materialType;
     float diffuse;
     float specular;
     float shininess;
@@ -129,6 +130,7 @@ uniform MaterialProperties uMaterialProperties;
 
 
 uniform sampler2D uTexture;
+uniform vec3 uColor;
 
 uniform vec3 uCameraPos; // camera location
 in vec3 FragPos; // pixel position
@@ -137,7 +139,17 @@ in vec2 UV;
 
 void main()
 {
-    vec4 texColor = texture(uTexture, UV);
+    vec4 texColor;
+
+    switch (uMaterialProperties.materialType){
+        case 0: // Colored
+            texColor = vec4(uColor, 1.0f);
+            break;
+        case 1: // Textured
+            texColor = texture(uTexture, UV);
+            break;
+    }
+
 
     if (texColor.a < 0.5){
         discard;

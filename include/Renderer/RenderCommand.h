@@ -11,11 +11,12 @@
 #include "Mesh/MeshReference.hpp"
 #include "RenderState.h"
 #include "Material/Material.h"
+#include "glm/ext/vector_float3.hpp"
 
 struct DrawCommand {
     std::string shaderName = "";
     MeshReference mesh;
-    Material material{"noname"};
+    Material material{"noname", glm::vec3{1.0f}};
     std::vector<ShaderUniform> uniforms = {};
 };
 
