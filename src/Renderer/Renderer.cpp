@@ -199,6 +199,8 @@ void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& came
             mCurrentProgram->setUniform(uniform);
         }
 
+         material.readyMaterial(*mCurrentProgram, *mAssetManager);
+
         int textureCount = 1;
         for (const auto& textureUniform : command.textureUniforms){
             std::visit([this, &textureCount, &textureUniform](auto&& arg) {
@@ -209,18 +211,18 @@ void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& came
                     tex->bind(textureCount);
                     mCurrentProgram->setUniformInt(textureUniform.name, textureCount);
 
-                    textureCount++;
+
                 }else if constexpr (std::is_same_v<T, CubemapTextureReference>) {
                     CubemapTexture* tex = mAssetManager->getCubemap(arg);
                     tex->bind(textureCount);
                     mCurrentProgram->setUniformInt(textureUniform.name, textureCount);
-
-                    textureCount++;
                 }
+
+                textureCount++;
             }, textureUniform.data);
         }
 
-        material.readyMaterial(*mCurrentProgram, *mAssetManager);
+
         toRender->draw(*mCurrentProgram);
     }
 
