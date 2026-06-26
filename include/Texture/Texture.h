@@ -9,11 +9,14 @@
 #include "glad/glad.h"
 
 class Texture : public Asset {
-private:
+protected:
     int mWidth, mHeight;
     GLuint mId;
+    bool mHasData = false;
     GLenum mInternalFormat, mFormat, mDatatype;
+    GLenum mTextureType = GL_TEXTURE_2D;
 public:
+    Texture(std::string name);
     Texture(std::string name, TextureData data);
     Texture(std::string name, int width, int height, GLenum format, GLenum internalFormat, GLenum datatype);
     Texture(std::string name, const unsigned char *texData, int width, int height, int channelCount);
@@ -45,6 +48,10 @@ public:
     int getWidth() const;
     int getHeight() const;
 
+    void setPixelData(const unsigned char *texData, int width, int height, int channelCount);
+
+protected:
+    void setupChannelCount(int channelCount);
 
 
 private:

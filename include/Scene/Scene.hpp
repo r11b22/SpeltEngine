@@ -17,8 +17,8 @@
 #include "../Window.h"
 #include "Renderer/RenderQueue.h"
 #include "Lighting/LightData.h"
+#include "Texture/CubemapAsset.hpp"
 #include "Texture/TextureAsset.hpp"
-#include "Texture/TextureReference.hpp"
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -49,6 +49,7 @@ private:
 
     std::vector<MeshAsset> mMeshAssets;
     std::vector<TextureAsset> mTextureAssets;
+    std::vector<CubemapAsset> mCubemapAssets;
 
 
 public:
@@ -295,8 +296,11 @@ public:
 
     void addTextureAsset(TextureAsset asset);
 
+    void addCubemapAsset(CubemapAsset asset);
+
     const std::vector<MeshAsset>& getMeshAssets() const;
     const std::vector<TextureAsset>& getTextureAssets() const;
+    const std::vector<CubemapAsset>& getCubemapAssets() const;
 
     AssetManager& getAssetManager();
     const AssetManager& getAssetManager() const;

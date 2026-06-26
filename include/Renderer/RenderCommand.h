@@ -11,6 +11,7 @@
 #include "Mesh/MeshReference.hpp"
 #include "RenderState.h"
 #include "Material/Material.h"
+#include "Texture/TextureUniform.hpp"
 #include "glm/ext/vector_float3.hpp"
 
 struct DrawCommand {
@@ -18,6 +19,7 @@ struct DrawCommand {
     MeshReference mesh;
     Material material{"noname", glm::vec3{1.0f}};
     std::vector<ShaderUniform> uniforms = {};
+    std::vector<TextureUniform> textureUniforms = {};
 };
 
 struct StateChangeCommand {

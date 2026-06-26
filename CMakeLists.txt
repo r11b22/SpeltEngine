@@ -127,9 +127,12 @@ set(ENGINE_SOURCES
         src/Shader/ShaderUniform.cpp
 
         src/Texture/MultisamledTexture.cpp
+        src/Texture/CubemapTexture.cpp
         src/Texture/Texture.cpp
         src/Texture/TextureLoader.cpp
         src/Texture/TextureAsset.cpp
+        src/Texture/CubemapLoader.cpp
+        src/Texture/CubemapAsset.cpp
 
         src/Transform/Transform.cpp
 
@@ -218,6 +221,11 @@ set(ENGINE_HEADERS
         include/Texture/TextureData.h
         include/Texture/TextureReference.hpp
         include/Texture/TextureAsset.hpp
+        include/Texture/CubemapTexture.hpp
+        include/Texture/CubemapTextureReference.hpp
+        include/Texture/CubemapLoader.hpp
+        include/Texture/CubemapAsset.hpp
+        include/Texture/TextureUniform.hpp
 
         include/Transform/ITransformable.h
         include/Transform/Transform.h

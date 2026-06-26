@@ -11,6 +11,7 @@
 #include "Object/Object.h"
 #include "Object/ObjectID.h"
 #include "Object/ObjectRepository.h"
+#include "Texture/CubemapAsset.hpp"
 #include "Texture/TextureAsset.hpp"
 #include "Texture/TextureReference.hpp"
 #include <algorithm>
@@ -185,6 +186,15 @@ void Scene::addTextureAsset(TextureAsset asset){
 const std::vector<TextureAsset>& Scene::getTextureAssets() const {
     return mTextureAssets;
 }
+
+void Scene::addCubemapAsset(CubemapAsset asset){
+    mCubemapAssets.push_back(asset);
+}
+
+const std::vector<CubemapAsset>& Scene::getCubemapAssets() const {
+    return mCubemapAssets;
+}
+
 
 AssetManager& Scene::getAssetManager() {
     if(mAssetManager){

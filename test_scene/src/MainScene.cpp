@@ -2,7 +2,7 @@
 // Created by joost on 6/8/26.
 //
 
-#include "ToonScene.h"
+#include "MainScene.h"
 
 #include "Defaults/Camera/FirstPersonCamera.h"
 #include "Defaults/Objects/Drawables/MeshObject.h"
@@ -11,16 +11,28 @@
 #include "Material/Material.h"
 #include "Object/ObjectRepository.h"
 #include "Renderer/Renderer.h"
+#include "Texture/CubemapAsset.hpp"
+#include "Texture/CubemapTexture.hpp"
 #include "glm/ext/vector_float3.hpp"
 #include "Utilities/Random.h"
 #include <memory>
 
-ToonScene::ToonScene() {
+MainScene::MainScene() {
     addMeshAsset({"tiger", "Models/Animals/tiger/tiger.gltf"});
     addTextureAsset({"tiger", "Models/Animals/tiger/Texture_1.png"});
+    CubemapAsset cubemapTest = {"test"};
+
+    cubemapTest.setPath(CubeFace::Front, "Models/Animals/tiger/Texture_1.png");
+    cubemapTest.setPath(CubeFace::Back, "Models/Animals/tiger/Texture_1.png");
+    cubemapTest.setPath(CubeFace::Bottom, "Models/Animals/tiger/Texture_1.png");
+    cubemapTest.setPath(CubeFace::Top, "Models/Animals/tiger/Texture_1.png");
+    cubemapTest.setPath(CubeFace::Left, "Models/Animals/tiger/Texture_1.png");
+    cubemapTest.setPath(CubeFace::Right, "Models/Animals/tiger/Texture_1.png");
+
+    addCubemapAsset(cubemapTest);
 }
 
-void ToonScene::onLoad(Renderer &renderer, Window &window) {
+void MainScene::onLoad(Renderer &renderer, Window &window) {
     window.setVSYNC(false);
 
     inputManager = new InputManager(window);
@@ -69,7 +81,7 @@ void ToonScene::onLoad(Renderer &renderer, Window &window) {
     testCreateMeshAtRuntime();
 }
 
-void ToonScene::onUpdate(Renderer &renderer, Window &window, float deltaT) {
+void MainScene::onUpdate(Renderer &renderer, Window &window, float deltaT) {
     // rotate the tiger
     int i = 0;
     for (auto& tiger : getObjectsOfType<MeshObject>()){
@@ -77,7 +89,7 @@ void ToonScene::onUpdate(Renderer &renderer, Window &window, float deltaT) {
     }
 }
 
-void ToonScene::testCreateMeshAtRuntime() {
+void MainScene::testCreateMeshAtRuntime() {
 
     std::vector<float> cubeVertices = {
         // Position          // Normals           // UVs
@@ -141,6 +153,6 @@ void ToonScene::testCreateMeshAtRuntime() {
 
 }
 
-ToonScene::~ToonScene() {
+MainScene::~MainScene() {
     delete inputManager;
 }

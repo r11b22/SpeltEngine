@@ -10,7 +10,7 @@
 #include "Scene/Scene.hpp"
 #include "Texture/TextureReference.hpp"
 
-class ToonScene : public Scene {
+class MainScene : public Scene {
 private:
     InputManager* inputManager = nullptr;
 
@@ -20,8 +20,8 @@ private:
     std::vector<ObjectReference<MeshObject>> mTigers;
 
 public:
-    ToonScene();
-    ~ToonScene();
+    MainScene();
+    ~MainScene();
 
     void onLoad(Renderer &renderer, Window &window) override;
     void onUpdate(Renderer &renderer, Window &window, float deltaT) override;

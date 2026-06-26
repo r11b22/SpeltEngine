@@ -24,8 +24,8 @@ endif()
 # ---------------------------------------------------------------------------
 add_executable(${PROJECT_NAME}
         main.cpp
-        src/ToonScene.cpp
-        include/ToonScene.h
+        src/MainScene.cpp
+        include/MainScene.h
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

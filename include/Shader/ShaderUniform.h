@@ -4,6 +4,9 @@
 
 #ifndef SPELTENGINE_SHADERUNIFORM_H
 #define SPELTENGINE_SHADERUNIFORM_H
+#include "Texture/CubemapTextureReference.hpp"
+#include "Texture/Texture.h"
+#include "Texture/TextureReference.hpp"
 #include <string>
 #include <variant>
 #include <glm/glm.hpp>

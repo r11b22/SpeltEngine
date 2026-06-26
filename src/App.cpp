@@ -72,4 +72,8 @@ void App::loadSceneAssets(const Scene& scene){
     for (auto& asset : scene.getTextureAssets()){
         mAssetManager.loadTexture(asset);
     }
+
+    for (auto& asset : scene.getCubemapAssets()){
+        mAssetManager.loadCubemap(asset);
+    }
 }

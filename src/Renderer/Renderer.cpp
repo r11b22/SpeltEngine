@@ -4,6 +4,7 @@
 
 #include "../../include/Renderer/Renderer.h"
 
+#include <format>
 #include <iostream>
 #include <type_traits>
 
@@ -11,7 +12,11 @@
 #include "FrameBuffer/MultisampledFrameBuffer.h"
 #include "Renderer/RenderCommand.h"
 #include "Strings/ShaderSource.h"
+#include "Texture/CubemapTexture.hpp"
+#include "Texture/CubemapTextureReference.hpp"
 #include "Texture/MultisampledTexture.h"
+#include "Texture/Texture.h"
+#include "Texture/TextureReference.hpp"
 #include "glm/ext/vector_float4.hpp"
 
 Renderer::Renderer(Window* target)
@@ -192,6 +197,27 @@ void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& came
 
         for (const auto& uniform : command.uniforms) {
             mCurrentProgram->setUniform(uniform);
+        }
+
+        int textureCount = 1;
+        for (const auto& textureUniform : command.textureUniforms){
+            std::visit([this, &textureCount](auto&& arg) {
+                using T = std::decay_t<decltype(arg)>;
+
+                if constexpr (std::is_same_v<T, TextureReference>) {
+                    Texture* tex = mAssetManager->getTexture(arg);
+                    tex->bind(textureCount);
+                    mCurrentProgram->setUniformInt(std::format("uTexture{}", textureCount), textureCount);
+
+                    textureCount++;
+                }else if constexpr (std::is_same_v<T, CubemapTextureReference>) {
+                    CubemapTexture* tex = mAssetManager->getCubemap(arg);
+                    tex->bind(textureCount);
+                    mCurrentProgram->setUniformInt(std::format("uTexture{}", textureCount), textureCount);
+
+                    textureCount++;
+                }
+            }, textureUniform.data);
         }
 
         material.readyMaterial(*mCurrentProgram, *mAssetManager);

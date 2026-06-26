@@ -4,12 +4,12 @@
 
 #include <App.h>
 
-#include "ToonScene.h"
+#include "MainScene.h"
 
 int main() {
     App app{"Toon Shader Experiment"};
 
-    ToonScene scene{};
+    MainScene scene{};
 
     app.loadScene(&scene);
     app.run();
