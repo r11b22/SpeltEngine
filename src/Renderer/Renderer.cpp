@@ -201,19 +201,19 @@ void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& came
 
         int textureCount = 1;
         for (const auto& textureUniform : command.textureUniforms){
-            std::visit([this, &textureCount](auto&& arg) {
+            std::visit([this, &textureCount, &textureUniform](auto&& arg) {
                 using T = std::decay_t<decltype(arg)>;
 
                 if constexpr (std::is_same_v<T, TextureReference>) {
                     Texture* tex = mAssetManager->getTexture(arg);
                     tex->bind(textureCount);
-                    mCurrentProgram->setUniformInt(std::format("uTexture{}", textureCount), textureCount);
+                    mCurrentProgram->setUniformInt(textureUniform.name, textureCount);
 
                     textureCount++;
                 }else if constexpr (std::is_same_v<T, CubemapTextureReference>) {
                     CubemapTexture* tex = mAssetManager->getCubemap(arg);
                     tex->bind(textureCount);
-                    mCurrentProgram->setUniformInt(std::format("uTexture{}", textureCount), textureCount);
+                    mCurrentProgram->setUniformInt(textureUniform.name, textureCount);
 
                     textureCount++;
                 }

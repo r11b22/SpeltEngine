@@ -16,7 +16,7 @@ GLenum toGLEnum(CubeFace face){
         case CubeFace::Back:
         return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
         case CubeFace::Front:
-        return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
+        return GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
     }
 }
 
@@ -38,6 +38,7 @@ CubemapTexture::CubemapTexture(std::string name, int width, int height, int chan
 }
 
 void CubemapTexture::setSidePixelData(CubeFace face, const unsigned char *texData){
+    bind();
     GLenum sideEnum = toGLEnum(face);
 
     glTexImage2D(sideEnum, 0, mInternalFormat, mWidth, mHeight, 0, mFormat, mDatatype, texData);
