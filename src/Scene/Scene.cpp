@@ -171,29 +171,7 @@ void Scene::setAssetManager(AssetManager* assetManager){
     mAssetManager = assetManager;
 }
 
-void Scene::addMeshAsset(MeshAsset asset){
-    mMeshAssets.push_back(asset);
-}
 
-const std::vector<MeshAsset>& Scene::getMeshAssets() const {
-    return mMeshAssets;
-}
-
-void Scene::addTextureAsset(TextureAsset asset){
-    mTextureAssets.push_back(asset);
-}
-
-const std::vector<TextureAsset>& Scene::getTextureAssets() const {
-    return mTextureAssets;
-}
-
-void Scene::addCubemapAsset(CubemapAsset asset){
-    mCubemapAssets.push_back(asset);
-}
-
-const std::vector<CubemapAsset>& Scene::getCubemapAssets() const {
-    return mCubemapAssets;
-}
 
 
 AssetManager& Scene::getAssetManager() {

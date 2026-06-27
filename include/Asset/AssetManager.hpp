@@ -1,6 +1,8 @@
 #pragma once
 
 
+#include "Asset/AssetLoader.hpp"
+#include "Asset/AssetReference.hpp"
 #include "Asset/AssetRepository.hpp"
 #include "Mesh/Mesh.h"
 #include "Mesh/MeshAsset.hpp"
@@ -11,33 +13,83 @@
 #include "Texture/Texture.h"
 #include "Texture/TextureAsset.hpp"
 #include "Texture/TextureReference.hpp"
+#include <stdexcept>
+#include <typeindex>
+#include <unordered_map>
+#include <any>
 
 class AssetManager {
     private:
-        AssetRepository<Mesh> mMeshRepo;
-        AssetRepository<Texture> mTextureRepo;
-        AssetRepository<CubemapTexture> mCubemapTextureRepo;
+        // Makes sure to keep track of destructors
+        std::unordered_map<std::type_index, std::unique_ptr<void, void(*)(void*)>> mRepos;
     public:
+        ~AssetManager();
+
+
         void clear();
 
-        MeshReference loadMesh(MeshAsset asset);
-        MeshReference addMesh(Mesh asset);
-        MeshReference getMeshByName(const std::string& name) const;
-        Mesh* getMesh(MeshReference ref);
-        const Mesh* getMesh(MeshReference ref) const;
+        template<typename T>
+            requires LoadableAsset<T>
+        AssetReference<T> loadAsset(AssetLoadInfo<T> source) {
+            return addAsset(std::move(AssetLoader<T>::load(source)));
+        }
 
-        TextureReference loadTexture(TextureAsset asset);
-        TextureReference addTexture(Texture asset);
-        TextureReference getTextureByName(const std::string& name) const;
-        Texture* getTexture(TextureReference ref);
-        const Texture* getTexture(TextureReference ref) const;
+        template<typename T>
+            requires std::derived_from<T, Asset>
+        AssetReference<T> addAsset(T asset){
+            AssetRepository<T>& repo = getRepo<T>();
+
+            return repo.pushAsset(std::move(asset));
+        }
+
+        template<typename T>
+            requires std::derived_from<T, Asset>
+        AssetReference<T> getAssetByName(std::string name) const{
+            const AssetRepository<T>& repo = getRepo<T>();
+
+            return repo.getAssetByName(name);
+        }
+
+        template<typename T>
+            requires std::derived_from<T, Asset>
+        T* getAsset(AssetReference<T> ref){
+            AssetRepository<T>& repo = getRepo<T>();
+
+            return repo.getAsset(std::move(ref));
+        }
 
 
-        CubemapTextureReference loadCubemap(CubemapAsset asset);
-        CubemapTextureReference addCubemap(CubemapTexture asset);
-        CubemapTextureReference getCubemapByName(const std::string& name) const;
-        CubemapTexture* getCubemap(CubemapTextureReference ref);
-        const CubemapTexture* getCubemap(CubemapTextureReference ref) const;
+        template<typename T>
+            requires std::derived_from<T, Asset>
+        const T* getAsset(AssetReference<T> ref) const{
+            const AssetRepository<T>& repo = getRepo<T>();
+
+            return repo.getAsset(std::move(ref));
+        }
 
     private:
+
+        template<typename T>
+        AssetRepository<T>& getRepo() {
+            auto it = mRepos.find(typeid(T));
+            if (it == mRepos.end()) {
+                // Create the repository on the heap
+                auto* repo = new AssetRepository<T>();
+
+                // Insert it with a custom lambda deleter that remembers how to delete AssetRepository<T>
+                auto deleter = [](void* ptr) { delete static_cast<AssetRepository<T>*>(ptr); };
+
+                it = mRepos.emplace(typeid(T), std::unique_ptr<void, void(*)(void*)>(repo, deleter)).first;
+            }
+            return *static_cast<AssetRepository<T>*>(it->second.get());
+        }
+
+        template<typename T>
+        const AssetRepository<T>& getRepo() const {
+            auto it = mRepos.find(typeid(T));
+            if (it == mRepos.end()) {
+                throw std::runtime_error("Unsupported asset repository type.");
+            }
+            return *static_cast<const AssetRepository<T>*>(it->second.get());
+        }
 };

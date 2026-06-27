@@ -56,7 +56,7 @@ void Material::readyTextured(ShaderProgram &shaderProgram, AssetManager& assetMa
     shaderProgram.setUniformInt("uTexture", 0);
 
     if (!mTexture.isNoReference()){
-        Texture* tex = assetManager.getTexture(mTexture);
+        Texture* tex = assetManager.getAsset<Texture>(mTexture);
         if(tex){
             tex->bind(0);
         }

@@ -182,7 +182,7 @@ void Renderer::executeRenderCommand(const RenderCommand& command, const Camera& 
 void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& camera, const std::vector<LightData>& lights) {
     const std::string& shaderName = command.shaderName;
     if(!command.mesh.isNoReference()){
-        IRenderable* toRender = mAssetManager->getMesh(command.mesh);
+        IRenderable* toRender = mAssetManager->getAsset<Mesh>(command.mesh);
         Material material = command.material;
 
         ShaderProgram* newProgram = mShaderPrograms.at(shaderName).get();
@@ -207,13 +207,13 @@ void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& came
                 using T = std::decay_t<decltype(arg)>;
 
                 if constexpr (std::is_same_v<T, TextureReference>) {
-                    Texture* tex = mAssetManager->getTexture(arg);
+                    Texture* tex = mAssetManager->getAsset<Texture>(arg);
                     tex->bind(textureCount);
                     mCurrentProgram->setUniformInt(textureUniform.name, textureCount);
 
 
                 }else if constexpr (std::is_same_v<T, CubemapTextureReference>) {
-                    CubemapTexture* tex = mAssetManager->getCubemap(arg);
+                    CubemapTexture* tex = mAssetManager->getAsset<CubemapTexture>(arg);
                     tex->bind(textureCount);
                     mCurrentProgram->setUniformInt(textureUniform.name, textureCount);
                 }

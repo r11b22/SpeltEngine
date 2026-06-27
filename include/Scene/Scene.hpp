@@ -47,10 +47,6 @@ private:
 
     bool mRunning = false;
 
-    std::vector<MeshAsset> mMeshAssets;
-    std::vector<TextureAsset> mTextureAssets;
-    std::vector<CubemapAsset> mCubemapAssets;
-
 
 public:
     Scene();
@@ -291,16 +287,6 @@ public:
     }
 
     void setAssetManager(AssetManager* assetManager);
-
-    void addMeshAsset(MeshAsset asset);
-
-    void addTextureAsset(TextureAsset asset);
-
-    void addCubemapAsset(CubemapAsset asset);
-
-    const std::vector<MeshAsset>& getMeshAssets() const;
-    const std::vector<TextureAsset>& getTextureAssets() const;
-    const std::vector<CubemapAsset>& getCubemapAssets() const;
 
     AssetManager& getAssetManager();
     const AssetManager& getAssetManager() const;

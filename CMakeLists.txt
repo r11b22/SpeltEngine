@@ -239,6 +239,7 @@ set(ENGINE_HEADERS
         include/Asset/AssetManager.hpp
         include/Asset/AssetRepository.hpp
         include/Asset/AssetReference.hpp
+        include/Asset/AssetLoader.hpp
         include/Asset/Asset.hpp
 
         include/Mesh/MeshReference.hpp
@@ -286,8 +287,8 @@ target_include_directories(${PROJECT_NAME_VAR} PUBLIC
 # ---------------------------------------------------------------------------
 target_link_libraries(${PROJECT_NAME_VAR}
         PUBLIC  OpenGL::GL
-        PRIVATE $<BUILD_INTERFACE:glfw>
         $<BUILD_INTERFACE:assimp>
+        PRIVATE $<BUILD_INTERFACE:glfw>
         $<BUILD_INTERFACE:stb_image>
 )
 

@@ -4,6 +4,14 @@
 
 #include "MainScene.h"
 
+
+
+
+#include "Asset/AssetLoader.hpp"
+#include "Mesh/MeshLoader.hpp"
+#include "Texture/Texture.h"
+#include "Texture/TextureLoader.h"
+#include "Texture/CubemapLoader.hpp"
 #include "Defaults/Camera/FirstPersonCamera.h"
 #include "Defaults/Objects/Drawables/MeshObject.h"
 #include "Defaults/Objects/Lighting/AmbientLight.h"
@@ -17,10 +25,19 @@
 #include "Utilities/Random.h"
 #include <memory>
 
+
+
 MainScene::MainScene() {
-    addMeshAsset({"tiger", "Models/Animals/tiger/tiger.gltf"});
-    addTextureAsset({"tiger", "Models/Animals/tiger/Texture_1.png"});
-    CubemapAsset cubemapTest = {"test"};
+
+}
+
+void MainScene::onLoad(Renderer &renderer, Window &window) {
+    window.setVSYNC(false);
+
+    getAssetManager().loadAsset(AssetLoadInfo<Texture>{"tiger", "Models/Animals/tiger/Texture_1.png"});
+
+
+    AssetLoadInfo<CubemapTexture> cubemapTest{"test"};
 
     cubemapTest.setPath(CubeFace::Front, "Models/Animals/tiger/Texture_1.png");
     cubemapTest.setPath(CubeFace::Back, "Models/Animals/tiger/Texture_1.png");
@@ -29,11 +46,12 @@ MainScene::MainScene() {
     cubemapTest.setPath(CubeFace::Left, "Models/Animals/tiger/Texture_1.png");
     cubemapTest.setPath(CubeFace::Right, "Models/Animals/tiger/Texture_1.png");
 
-    addCubemapAsset(cubemapTest);
-}
+    getAssetManager().loadAsset(cubemapTest);
 
-void MainScene::onLoad(Renderer &renderer, Window &window) {
-    window.setVSYNC(false);
+    AssetLoadInfo<Mesh> tigerTest = {"tiger", "Models/Animals/tiger/tiger.gltf"};
+    getAssetManager().loadAsset<Mesh>(tigerTest);
+
+
 
     inputManager = new InputManager(window);
 
@@ -41,10 +59,11 @@ void MainScene::onLoad(Renderer &renderer, Window &window) {
     camera->setPosition(glm::vec3{10.0f, 5.0f, 10.0f});
 
 
-    Material tigerMaterial = {"tigerMaterial", getAssetManager().getTextureByName("tiger")};
+    Material tigerMaterial = {"tigerMaterial", getAssetManager().getAssetByName<Texture>("tiger")};
+
 
     // use get by name to test the system
-    mTigerMesh = getAssetManager().getMeshByName("tiger");
+    mTigerMesh = getAssetManager().getAssetByName<Mesh>("tiger");
 
     // Spawn 100 tigers using your utility functions
     for (int i = 0; i < 1000; ++i) {
@@ -144,7 +163,7 @@ void MainScene::testCreateMeshAtRuntime() {
     mesh.setVertices(cubeVertices);
     mesh.setIndices(cubeIndices);
 
-    MeshReference ref = getAssetManager().addMesh(std::move(mesh));
+    MeshReference ref = getAssetManager().addAsset<Mesh>(std::move(mesh));
     Material mat = {"cubeMaterial", glm::vec3{1.0f, 0.0f, 0.0f}};
 
     // draw the mesh
