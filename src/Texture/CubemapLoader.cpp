@@ -29,7 +29,7 @@ void CubmapLoader::readFile(CubeFace face, const std::filesystem::path& path, bo
     unsigned char* texData = stbi_load(path.string().c_str(), &texWidth, &texHeight, &channelCount, 0);
 
     if (!texData) {
-        throw std::runtime_error("Could not load texture at: " + path.string());
+        throw std::runtime_error("Could not load cubemap at: " + path.string());
     }
 
     switch (face) {

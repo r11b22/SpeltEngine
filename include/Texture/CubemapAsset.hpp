@@ -15,7 +15,7 @@ class CubemapAsset {
         std::filesystem::path mPathBottom;
         bool mFlipped;
     public:
-        CubemapAsset(std::string name, bool flipped = false);
+        explicit CubemapAsset(std::string name, bool flipped = false);
 
         void setPath(CubeFace face, std::filesystem::path path);
         const std::filesystem::path& getPath(CubeFace face) const;
