@@ -72,7 +72,7 @@ void Texture::bind(int unit){
 }
 
 Texture::Texture(Texture&& other) noexcept
-    : Asset(other.getName()), mId(other.mId), mWidth(other.mWidth), mHeight(other.mHeight), mInternalFormat(other.mInternalFormat), mFormat(other.mFormat), mDatatype(other.mDatatype), mHasData(other.mHasData)
+    : Asset(other.getName()), mId(other.mId), mWidth(other.mWidth), mHeight(other.mHeight), mInternalFormat(other.mInternalFormat), mFormat(other.mFormat), mDatatype(other.mDatatype), mHasData(other.mHasData), mTextureType(other.mTextureType)
 {
     other.mHasData = false;
     other.mId = 0;
@@ -89,6 +89,7 @@ Texture& Texture::operator=(Texture&& other) noexcept {
         mFormat = other.mFormat;
         mInternalFormat = other.mInternalFormat;
         mHasData = other.mHasData;
+        mTextureType = other.mTextureType;
 
         other.mHasData = false;
         other.mId = 0;
