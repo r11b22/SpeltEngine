@@ -1,6 +1,7 @@
 #include "Texture/CubemapTexture.hpp"
 #include "Buffer/Buffer.h"
 #include "Texture/Texture.h"
+#include <iostream>
 
 
 GLenum toGLEnum(CubeFace face){
@@ -24,11 +25,13 @@ GLenum toGLEnum(CubeFace face){
 CubemapTexture::CubemapTexture(std::string name, int width, int height, int channelCount)
     : Texture(name)
 {
+    mTextureType = GL_TEXTURE_CUBE_MAP;
+
     mWidth = width;
     mHeight = height;
     setupChannelCount(channelCount);
 
-    mTextureType = GL_TEXTURE_CUBE_MAP;
+
 
     setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -42,4 +45,5 @@ void CubemapTexture::setSidePixelData(CubeFace face, const unsigned char *texDat
     GLenum sideEnum = toGLEnum(face);
 
     glTexImage2D(sideEnum, 0, mInternalFormat, mWidth, mHeight, 0, mFormat, mDatatype, texData);
+    mHasData = true;
 }

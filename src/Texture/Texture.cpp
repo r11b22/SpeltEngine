@@ -64,6 +64,10 @@ Texture::Texture(std::string name, int width, int height, GLenum format, GLenum 
 
 void Texture::bind(int unit){
     glActiveTexture(GL_TEXTURE0 + unit);
+    if(mTextureType != GL_TEXTURE_2D){
+        std::cout << mTextureType << std::endl;
+    }
+
     glBindTexture(mTextureType, mId);
 }
 
