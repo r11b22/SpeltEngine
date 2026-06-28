@@ -11,7 +11,7 @@ CubmapLoader::~CubmapLoader(){
 }
 
 CubemapTexture CubmapLoader::createCubemap(std::string name) {
-    CubemapTexture texture{name, mRight.texWidth, mLeft.texHeight, mLeft.channelCount};
+    CubemapTexture texture{name, mRight.texWidth, mRight.texHeight, mRight.channelCount};
 
     texture.setSidePixelData(CubeFace::Right, mRight.texData);
     texture.setSidePixelData(CubeFace::Left, mLeft.texData);

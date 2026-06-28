@@ -170,8 +170,31 @@ void Texture::setPixelData(const unsigned char *texData, int width, int height, 
 }
 
 
-void Texture::setupChannelCount(int channelCount){
-    mInternalFormat = (channelCount == 4) ? GL_RGBA8 : GL_RGB8;
-    mFormat = (channelCount == 4) ? GL_RGBA : GL_RGB;
+void Texture::setupChannelCount(int channelCount) {
     mDatatype = GL_UNSIGNED_BYTE;
+
+    switch (channelCount) {
+        case 1: // Grayscale (e.g., your planet depth maps)
+            mInternalFormat = GL_R8;
+            mFormat = GL_RED;
+            break;
+
+        case 2: // Grayscale + Alpha
+            mInternalFormat = GL_RG8;
+            mFormat = GL_RG;
+            break;
+
+        case 3: // Standard RGB
+            mInternalFormat = GL_RGB8;
+            mFormat = GL_RGB;
+            break;
+
+        case 4: // Standard RGBA
+            mInternalFormat = GL_RGBA8;
+            mFormat = GL_RGBA;
+            break;
+
+        default:
+            throw std::runtime_error("Unsupported channel count: " + std::to_string(channelCount));
+    }
 }
