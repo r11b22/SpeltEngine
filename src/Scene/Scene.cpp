@@ -181,3 +181,10 @@ AssetManager& Scene::getAssetManager() {
         throw std::runtime_error("The Scene was not yet loaded! Changing assets can only be done after the scene is loaded!");
     }
 }
+
+
+void Scene::loadAssets(AssetManager& assetManager) const{
+    for (const auto& toLoad : mAssets){
+        toLoad->load(assetManager);
+    }
+}

@@ -28,13 +28,7 @@
 
 
 MainScene::MainScene() {
-
-}
-
-void MainScene::onLoad(Renderer &renderer, Window &window) {
-    window.setVSYNC(false);
-
-    getAssetManager().loadAsset(AssetLoadInfo<Texture>{"tiger", "Models/Animals/tiger/Texture_1.png"});
+    addAsset(AssetLoadInfo<Texture>{"tiger", "Models/Animals/tiger/Texture_1.png"});
 
 
     AssetLoadInfo<CubemapTexture> cubemapTest{"test"};
@@ -46,10 +40,16 @@ void MainScene::onLoad(Renderer &renderer, Window &window) {
     cubemapTest.setPath(CubeFace::Left, "Models/Animals/tiger/Texture_1.png");
     cubemapTest.setPath(CubeFace::Right, "Models/Animals/tiger/Texture_1.png");
 
-    getAssetManager().loadAsset(cubemapTest);
+    addAsset(cubemapTest);
 
     AssetLoadInfo<Mesh> tigerTest = {"tiger", "Models/Animals/tiger/tiger.gltf"};
-    getAssetManager().loadAsset<Mesh>(tigerTest);
+    addAsset(tigerTest);
+}
+
+void MainScene::onLoad(Renderer &renderer, Window &window) {
+    window.setVSYNC(false);
+
+
 
 
 

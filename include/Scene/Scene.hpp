@@ -4,6 +4,7 @@
 
 #ifndef CGVCPROJECT_SCENE_H
 #define CGVCPROJECT_SCENE_H
+#include "Asset/AssetLoader.hpp"
 #include "Asset/AssetManager.hpp"
 #include "Lighting/ILight.h"
 #include "Mesh/MeshAsset.hpp"
@@ -11,6 +12,7 @@
 #include "Object/Object.h"
 #include "Object/ObjectID.h"
 #include "Object/ObjectRepository.h"
+#include "Scene/SceneLoadRequest.hpp"
 #include "SceneHierarchy.h"
 #include "../Camera.h"
 #include "../Renderer/IDrawable.h"
@@ -46,6 +48,8 @@ private:
     ObjectReference<Camera> mCurrentCamera;
 
     bool mRunning = false;
+
+    std::vector<std::unique_ptr<ILoadRequest>> mAssets = {};
 
 
 public:
@@ -290,6 +294,13 @@ public:
 
     AssetManager& getAssetManager();
     const AssetManager& getAssetManager() const;
+
+    template<typename T>
+    void addAsset(AssetLoadInfo<T> toLoad){
+        mAssets.push_back(std::make_unique<LoadRequest<T>>(toLoad));
+    }
+
+    void loadAssets(AssetManager& assetManager) const;
 
 private:
 

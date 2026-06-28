@@ -66,4 +66,5 @@ void App::run() {
 
 void App::loadSceneAssets(const Scene& scene){
     mAssetManager.clear();
+    scene.loadAssets(mAssetManager);
 }

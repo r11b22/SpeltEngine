@@ -88,7 +88,7 @@ class AssetManager {
         const AssetRepository<T>& getRepo() const {
             auto it = mRepos.find(typeid(T));
             if (it == mRepos.end()) {
-                throw std::runtime_error("Unsupported asset repository type.");
+                throw std::runtime_error("The requested asset could not be found: No assets of that type exist yet!");
             }
             return *static_cast<const AssetRepository<T>*>(it->second.get());
         }
