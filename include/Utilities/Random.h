@@ -5,6 +5,7 @@
 #ifndef CGVCPROJECT_RANDOM_H
 #define CGVCPROJECT_RANDOM_H
 #include <random>
+#include "glm/glm.hpp"
 
 static std::random_device rd;
 static std::mt19937 gen(rd());
@@ -12,6 +13,10 @@ static std::mt19937 gen(rd());
 inline float getRandomFloat(float min, float max) {
     std::uniform_real_distribution<float> distr(min, max);
     return distr(gen);
+}
+
+inline glm::vec3 getRandomVec3(glm::vec3 min, glm::vec3 max){
+    return glm::vec3{getRandomFloat(min.x, max.x), getRandomFloat(min.y, max.y), getRandomFloat(min.z, max.z)};
 }
 
 inline float getRandomFloatNormal(float mean, float std_dev) {
