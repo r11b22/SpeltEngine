@@ -31,6 +31,7 @@ public:
     Texture& operator=(Texture&& other) noexcept;
 
     void bind(int unit = 0);
+    void imageBind(int location, GLenum rwType);
 
     void setParameter(GLenum name, GLenum param);
 

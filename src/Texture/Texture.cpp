@@ -68,6 +68,18 @@ void Texture::bind(int unit){
     glBindTexture(mTextureType, mId);
 }
 
+void Texture::imageBind(int location, GLenum rwType){
+    glBindImageTexture(
+        location,
+        mId,
+        0,
+        GL_FALSE,
+        0,
+        rwType,
+        mInternalFormat
+    );
+}
+
 Texture::Texture(Texture&& other) noexcept
     : Asset(other.getName()), mId(other.mId), mWidth(other.mWidth), mHeight(other.mHeight), mInternalFormat(other.mInternalFormat), mFormat(other.mFormat), mDatatype(other.mDatatype), mHasData(other.mHasData), mTextureType(other.mTextureType)
 {
