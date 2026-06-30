@@ -47,3 +47,15 @@ void CubemapTexture::setSidePixelData(CubeFace face, const unsigned char *texDat
     glTexImage2D(sideEnum, 0, mInternalFormat, mWidth, mHeight, 0, mFormat, mDatatype, texData);
     mHasData = true;
 }
+
+void CubemapTexture::imageBind(int location, GLenum rwType){
+    glBindImageTexture(
+        location,
+        mId,
+        0,
+        GL_TRUE,
+        0,
+        rwType,
+        mInternalFormat
+    );
+}
