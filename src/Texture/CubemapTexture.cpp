@@ -32,12 +32,15 @@ CubemapTexture::CubemapTexture(std::string name, int width, int height, int chan
     setupChannelCount(channelCount);
 
 
+    bind();
 
     setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     setParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 }
 
 void CubemapTexture::setSidePixelData(CubeFace face, const unsigned char *texData){
@@ -45,6 +48,14 @@ void CubemapTexture::setSidePixelData(CubeFace face, const unsigned char *texDat
     GLenum sideEnum = toGLEnum(face);
 
     glTexImage2D(sideEnum, 0, mInternalFormat, mWidth, mHeight, 0, mFormat, mDatatype, texData);
+    mHasData = true;
+}
+
+void CubemapTexture::initEmpty(){
+    bind();
+    for(int i = 0; i < 6; i++){
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, mInternalFormat, mWidth, mHeight, 0, mFormat, mDatatype, nullptr);
+    }
     mHasData = true;
 }
 

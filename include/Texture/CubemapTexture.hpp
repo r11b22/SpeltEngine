@@ -20,6 +20,8 @@ class CubemapTexture : public Texture {
 
         void setSidePixelData(CubeFace face, const unsigned char *texData);
 
+        void initEmpty();
+
         /**
          * Binds the multiple sides of the cubemap as a layered 3D Texture
          * Layers:
