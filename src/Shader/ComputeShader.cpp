@@ -41,3 +41,7 @@ void ComputeShader::rawDispatch(int xElements, int yElements, int zElements) con
 
     glDispatchCompute(numGroupsX, numGroupsY, numGroupsZ);
 }
+
+void ComputeShader::waitForFinish(){
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+}

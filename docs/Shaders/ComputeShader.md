@@ -54,5 +54,11 @@ compute.rawDispatch(size, size, 1);
 // compute.dispatch(size, size, 1)
 ```
 
+Dispatching the shader does not mean it is actually finished with its calculations. If we want to have the data on the cpu from the texture we need to wait for the compute shader to finish writing to it.
+
+```c++
+compute.waitForFinish();
+```
+
 
 Now the data will be contained inside the Texture and you can get it via the functions on Texture.

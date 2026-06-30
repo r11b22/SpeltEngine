@@ -34,6 +34,11 @@ public:
      * @param zElements The z dimension of your elements
      */
     void rawDispatch(int xElements = 1, int yElements = 1, int zElements = 1) const;
+
+    /*
+     * Wait for the compute shader to finish all writing to the texture
+     */
+    void waitForFinish();
 };
 
 #endif //CGVCPROJECT_COMPUTESHADER_H
