@@ -46,6 +46,13 @@ class AssetRepository {
             return AssetReference<T>{static_cast<unsigned int>((*it).first)};
         }
 
+        [[nodiscard]] bool hasAssetOfName(const std::string& name) const {
+            const auto it = std::find_if(mData.begin(), mData.end(), [&name](const auto& pair) {
+                return pair.second.getName() == name;
+            });
+            return it != mData.end();
+        }
+
         T* getAsset(AssetReference<T> reference){
             int id = reference.getID();
 

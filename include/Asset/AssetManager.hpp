@@ -13,6 +13,7 @@
 #include "Texture/Texture.h"
 #include "Texture/TextureAsset.hpp"
 #include "Texture/TextureReference.hpp"
+#include <concepts>
 #include <stdexcept>
 #include <typeindex>
 #include <unordered_map>
@@ -44,10 +45,18 @@ class AssetManager {
 
         template<typename T>
             requires std::derived_from<T, Asset>
-        AssetReference<T> getAssetByName(std::string name) const{
+        AssetReference<T> getAssetByName(const std::string& name) const{
             const AssetRepository<T>& repo = getRepo<T>();
 
             return repo.getAssetByName(name);
+        }
+
+        template<typename T>
+            requires std::derived_from<T, Asset>
+        bool hasAssetOfName(const std::string& name) const{
+            const AssetRepository<T>& repo = getRepo<T>();
+
+            return repo.hasAssetOfName(name);
         }
 
         template<typename T>
