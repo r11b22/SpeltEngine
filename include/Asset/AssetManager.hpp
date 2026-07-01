@@ -98,7 +98,7 @@ class AssetManager {
         }
 
         template<typename T>
-        const AssetRepository<T>& hasRepo() const {
+        bool hasRepo() const {
             auto it = mRepos.find(typeid(T));
             return it != mRepos.end();
         }
