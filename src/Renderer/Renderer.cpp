@@ -166,7 +166,7 @@ void Renderer::setAssetManager(AssetManager* assetManager){
     mAssetManager = assetManager;
 }
 
-void Renderer::applySetting(GLenum setting, bool value){
+void Renderer::setSetting(GLenum setting, bool value){
     if(value){
         glEnable(setting);
     }else{

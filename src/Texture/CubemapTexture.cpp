@@ -1,6 +1,7 @@
 #include "Texture/CubemapTexture.hpp"
 #include "Buffer/Buffer.h"
 #include "Texture/Texture.h"
+#include "Window.h"
 #include <iostream>
 
 
@@ -66,6 +67,18 @@ void CubemapTexture::imageBind(int location, GLenum rwType){
         0,
         GL_TRUE,
         0,
+        rwType,
+        mInternalFormat
+    );
+}
+
+void CubemapTexture::singleSideImageBind(int location, CubeFace face, GLenum rwType){
+    glBindImageTexture(
+        location,
+        mId,
+        0,
+        GL_FALSE,
+        static_cast<int>(face),
         rwType,
         mInternalFormat
     );

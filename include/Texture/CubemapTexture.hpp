@@ -2,13 +2,13 @@
 
 #include "Texture/Texture.h"
 
-enum class CubeFace {
-    Right,
-    Left,
-    Top,
-    Bottom,
-    Back,
-    Front
+enum class CubeFace : int {
+    Right = 0,
+    Left = 1,
+    Top = 2,
+    Bottom = 3,
+    Front = 4,
+    Back = 5
 };
 
 GLenum toGLEnum(CubeFace face);
@@ -23,7 +23,7 @@ class CubemapTexture : public Texture {
         void initEmpty();
 
         /**
-         * Binds the multiple sides of the cubemap as a layered 3D Texture
+         * Binds the multiple sides of the cubemap as a layered 3D ImageTexture
          * Layers:
          * 0 = +X = Right
          * 1 = -X = Left
@@ -33,5 +33,10 @@ class CubemapTexture : public Texture {
          * 5 = -Z = Back
          */
         void imageBind(int location, GLenum rwType);
+
+        /**
+         * Binds a single side of the cubemap as a 2D ImageTexture
+         */
+        void singleSideImageBind(int location, CubeFace face, GLenum rwType);
     private:
 };
