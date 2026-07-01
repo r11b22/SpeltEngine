@@ -54,6 +54,10 @@ class AssetManager {
         template<typename T>
             requires std::derived_from<T, Asset>
         bool hasAssetOfName(const std::string& name) const{
+            if (!hasRepo<T>()){
+                return false;
+            }
+
             const AssetRepository<T>& repo = getRepo<T>();
 
             return repo.hasAssetOfName(name);
@@ -91,6 +95,12 @@ class AssetManager {
                 it = mRepos.emplace(typeid(T), std::unique_ptr<void, void(*)(void*)>(repo, deleter)).first;
             }
             return *static_cast<AssetRepository<T>*>(it->second.get());
+        }
+
+        template<typename T>
+        const AssetRepository<T>& hasRepo() const {
+            auto it = mRepos.find(typeid(T));
+            return it != mRepos.end();
         }
 
         template<typename T>
