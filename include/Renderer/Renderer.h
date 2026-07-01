@@ -68,6 +68,8 @@ public:
 
     void setAssetManager(AssetManager* assetManager);
 
+    void applySetting(GLenum setting, bool value);
+
 private:
     void drawPass(const RenderQueue& queue, const Camera& camera, const std::vector<LightData>& lights);
     void renderToScreen();

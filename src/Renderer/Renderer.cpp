@@ -17,6 +17,7 @@
 #include "Texture/MultisampledTexture.h"
 #include "Texture/Texture.h"
 #include "Texture/TextureReference.hpp"
+#include "Window.h"
 #include "glm/ext/vector_float4.hpp"
 
 Renderer::Renderer(Window* target)
@@ -163,6 +164,14 @@ void Renderer::setClearColor(glm::vec4 color){
 
 void Renderer::setAssetManager(AssetManager* assetManager){
     mAssetManager = assetManager;
+}
+
+void Renderer::applySetting(GLenum setting, bool value){
+    if(value){
+        glEnable(setting);
+    }else{
+        glDisable(setting);
+    }
 }
 
 void Renderer::executeRenderCommand(const RenderCommand& command, const Camera& camera, const std::vector<LightData>& lights) {
