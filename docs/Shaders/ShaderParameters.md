@@ -5,7 +5,42 @@ This document provides a list of all parameters that are passed by the rendering
 
 ## Vertex data
 
-TODO
+This is a list of all vertex shader parameters and their contained data
+
+Vertex position:
+```glsl
+layout(location = 0) in vec3 aPos;
+```
+
+Vertex normal
+```glsl
+layout(location = 0) in vec3 aNorm;
+```
+
+UV coordinates
+```glsl
+// TODO
+```
+
+## Position uniforms
+
+This is a list of all position matrix shader parameters and their contained data
+
+Model matrix (Provided per RenderCommand, Some default objects may not support the model matrix)
+```glsl
+uniform mat4 uModelMatrix;
+```
+
+View matrix / Camera matrix
+```glsl
+uniform mat4 uViewMatrix;
+```
+
+Projection matrix
+```glsl
+uniform mat4 uProjectionMatrix;
+```
+
 
 ## Material data
 

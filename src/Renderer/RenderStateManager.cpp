@@ -37,104 +37,168 @@ static GLenum getGLStencilOp(StencilOp op) {
     return GL_KEEP;
 }
 
+// --- Dumb OpenGL Setters ---
+// These execute commands and sync mCurrentState unconditionally.
+
+void RenderStateManager::setDepthTestEnabled(bool enabled) {
+    enabled ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+    mCurrentState.depthTest = enabled;
+}
+
+void RenderStateManager::setDepthFunc(DepthFunc func) {
+    GLenum glFunc = GL_LESS;
+    switch(func) {
+        case DepthFunc::Less:    glFunc = GL_LESS; break;
+        case DepthFunc::LEqual:  glFunc = GL_LEQUAL; break;
+        case DepthFunc::Always:  glFunc = GL_ALWAYS; break;
+        case DepthFunc::Greater: glFunc = GL_GREATER; break;
+        case DepthFunc::Equal:   glFunc = GL_EQUAL; break;
+    }
+    glDepthFunc(glFunc);
+    mCurrentState.depthFunc = func;
+}
+
+void RenderStateManager::setDepthWriteEnabled(bool enabled) {
+    glDepthMask(enabled ? GL_TRUE : GL_FALSE);
+    mCurrentState.depthWrite = enabled;
+}
+
+void RenderStateManager::setCullFaceEnabled(bool enabled) {
+    enabled ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+    mCurrentState.cullFace = enabled;
+}
+
+void RenderStateManager::setCullMode(CullMode mode) {
+    GLenum glMode = GL_BACK;
+    if (mode == CullMode::Front) glMode = GL_FRONT;
+    glCullFace(glMode);
+    mCurrentState.cullMode = mode;
+}
+
+void RenderStateManager::setBlendEnabled(bool enabled) {
+    enabled ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
+    mCurrentState.blend = enabled;
+}
+
+void RenderStateManager::setBlendFunc(GLenum src, GLenum dst) {
+    glBlendFunc(src, dst);
+    mCurrentState.srcBlendFactor = src;
+    mCurrentState.dstBlendFactor = dst;
+}
+
+void RenderStateManager::setStencilTestEnabled(bool enabled) {
+    enabled ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST);
+    mCurrentState.stencilTest = enabled;
+}
+
+void RenderStateManager::setStencilWriteMask(GLuint mask) {
+    glStencilMask(mask);
+    mCurrentState.stencilWriteMask = mask;
+}
+
+void RenderStateManager::setStencilFunc(StencilFunc func, GLint ref, GLuint mask) {
+    glStencilFunc(getGLStencilFunc(func), ref, mask);
+    mCurrentState.stencilFunc = func;
+    mCurrentState.stencilRef = ref;
+    mCurrentState.stencilReadMask = mask;
+}
+
+void RenderStateManager::setStencilOp(StencilOp fail, StencilOp zfail, StencilOp zpass) {
+    glStencilOp(getGLStencilOp(fail), getGLStencilOp(zfail), getGLStencilOp(zpass));
+    mCurrentState.stencilFailOp = fail;
+    mCurrentState.stencilZFailOp = zfail;
+    mCurrentState.stencilZPassOp = zpass;
+}
+
+// --- Core API Implementation ---
+
+void RenderStateManager::applyStartState(const RenderState& newState) {
+    // 1. Depth Testing
+    setDepthTestEnabled(newState.depthTest);
+    if (newState.depthTest) {
+        setDepthFunc(newState.depthFunc);
+    }
+    setDepthWriteEnabled(newState.depthWrite);
+
+    // 2. Face Culling
+    setCullFaceEnabled(newState.cullFace);
+    if (newState.cullFace) {
+        setCullMode(newState.cullMode);
+    }
+
+    // 3. Blending
+    setBlendEnabled(newState.blend);
+    if (newState.blend) {
+        setBlendFunc(newState.srcBlendFactor, newState.dstBlendFactor);
+    }
+
+    // 4. Stencil Testing
+    setStencilTestEnabled(newState.stencilTest);
+    setStencilWriteMask(newState.stencilWriteMask);
+    if (newState.stencilTest) {
+        setStencilFunc(newState.stencilFunc, newState.stencilRef, newState.stencilReadMask);
+        setStencilOp(newState.stencilFailOp, newState.stencilZFailOp, newState.stencilZPassOp);
+    }
+}
+
 void RenderStateManager::applyState(const RenderState &newState) {
     // 1. Depth Testing
     if (mCurrentState.depthTest != newState.depthTest) {
-        newState.depthTest ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
-        mCurrentState.depthTest = newState.depthTest;
+        setDepthTestEnabled(newState.depthTest);
     }
 
     if (newState.depthTest) {
         if (mCurrentState.depthFunc != newState.depthFunc) {
-            GLenum glFunc = GL_LESS;
-            switch(newState.depthFunc) {
-                case DepthFunc::Less:    glFunc = GL_LESS; break;
-                case DepthFunc::LEqual:  glFunc = GL_LEQUAL; break;
-                case DepthFunc::Always:  glFunc = GL_ALWAYS; break;
-                case DepthFunc::Greater: glFunc = GL_GREATER; break;
-                case DepthFunc::Equal:   glFunc = GL_EQUAL; break;
-            }
-            glDepthFunc(glFunc);
-            mCurrentState.depthFunc = newState.depthFunc;
+            setDepthFunc(newState.depthFunc);
         }
     }
 
     if (mCurrentState.depthWrite != newState.depthWrite) {
-        glDepthMask(newState.depthWrite ? GL_TRUE : GL_FALSE);
-        mCurrentState.depthWrite = newState.depthWrite;
+        setDepthWriteEnabled(newState.depthWrite);
     }
 
     // 2. Face Culling
     if (mCurrentState.cullFace != newState.cullFace) {
-        newState.cullFace ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
-        mCurrentState.cullFace = newState.cullFace;
+        setCullFaceEnabled(newState.cullFace);
     }
 
     if (newState.cullFace && mCurrentState.cullMode != newState.cullMode) {
-        GLenum glMode = GL_BACK;
-        if (newState.cullMode == CullMode::Front) glMode = GL_FRONT;
-        glCullFace(glMode);
-        mCurrentState.cullMode = newState.cullMode;
+        setCullMode(newState.cullMode);
     }
 
     // 3. Blending
     if (mCurrentState.blend != newState.blend) {
-        newState.blend ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
-        mCurrentState.blend = newState.blend;
+        setBlendEnabled(newState.blend);
     }
 
     if (newState.blend &&
        (mCurrentState.srcBlendFactor != newState.srcBlendFactor ||
         mCurrentState.dstBlendFactor != newState.dstBlendFactor)) {
-        glBlendFunc(newState.srcBlendFactor, newState.dstBlendFactor);
-        mCurrentState.srcBlendFactor = newState.srcBlendFactor;
-        mCurrentState.dstBlendFactor = newState.dstBlendFactor;
+        setBlendFunc(newState.srcBlendFactor, newState.dstBlendFactor);
     }
 
     // 4. Stencil Testing
     if (mCurrentState.stencilTest != newState.stencilTest) {
-        newState.stencilTest ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST);
-        mCurrentState.stencilTest = newState.stencilTest;
+        setStencilTestEnabled(newState.stencilTest);
     }
 
-    // Even if stencil testing is disabled, glStencilMask controls clearing behavior,
-    // so update the mask configuration independently of the toggle status.
     if (mCurrentState.stencilWriteMask != newState.stencilWriteMask) {
-        glStencilMask(newState.stencilWriteMask);
-        mCurrentState.stencilWriteMask = newState.stencilWriteMask;
+        setStencilWriteMask(newState.stencilWriteMask);
     }
 
     if (newState.stencilTest) {
-        // Update function, reference value, and read mask
         if (mCurrentState.stencilFunc     != newState.stencilFunc ||
             mCurrentState.stencilRef      != newState.stencilRef  ||
             mCurrentState.stencilReadMask != newState.stencilReadMask) {
 
-            glStencilFunc(
-                getGLStencilFunc(newState.stencilFunc),
-                newState.stencilRef,
-                newState.stencilReadMask
-            );
-
-            mCurrentState.stencilFunc     = newState.stencilFunc;
-            mCurrentState.stencilRef      = newState.stencilRef;
-            mCurrentState.stencilReadMask = newState.stencilReadMask;
+            setStencilFunc(newState.stencilFunc, newState.stencilRef, newState.stencilReadMask);
         }
 
-        // Update actions based on test results
         if (mCurrentState.stencilFailOp  != newState.stencilFailOp  ||
             mCurrentState.stencilZFailOp != newState.stencilZFailOp ||
             mCurrentState.stencilZPassOp != newState.stencilZPassOp) {
 
-            glStencilOp(
-                getGLStencilOp(newState.stencilFailOp),
-                getGLStencilOp(newState.stencilZFailOp),
-                getGLStencilOp(newState.stencilZPassOp)
-            );
-
-            mCurrentState.stencilFailOp  = newState.stencilFailOp;
-            mCurrentState.stencilZFailOp = newState.stencilZFailOp;
-            mCurrentState.stencilZPassOp = newState.stencilZPassOp;
+            setStencilOp(newState.stencilFailOp, newState.stencilZFailOp, newState.stencilZPassOp);
         }
     }
 }

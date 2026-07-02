@@ -11,6 +11,7 @@
 #include "Asset/AssetManager.hpp"
 #include "FrameBuffer/MultisampledFrameBuffer.h"
 #include "Renderer/RenderCommand.h"
+#include "Renderer/RenderState.h"
 #include "Strings/ShaderSource.h"
 #include "Texture/CubemapTexture.hpp"
 #include "Texture/CubemapTextureReference.hpp"
@@ -95,6 +96,7 @@ void Renderer::addShaderProgram(std::string name, std::unique_ptr<ShaderProgram>
 
 void Renderer::prepare() {
     mPostProcessingPipeline->prepare();
+    mStateManager.applyStartState(RenderState());
 }
 
 void Renderer::drawPass(const RenderQueue& queue, const Camera& camera, const std::vector<LightData>& lights) {
