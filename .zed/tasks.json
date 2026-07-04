@@ -29,4 +29,13 @@
     "allow_concurrent_runs": false,
     "save": "current",
   },
+  {
+    "label": "CMake: Benchmark Test Scene",
+    // We use ../build because we are executing from inside the test_scene folder
+    "command": "cmake --build ../build && MANGOHUD_CONFIG=procmem mangohud ../build/test_scene/SpeltEngineTestScene",
+    "cwd": "$ZED_WORKTREE_ROOT/test_scene",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "save": "current",
+  },
 ]

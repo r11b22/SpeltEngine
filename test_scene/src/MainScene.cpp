@@ -30,18 +30,6 @@
 MainScene::MainScene() {
     addAsset(AssetLoadInfo<Texture>{"tiger", "Models/Animals/tiger/Texture_1.png"});
 
-
-    AssetLoadInfo<CubemapTexture> cubemapTest{"test"};
-
-    cubemapTest.setPath(CubeFace::Front, "Models/Animals/tiger/Texture_1.png");
-    cubemapTest.setPath(CubeFace::Back, "Models/Animals/tiger/Texture_1.png");
-    cubemapTest.setPath(CubeFace::Bottom, "Models/Animals/tiger/Texture_1.png");
-    cubemapTest.setPath(CubeFace::Top, "Models/Animals/tiger/Texture_1.png");
-    cubemapTest.setPath(CubeFace::Left, "Models/Animals/tiger/Texture_1.png");
-    cubemapTest.setPath(CubeFace::Right, "Models/Animals/tiger/Texture_1.png");
-
-    addAsset(cubemapTest);
-
     AssetLoadInfo<Mesh> tigerTest = {"tiger", "Models/Animals/tiger/tiger.gltf"};
     addAsset(tigerTest);
 }
@@ -56,7 +44,7 @@ void MainScene::onLoad(Renderer &renderer, Window &window) {
     inputManager = new InputManager(window);
 
     ObjectReference<FirstPersonCamera> camera = createObject<FirstPersonCamera>("main camera", inputManager, &window);
-    camera->setPosition(glm::vec3{10.0f, 5.0f, 10.0f});
+    camera->setPosition(glm::vec3{10.0f, 5.0f, 30.0f});
 
 
     Material tigerMaterial = {"tigerMaterial", getAssetManager().getAssetByName<Texture>("tiger")};
@@ -66,38 +54,24 @@ void MainScene::onLoad(Renderer &renderer, Window &window) {
     mTigerMesh = getAssetManager().getAssetByName<Mesh>("tiger");
 
     // Spawn 100 tigers using your utility functions
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 10000; ++i) {
         std::string name = "tiger_" + std::to_string(i);
         ObjectReference<MeshObject> tiger = createObject<MeshObject>(name, mTigerMesh, tigerMaterial);
 
-        // Using your basic uniform random distribution over a 100x100 area
-        float x = getRandomFloat(-50.0f, 50.0f);
-        float y = 0.0f; // Keep them on the ground
-        float z = getRandomFloat(-50.0f, 50.0f);
 
-        tiger->setPosition(glm::vec3{x, y, z});
+        tiger->setPosition(getRandomVec3(glm::vec3{-50.0f, 0.0f, -100.0f}, glm::vec3{50.0f, 0.0f, 0.0f}));
         mTigers.push_back(tiger);
-    }
-
-    if (!mTigers.empty()) {
-        glm::vec3 diff = mTigers[0]->getPosition() - camera->getPosition();
-        camera->lookAt(glm::normalize(diff));
     }
 
 
 
     ObjectReference<AmbientLight> ambientLight = createObject<AmbientLight>("ambient light", glm::vec3{0.2f});
 
-    /* std::shared_ptr<PointLight> pointLight = std::make_shared<PointLight>("point light", glm::vec3{3.0f});
-        pointLight->setPosition(glm::vec3{2.0f, 0.0f, 0.0f});
-        addObject(pointLight);*/
-
     ObjectReference<DirectionalLight> directionalLight = createObject<DirectionalLight>("directional light", glm::vec3{1.0f}, glm::vec3{1.0f});
 
     renderer.setClearColor({0.0f, 0.2f, 0.2f, 1.0f});
 
 
-    testCreateMeshAtRuntime();
 }
 
 void MainScene::onUpdate(Renderer &renderer, Window &window, float deltaT) {
@@ -106,70 +80,6 @@ void MainScene::onUpdate(Renderer &renderer, Window &window, float deltaT) {
     for (auto& tiger : getObjectsOfType<MeshObject>()){
         tiger.rotate(glm::radians(10.0f)*deltaT, glm::vec3{0.0f, 1.0f, 0.0f});
     }
-}
-
-void MainScene::testCreateMeshAtRuntime() {
-
-    std::vector<float> cubeVertices = {
-        // Position          // Normals           // UVs
-        // --- Front Face (Z+)
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 1.0f,
-
-        // --- Back Face (Z-)
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-
-        // --- Left Face (X-)
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-
-        // --- Right Face (X+)
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-
-        // --- Top Face (Y+)
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-
-        // --- Bottom Face (Y-)
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f
-    };
-
-    std::vector<unsigned int> cubeIndices = {
-        0,  1,  2,    2,  3,  0,  // Front
-        4,  5,  6,    6,  7,  4,  // Back
-        8,  9,  10,   10, 11, 8,  // Left
-        12, 13, 14,   14, 15, 12, // Right
-        16, 17, 18,   18, 19, 16, // Top
-        20, 21, 22,   22, 23, 20  // Bottom
-    };
-
-    Mesh mesh{"cube"};
-
-    mesh.setVertices(cubeVertices);
-    mesh.setIndices(cubeIndices);
-
-    MeshReference ref = getAssetManager().addAsset<Mesh>(std::move(mesh));
-    Material mat = {"cubeMaterial", glm::vec3{1.0f, 0.0f, 0.0f}};
-
-    // draw the mesh
-    ObjectReference<MeshObject> testCube = createObject<MeshObject>("cube", ref, mat);
-
-
 }
 
 MainScene::~MainScene() {
