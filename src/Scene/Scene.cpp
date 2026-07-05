@@ -60,6 +60,7 @@ const RenderQueue& Scene::getRenderQueue() {
         mRenderQueue.submitRenderCommands(commands);
     }
 
+    mRenderQueue.flattenCommands();
     return mRenderQueue;
 }
 

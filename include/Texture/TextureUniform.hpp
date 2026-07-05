@@ -15,4 +15,10 @@ using UniformTextureData = std::variant<
 struct TextureUniform {
     std::string name;
     UniformTextureData data;
+
+    bool operator==(const TextureUniform& other) const {
+        if (name != other.name) return false;
+
+        return data == other.data;
+    }
 };

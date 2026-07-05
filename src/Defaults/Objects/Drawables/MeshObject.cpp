@@ -5,6 +5,7 @@
 #include "Defaults/Objects/Drawables/MeshObject.h"
 #include "Mesh/Mesh.h"
 #include "Mesh/MeshReference.hpp"
+#include "Renderer/Instancing/InstanceData.hpp"
 #include "Renderer/RenderCommand.h"
 
 MeshObject::MeshObject(const std::string &name, MeshReference mesh, Material material)
@@ -22,7 +23,11 @@ std::vector<RenderCommand> MeshObject::getRenderCommands() {
     command.shaderName = mShader;
 
     glm::mat4 transformationMatrix = getTransformationMatrix();
-    command.uniforms.push_back({"uModelMatrix", transformationMatrix});
+    InstanceData instance;
+
+    instance.addUniform({"uModelMatrix", transformationMatrix});
+
+    command.instances.push_back(std::move(instance));
 
     return {defaultState, command};
 }

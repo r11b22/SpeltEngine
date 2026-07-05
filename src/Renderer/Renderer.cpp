@@ -10,6 +10,7 @@
 
 #include "Asset/AssetManager.hpp"
 #include "FrameBuffer/MultisampledFrameBuffer.h"
+#include "Renderer/Instancing/InstanceData.hpp"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/RenderState.h"
 #include "Strings/ShaderSource.h"
@@ -206,11 +207,11 @@ void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& came
 
         uploadStandardUniforms(*mCurrentProgram, camera, lights);
 
-        for (const auto& uniform : command.uniforms) {
+        for (const auto& uniform : command.staticUniforms) {
             mCurrentProgram->setUniform(uniform);
         }
 
-         material.readyMaterial(*mCurrentProgram, *mAssetManager);
+        material.readyMaterial(*mCurrentProgram, *mAssetManager);
 
         int textureCount = 1;
         for (const auto& textureUniform : command.textureUniforms){
@@ -233,8 +234,13 @@ void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& came
             }, textureUniform.data);
         }
 
+        for (const InstanceData& instance : command.instances){
+            for(const auto& uniform : instance.getUniforms()){
+                mCurrentProgram->setUniform(uniform);
+            }
+            toRender->draw(*mCurrentProgram);
+        }
 
-        toRender->draw(*mCurrentProgram);
     }
 
 }

@@ -82,6 +82,8 @@ set(ENGINE_SOURCES
         src/App.cpp
 
         src/Buffer/Buffer.cpp
+        src/Buffer/ShaderStorageBuffer.cpp
+
 
         src/Camera.cpp
 
@@ -97,6 +99,8 @@ set(ENGINE_SOURCES
         src/FileReader.cpp
 
         src/FrameBuffer/MultisampledFrameBuffer.cpp
+
+        src/Hashing/Hashing.cpp
 
         src/InputManager.cpp
 
@@ -114,6 +118,9 @@ set(ENGINE_SOURCES
         src/Renderer/RenderQueue.cpp
         src/Renderer/RenderState.cpp
         src/Renderer/RenderStateManager.cpp
+
+        src/Renderer/Instancing/InstanceBufferManager.cpp
+        src/Renderer/Instancing/InstanceData.cpp
 
         src/Object/Object.cpp
         src/Object/ObjectRepository.cpp
@@ -155,6 +162,7 @@ set(ENGINE_HEADERS
 
         include/Buffer/Buffer.h
         include/Buffer/BufferMap.h
+        include/Buffer/ShaderStorageBuffer.hpp
 
         include/Camera.h
 
@@ -175,6 +183,8 @@ set(ENGINE_HEADERS
 
         include/FrameBuffer/FrameBuffer.h
         include/FrameBuffer/MultisampledFrameBuffer.h
+
+        include/Hashing/Hashing.hpp
 
         include/InputManager.h
 
@@ -204,6 +214,9 @@ set(ENGINE_HEADERS
         include/Renderer/RenderQueue.h
         include/Renderer/RenderState.h
         include/Renderer/RenderStateManager.h
+
+        include/Renderer/Instancing/InstanceBufferManager.hpp
+        include/Renderer/Instancing/InstanceData.hpp
 
         include/Scene/Scene.hpp
         include/Scene/SceneHierarchyComponent.h

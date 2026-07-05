@@ -20,6 +20,22 @@ Material::Material(std::string name, glm::vec3 color)
 
 }
 
+bool Material::operator==(const Material& other) const {
+    if (mType != other.mType)
+        return false;
+
+    switch (mType) {
+        case MaterialType::Textured:
+            if (mTexture != other.mTexture) return false;
+        case MaterialType::Colored:
+            if (mColor != other.mColor) return false;
+    }
+
+    return mDiffuse == other.mDiffuse
+    && mSpecular == other.mSpecular
+    && mShininess == other.mShininess;
+}
+
 void Material::readyMaterial(ShaderProgram &shaderProgram,  AssetManager& assetManager) {
 
     switch (mType) {
