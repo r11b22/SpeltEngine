@@ -11,9 +11,12 @@
 class RenderQueue {
 private:
     std::vector<RenderCommand> mRenderCommands;
+
+    StateChangeCommand mLastState{};
+    size_t mLastDrawCommandHash = 0;
+    DrawCommand* mLasDrawCommand = nullptr;
 public:
 
-    void flattenCommands();
     const std::vector<RenderCommand>& getRenderCommands() const;
 
     void submitRenderCommands(std::vector<RenderCommand> commands);
