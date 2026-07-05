@@ -60,13 +60,21 @@ void main()
 )glsl";
 
 
-constexpr const char* standardVertexShader = R"glsl(
-#version 330 core
+constexpr const char *standardVertexShader = R"glsl(
+#version 430 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNorm;
 layout (location = 2) in vec2 aUV;
 
-uniform mat4 uModelMatrix;
+struct InstanceData {
+    mat4 uModelMatrix;
+};
+
+// The SSBO bound by mInstanceStreamBuffer.bindBase(3)
+layout(std430, binding = 3) readonly buffer InstanceBuffer {
+    InstanceData instances[];
+};
+
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 
@@ -76,19 +84,21 @@ out vec2 UV;
 
 void main()
 {
-    FragPos = vec3(uModelMatrix * vec4(aPos, 1.0));
+    mat4 modelMatrix = instances[gl_InstanceID].uModelMatrix;
+
+    FragPos = vec3(modelMatrix * vec4(aPos, 1.0));
     // vec4 position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
     // gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * position;
     gl_Position = uProjectionMatrix * uViewMatrix * vec4(FragPos, 1.0);
 
     //Normal = normalize(aNorm);
-    Normal = mat3(transpose(inverse(uModelMatrix))) * aNorm;
+    Normal = mat3(transpose(inverse(modelMatrix))) * aNorm;
     UV = aUV;
 }
 )glsl";
 
 constexpr const char *litFragmentShader = R"glsl(
-#version 330 core
+#version 430 core
 layout (location = 0) out vec4 FragColor;
 
 #define MAX_POINT_LIGHTS 64

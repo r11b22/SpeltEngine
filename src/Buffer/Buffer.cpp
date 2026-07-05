@@ -5,6 +5,7 @@
 
 #include "Buffer/Buffer.h"
 #include "Buffer/BufferMap.h"
+#include "Window.h"
 
 #include <stdexcept>
 
@@ -24,7 +25,7 @@ Buffer::~Buffer() {
 }
 
 Buffer::Buffer(Buffer&& other) noexcept
-    : mId(other.mId), mType(other.mType)
+    : mId(other.mId), mType(other.mType), mUsageType(other.mUsageType), mMapped(other.mMapped)
 {
     other.mId = 0;
 }
@@ -35,6 +36,8 @@ Buffer& Buffer::operator=(Buffer&& other) noexcept {
             glDeleteBuffers(1, &mId);
         mId   = other.mId;
         mType = other.mType;
+        mMapped = other.mMapped;
+        mUsageType = other.mUsageType;
         other.mId = 0;
     }
     return *this;
@@ -115,6 +118,13 @@ void Buffer::setDataVec3(glm::vec3 *data, size_t len) {
     // 3. Upload the aligned vec4 data instead of the raw vec3 data
     // Total bytes = number of elements * 16 bytes (sizeof(glm::vec4))
     glBufferData(mType, len * sizeof(glm::vec4), alignedData.data(), mUsageType);
+}
+
+void Buffer::setDataAndOrphan(const void* data, size_t bytes){
+    bind();
+
+    glBufferData(mType, bytes, nullptr, mUsageType);
+    glBufferSubData(mType, 0, bytes, data);
 }
 
 BufferMap<float> Buffer::mapDataFloat(GLenum accessType) {

@@ -60,6 +60,7 @@ public:
      * @param data the vector of vec3's
      */
     void setDataVec3(std::vector<glm::vec3> data);
+
     /**
      * Uploades a list of vec3's to the buffer
      * Warning: vec3 arrays are padded to vec4 arrays, make sure to use vec4's in your shader
@@ -67,6 +68,12 @@ public:
      * @param len the length of the array
      */
     void setDataVec3(glm::vec3 *data, size_t len);
+
+    /**
+     * Uploades data to the buffer. Size is given in bytes
+     * Orphans the buffer before uploading
+     */
+    void setDataAndOrphan(const void* data, size_t bytes);
 
     /**
      * Creates a mapping for the cpu to read from the gpu buffer

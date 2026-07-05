@@ -8,6 +8,7 @@
 #include "Asset/Asset.hpp"
 #include "Buffer/Buffer.h"
 #include "Renderer/IRenderable.h"
+#include "Shader/ShaderProgram.h"
 #include "VertexArray.h"
 
 class Mesh : public IRenderable, public Asset {
@@ -30,6 +31,7 @@ public:
 
 
     void draw(ShaderProgram& shaderProgram) override;
+    void drawInstanced(ShaderProgram& shaderProgram, int instanceCount) override;
 
     void setVertices(std::vector<float> vertices);
     void setIndices(std::vector<unsigned int> indices);

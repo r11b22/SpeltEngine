@@ -119,7 +119,7 @@ set(ENGINE_SOURCES
         src/Renderer/RenderState.cpp
         src/Renderer/RenderStateManager.cpp
 
-        src/Renderer/Instancing/InstanceBufferManager.cpp
+        src/Renderer/Instancing/InstanceRenderer.cpp
         src/Renderer/Instancing/InstanceData.cpp
 
         src/Object/Object.cpp
@@ -215,8 +215,9 @@ set(ENGINE_HEADERS
         include/Renderer/RenderState.h
         include/Renderer/RenderStateManager.h
 
-        include/Renderer/Instancing/InstanceBufferManager.hpp
+        include/Renderer/Instancing/InstanceRenderer.hpp
         include/Renderer/Instancing/InstanceData.hpp
+        include/Renderer/Instancing/InstanceLayout.hpp
 
         include/Scene/Scene.hpp
         include/Scene/SceneHierarchyComponent.h

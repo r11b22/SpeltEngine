@@ -54,7 +54,7 @@ void MainScene::onLoad(Renderer &renderer, Window &window) {
     mTigerMesh = getAssetManager().getAssetByName<Mesh>("tiger");
 
     // Spawn 100 tigers using your utility functions
-    for (int i = 0; i < 10000; ++i) {
+    for (int i = 0; i < 100; ++i) {
         std::string name = "tiger_" + std::to_string(i);
         ObjectReference<MeshObject> tiger = createObject<MeshObject>(name, mTigerMesh, tigerMaterial);
 

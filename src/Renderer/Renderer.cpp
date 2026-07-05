@@ -11,6 +11,7 @@
 #include "Asset/AssetManager.hpp"
 #include "FrameBuffer/MultisampledFrameBuffer.h"
 #include "Renderer/Instancing/InstanceData.hpp"
+#include "Renderer/Instancing/InstanceRenderer.hpp"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/RenderState.h"
 #include "Strings/ShaderSource.h"
@@ -70,6 +71,8 @@ Renderer::Renderer(Window* target)
 
     mInputFrameBuffer->attachTexture(mInputTexture, GL_COLOR_ATTACHMENT0);
     mInputFrameBuffer->setAttachments({GL_COLOR_ATTACHMENT0});
+
+    mInstanceRenderer = new InstanceRenderer(3);
 }
 
 EffectHandle Renderer::addPostProcessingEffect(PostProcessingEffect effect) {
@@ -234,12 +237,13 @@ void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& came
             }, textureUniform.data);
         }
 
-        for (const InstanceData& instance : command.instances){
+        mInstanceRenderer->draw(toRender, *mCurrentProgram, command.instances);
+        /*for (const InstanceData& instance : command.instances){
             for(const auto& uniform : instance.getUniforms()){
                 mCurrentProgram->setUniform(uniform);
             }
             toRender->draw(*mCurrentProgram);
-        }
+        }*/
 
     }
 
@@ -279,4 +283,5 @@ Renderer::~Renderer() {
     delete mPostProcessingPipeline;
     delete mInputFrameBuffer;
     delete mInputTexture;
+    delete mInstanceRenderer;
 }

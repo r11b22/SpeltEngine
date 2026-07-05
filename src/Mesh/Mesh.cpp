@@ -3,8 +3,8 @@
 //
 
 #include "Mesh/Mesh.h"
+#include "Buffer/Buffer.h"
 
-#include <iostream>
 
 Mesh::Mesh(std::string name)
     : Asset(name), mVertexBuffer(GL_ARRAY_BUFFER), mVAO()
@@ -19,6 +19,17 @@ Mesh::Mesh(std::string name)
 void Mesh::draw(ShaderProgram &shaderProgram) {
     mVAO.bind();
     glDrawElements(GL_TRIANGLES, mVertexCount, GL_UNSIGNED_INT, 0);
+}
+
+void Mesh::drawInstanced(ShaderProgram &shaderProgram, int instanceCount) {
+    mVAO.bind();
+    glDrawElementsInstanced(
+        GL_TRIANGLES,
+        mVertexCount,
+        GL_UNSIGNED_INT,
+        nullptr,
+        instanceCount
+        );
 }
 
 void Mesh::setVertices(std::vector<float> vertices) {

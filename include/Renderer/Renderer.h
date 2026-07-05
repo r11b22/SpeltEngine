@@ -14,6 +14,7 @@
 #include "RenderStateManager.h"
 #include "Mesh/Mesh.h"
 #include "PostProcessing/PostProcessingPipeline.h"
+#include "Renderer/Instancing/InstanceRenderer.hpp"
 #include "Scene/Scene.hpp"
 #include "../Window.h"
 #include "../PostProcessing/PostProcessingGroup.h"
@@ -42,6 +43,8 @@ private:
     RenderStateManager mStateManager = {};
     LightManager mLightManager = {};
     ShaderProgram* mCurrentProgram = nullptr;
+
+    InstanceRenderer* mInstanceRenderer;
 
     glm::vec4 mScreenClearColor{0.0f, 0.0f, 0.0f, 1.0f};
 

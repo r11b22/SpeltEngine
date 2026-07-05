@@ -11,6 +11,12 @@
 #include <variant>
 #include <glm/glm.hpp>
 
+/**
+ * Things to update when you update this
+ * ShaderProgram.setUniform()
+ * InstanceAttribType
+ * InstanceData.getLayout()
+ */
 using UniformData = std::variant<
     int,
     float,
