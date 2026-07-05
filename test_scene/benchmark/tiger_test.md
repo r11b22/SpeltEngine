@@ -62,3 +62,27 @@ This version groups draw commands with the same mesh into one single hardware in
 |100|700-850|1.2|61|7|146.8|
 |1000|140|7.0|80|6|146.9|
 |10000|18|56-57|35|8-10|156.4|
+
+
+## Transform optimsations
+
+This versions uses the fact that transform matrices have a special form to reduce matrix multiplications as much as possible. Matrix caching is also used but because the tigers are rotating this will not have any effect on the result.
+
+These optimisations wore chosen after profiling the engine.
+
+
+### Specs
+* OS: Arch Linux x86_64
+* Kernel version: Linux 7.1.2-arch3-1
+* CPU: Intel(R) Core(TM) Ultra 7 255H (16) @ 5.10 GHz
+* GPU: NVIDIA RTX PRO 1000 Blackwell Generation Laptop GPU
+* Memory: 32GB
+* Resolution: 1920x1080
+
+
+### results
+|Count|FPS|Frame Time (ms)|GPU usage (%)|CPU usage (%)|Memory usage (MiB)|
+|-----|---|----------|---------|---------|------------|
+|100|830|1.2|63|5|192.2|
+|1000|170|5.8|80|7|192.2|
+|10000|21|47-48|40|8|199.4|

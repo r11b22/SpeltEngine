@@ -33,12 +33,13 @@ void TransformableObject::lookAt(glm::vec3 forward) {
 
 
 glm::mat4 TransformableObject::getTransformationMatrix() const {
-    return getParentTransformationMatrix() * mTransform.getTransformationMatrix();
+    return mTransform.getTransformationMatrix(getParentTransformationMatrix());
 }
 
 glm::mat4 TransformableObject::getParentTransformationMatrix() const {
     // find first ancestor with transform
     // FIXME: this only checks the immediate parent not all parents
+    // TODO cache result
     while (true) {
         ObjectReference<ITransformable> current = getScene().getParentByID<ITransformable>(getID());
         if (current.isNoReference()) {

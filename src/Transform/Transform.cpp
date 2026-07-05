@@ -5,7 +5,12 @@
 
 
 #include "../../include/Transform/Transform.h"
+#include "glm/ext/matrix_transform.hpp"
+#include "glm/ext/quaternion_geometric.hpp"
+#include "glm/ext/quaternion_trigonometric.hpp"
+#include "glm/ext/vector_float3.hpp"
 
+#include <cmath>
 #include <stdexcept>
 
 
@@ -13,26 +18,54 @@
 #include <glm/gtx/quaternion.hpp>
 
 void Transform::setPosition(const glm::vec3 &pos) {
+    mCacheInvalid = true;
     mPosition = pos;
-    mPositionMatrix = glm::translate(glm::mat4(1.0f), pos);
 }
 
 void Transform::setScale(const glm::vec3 &scale) {
-    mScaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+    mCacheInvalid = true;
+    mScale = scale;
 }
 
 void Transform::rotate(float rad, const glm::vec3 &axis) {
-    mRotationMatrix = glm::rotate(mRotationMatrix, rad, axis);
+    mCacheInvalid = true;
+    mRotation = glm::angleAxis(rad, glm::normalize(axis)) * mRotation;
 }
 
 
 glm::mat4 Transform::getTransformationMatrix() const{
-    return mPositionMatrix * mRotationMatrix * mScaleMatrix;
+    if (mCacheInvalid) {
+        const glm::mat3 rot = glm::mat3_cast(mRotation);
+
+        mTransformationMatrixCache[0] = glm::vec4(rot[0] * mScale.x, 0.0f);
+        mTransformationMatrixCache[1] = glm::vec4(rot[1] * mScale.y, 0.0f);
+        mTransformationMatrixCache[2] = glm::vec4(rot[2] * mScale.z, 0.0f);
+        mTransformationMatrixCache[3] = glm::vec4(mPosition, 1.0f);
+
+        mCacheInvalid = false;
+    }
+
+    return mTransformationMatrixCache;
+}
+
+inline glm::mat4 multiplyAffine(const glm::mat4 &a, const glm::mat4 &b) {
+    const glm::mat3 aRot(a); // extract a's 3x3 upper-left once
+
+    glm::mat4 result;
+    result[0] = glm::vec4(aRot * glm::vec3(b[0]), 0.0f);
+    result[1] = glm::vec4(aRot * glm::vec3(b[1]), 0.0f);
+    result[2] = glm::vec4(aRot * glm::vec3(b[2]), 0.0f);
+    result[3] = glm::vec4(aRot * glm::vec3(b[3]) + glm::vec3(a[3]), 1.0f);
+    return result;
+}
+
+glm::mat4 Transform::getTransformationMatrix(glm::mat4 parent) const{
+    return multiplyAffine(parent, getTransformationMatrix());
 }
 
 void Transform::lookAt(glm::vec3 forward) {
-    glm::quat rotation = glm::quatLookAt(forward, glm::vec3(0, 1, 0));
-    mRotationMatrix = glm::toMat4(rotation);
+    mCacheInvalid = true;
+    mRotation = glm::quatLookAt(glm::normalize(forward), glm::vec3(0, 1, 0));
 }
 
 glm::vec3 Transform::getPosition() const {
@@ -40,15 +73,11 @@ glm::vec3 Transform::getPosition() const {
 }
 
 glm::vec3 Transform::getScale() const {
-    glm::vec3 scale;
-    scale.x = mScaleMatrix[0][0];
-    scale.y = mScaleMatrix[1][1];
-    scale.z = mScaleMatrix[2][2];
-    return scale;
+    return mScale;
 }
 
 glm::vec3 Transform::getRight() const {
-    return glm::vec3(mRotationMatrix[0]);
+    return mRotation * glm::vec3(1.0f, 0.0f, 0.0f);
 }
 
 glm::vec3 Transform::getLeft() const {
@@ -56,7 +85,7 @@ glm::vec3 Transform::getLeft() const {
 }
 
 glm::vec3 Transform::getUp() const {
-    return glm::vec3(mRotationMatrix[1]);
+    return mRotation * glm::vec3(0.0f, 1.0f, 0.0f);
 }
 
 glm::vec3 Transform::getDown() const {
@@ -64,7 +93,7 @@ glm::vec3 Transform::getDown() const {
 }
 
 glm::vec3 Transform::getBackward() const {
-    return glm::vec3(mRotationMatrix[2]);
+    return mRotation * glm::vec3(0.0f, 0.0f, 1.0f);
 }
 
 glm::vec3 Transform::getForward() const {
@@ -72,5 +101,6 @@ glm::vec3 Transform::getForward() const {
 }
 
 void Transform::scale(const glm::vec3 &scalar) {
-    mScaleMatrix = glm::scale(mScaleMatrix, scalar);
+    mScale *= scalar;
+    mCacheInvalid = true;
 }

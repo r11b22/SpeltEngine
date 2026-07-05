@@ -19,6 +19,10 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     set(SPELT_IS_ROOT_PROJECT TRUE)
 endif()
 
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(-fno-omit-frame-pointer)
+endif()
+
 option(SPELT_VENDORED_DEPS
         "Use vendored copies of GLFW/Assimp (disable if consuming project provides them)"
         ON)

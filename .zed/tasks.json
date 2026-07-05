@@ -14,7 +14,6 @@
   },
   {
     "label": "CMake: Run Test Scene",
-    // We use ../build because we are executing from inside the test_scene folder
     "command": "cmake --build ../build && ../build/test_scene/SpeltEngineTestScene",
     "cwd": "$ZED_WORKTREE_ROOT/test_scene",
     "use_new_terminal": false,
@@ -23,7 +22,6 @@
   },
   {
     "label": "CMake: Run Tests",
-    // We use ../build because we are executing from inside the test_scene folder
     "command": "cmake --build build && ./build/test/tests",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
@@ -31,8 +29,15 @@
   },
   {
     "label": "CMake: Benchmark Test Scene",
-    // We use ../build because we are executing from inside the test_scene folder
     "command": "cmake --build ../build && MANGOHUD_CONFIG=procmem mangohud ../build/test_scene/SpeltEngineTestScene",
+    "cwd": "$ZED_WORKTREE_ROOT/test_scene",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "save": "current",
+  },
+  {
+    "label": "CMake: Profile Test Scene (Hotspot)",
+    "command": "cmake --build ../build && perf record --call-graph dwarf -o perf.data ../build/test_scene/SpeltEngineTestScene && hotspot perf.data",
     "cwd": "$ZED_WORKTREE_ROOT/test_scene",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
