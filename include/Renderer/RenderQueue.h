@@ -14,7 +14,7 @@ private:
 
     StateChangeCommand mLastState{};
     size_t mLastDrawCommandHash = 0;
-    DrawCommand* mLasDrawCommand = nullptr;
+    int mLastDrawCommandIdx = -1;
 public:
 
     const std::vector<RenderCommand>& getRenderCommands() const;

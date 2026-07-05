@@ -15,35 +15,41 @@ template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 void RenderQueue::submitRenderCommands(std::vector<RenderCommand> commands) {
     mRenderCommands.reserve(mRenderCommands.size() + commands.size());
 
-    for (const RenderCommand& command : commands){
+    for (RenderCommand& command : commands) { // Removed 'const' to allow std::move
         std::visit(overloaded{
-            [&](const DrawCommand& drawCmd) {
+            [&](DrawCommand& drawCmd) {
                 size_t testHash = hash(drawCmd);
-                if(mLasDrawCommand != nullptr && mLastDrawCommandHash == testHash && drawCmd.isInstanceOf(*mLasDrawCommand)){
-                    // merge draw command with the previous one
-                    mergeDrawCommand(mLasDrawCommand, drawCmd);
-                }else{
-                    // Create new drawcommand
-                    mRenderCommands.push_back(std::move(drawCmd));
-                    mLasDrawCommand = &std::get<DrawCommand>(mRenderCommands.back());
-                    mLastDrawCommandHash = testHash;
+
+                // Check if we have a valid index to merge into
+                if (mLastDrawCommandIdx != -1 &&
+                    mLastDrawCommandIdx < mRenderCommands.size() &&
+                    mLastDrawCommandHash == testHash)
+                {
+                    auto& targetDrawCmd = std::get<DrawCommand>(mRenderCommands[mLastDrawCommandIdx]);
+                    if (drawCmd.isInstanceOf(targetDrawCmd)) {
+                        mergeDrawCommand(&targetDrawCmd, drawCmd);
+                        return; // Successfully merged, do not push to vector
+                    }
                 }
+
+                // Create new draw command by moving it
+                mRenderCommands.push_back(std::move(command));
+                mLastDrawCommandIdx = mRenderCommands.size() - 1; // Store index, completely safe!
+                mLastDrawCommandHash = testHash;
             },
-            [&](const StateChangeCommand& stateCmd) {
-                // TODO cache hash
-                if (hash(stateCmd) != hash(mLastState)){
+            [&](StateChangeCommand& stateCmd) {
+                if (hash(stateCmd) != hash(mLastState)) {
                     mLastState = stateCmd;
-                    // Get ready for a new draw command
-                    mLasDrawCommand = nullptr;
+                    mLastDrawCommandIdx = -1; // Invalidate index
                     mLastDrawCommandHash = 0;
 
-                    mRenderCommands.push_back(stateCmd);
+                    mRenderCommands.push_back(std::move(command));
                 }
             },
-            [&](const ClearCommand& clearCmd) {
+            [&](ClearCommand& clearCmd) {
                 mLastDrawCommandHash = 0;
-                mLasDrawCommand = nullptr;
-                mRenderCommands.push_back(clearCmd);
+                mLastDrawCommandIdx = -1; // Invalidate index
+                mRenderCommands.push_back(std::move(command));
             }
         }, command);
     }
@@ -57,6 +63,9 @@ const std::vector<RenderCommand>& RenderQueue::getRenderCommands() const{
 
 void RenderQueue::clear() {
     mRenderCommands.clear();
+    mLastDrawCommandIdx = -1;
+    mLastDrawCommandHash = 0;
+    mLastState = {};
 }
 
 void RenderQueue::mergeDrawCommand(DrawCommand* into, const DrawCommand& toMerge) const {

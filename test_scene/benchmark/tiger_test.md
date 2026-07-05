@@ -59,6 +59,6 @@ This version groups draw commands with the same mesh into one single hardware in
 ### results
 |Count|FPS|Frame Time (ms)|GPU usage (%)|CPU usage (%)|Memory usage (MiB)|
 |-----|---|----------|---------|---------|------------|
-|100|650 - 700|1.3|61|5|147.1|
-|1000|130-150|6.2 - 6.7|80|6|147.7|
-|10000|17|56-59|35|7-9|161.0|
+|100|700-850|1.2|61|7|146.8|
+|1000|140|7.0|80|6|146.9|
+|10000|18|56-57|35|8-10|156.4|
