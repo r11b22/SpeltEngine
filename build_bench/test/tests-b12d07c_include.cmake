@@ -1,5 +1,0 @@
-if(EXISTS "/home/joost/Documents/projects/c++/SpeltEngine/build_bench/test/tests-b12d07c_tests.cmake")
-  include("/home/joost/Documents/projects/c++/SpeltEngine/build_bench/test/tests-b12d07c_tests.cmake")
-else()
-  add_test(tests_NOT_BUILT-b12d07c tests_NOT_BUILT-b12d07c)
-endif()

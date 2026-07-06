@@ -12,6 +12,12 @@
     "allow_concurrent_runs": false,
   },
   {
+    "label": "CMake: Configure (Release+Tracy)",
+    "command": "cmake -B build_release_tracy -DCMAKE_BUILD_TYPE=Release -DSPELT_BUILD_TEST_SCENE=ON -DENABLE_PROFILING=ON",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+  },
+  {
     "label": "CMake: Build Target",
     "command": "cmake --build build",
     "use_new_terminal": false,
@@ -21,6 +27,14 @@
   {
     "label": "CMake: Run Test Scene",
     "command": "cmake --build ../build --target SpeltEngineTestScene && ../build/test_scene/SpeltEngineTestScene",
+    "cwd": "$ZED_WORKTREE_ROOT/test_scene",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "save": "current",
+  },
+  {
+    "label": "CMake: Run Test Scene (Release + Tracy)",
+    "command": "cmake --build ../build_release_tracy --target SpeltEngineTestScene && ../build_release_tracy/test_scene/SpeltEngineTestScene",
     "cwd": "$ZED_WORKTREE_ROOT/test_scene",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
