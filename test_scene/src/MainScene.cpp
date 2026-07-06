@@ -8,6 +8,7 @@
 
 
 #include "Asset/AssetLoader.hpp"
+#include "Defaults/Objects/TransformableObject.h"
 #include "Mesh/MeshLoader.hpp"
 #include "Texture/Texture.h"
 #include "Texture/TextureLoader.h"
@@ -53,11 +54,15 @@ void MainScene::onLoad(Renderer &renderer, Window &window) {
     // use get by name to test the system
     mTigerMesh = getAssetManager().getAssetByName<Mesh>("tiger");
 
+    ObjectReference<TransformableObject> testParent = createObject<TransformableObject>("parent");
+    testParent->setPosition(glm::vec3{5.0f});
+
+
     // Spawn 100 tigers using your utility functions
     for (int i = 0; i < 10000; ++i) {
         std::string name = "tiger_" + std::to_string(i);
         ObjectReference<MeshObject> tiger = createObject<MeshObject>(name, mTigerMesh, tigerMaterial);
-
+        tiger->setParent(testParent);
 
         tiger->setPosition(getRandomVec3(glm::vec3{-50.0f, 0.0f, -100.0f}, glm::vec3{50.0f, 0.0f, 0.0f}));
         mTigers.push_back(tiger);

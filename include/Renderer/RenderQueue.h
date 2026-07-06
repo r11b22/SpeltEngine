@@ -23,7 +23,7 @@ public:
 
     void clear();
 private:
-    void mergeDrawCommand(DrawCommand* into, const DrawCommand& toMerge) const;
+    void mergeDrawCommand(DrawCommand* into, DrawCommand& toMerge) const;
 };
 
 #endif //CGVCPROJECT_RENDERQUEUE_H

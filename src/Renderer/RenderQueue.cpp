@@ -6,6 +6,7 @@
 #include "Hashing/Hashing.hpp"
 #include "Renderer/RenderCommand.h"
 #include <cstddef>
+#include <iostream>
 #include <iterator>
 #include <vector>
 
@@ -14,6 +15,8 @@ template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 void RenderQueue::submitRenderCommands(std::vector<RenderCommand> commands) {
     mRenderCommands.reserve(mRenderCommands.size() + commands.size());
+
+
 
     for (RenderCommand& command : commands) { // Removed 'const' to allow std::move
         std::visit(overloaded{
@@ -39,6 +42,7 @@ void RenderQueue::submitRenderCommands(std::vector<RenderCommand> commands) {
             },
             [&](StateChangeCommand& stateCmd) {
                 if (hash(stateCmd) != hash(mLastState)) {
+
                     mLastState = stateCmd;
                     mLastDrawCommandIdx = -1; // Invalidate index
                     mLastDrawCommandHash = 0;
@@ -65,10 +69,9 @@ void RenderQueue::clear() {
     mRenderCommands.clear();
     mLastDrawCommandIdx = -1;
     mLastDrawCommandHash = 0;
-    mLastState = {};
 }
 
-void RenderQueue::mergeDrawCommand(DrawCommand* into, const DrawCommand& toMerge) const {
+void RenderQueue::mergeDrawCommand(DrawCommand* into, DrawCommand& toMerge) const {
     if (!into) return; // Safety check
 
     // Append all elements from toMerge.instanceUniforms to the end of into->instanceUniforms

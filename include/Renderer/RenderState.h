@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <cstring>
 #include <functional>
+#include <ios>
+#include <iostream>
 
 enum class CullMode  : uint8_t { None, Front, Back, FrontAndBack };
 enum class DepthFunc : uint8_t { Less, Equal, LEqual, Greater, Always };
@@ -39,7 +41,7 @@ struct RenderState {
     uint8_t bitfieldPadding : 3 = 0;
 
     // 4. Explicit padding to guarantee the struct total is a multiple of 4 (Total size: 20 bytes)
-    uint8_t structPadding[3] = {0, 0, 0};
+    uint8_t structPadding[2] = {0, 0};
 
     // Safe to use now because there are absolutely zero hidden compiler gaps!
     bool operator==(const RenderState& other) const {
@@ -49,7 +51,11 @@ struct RenderState {
     bool operator!=(const RenderState& other) const {
         return !(*this == other);
     }
+
+
 };
+
+std::ostream& operator<<(std::ostream& os, const RenderState& state);
 
 namespace std {
     template<>
