@@ -9,6 +9,7 @@
 
 #include "glad/glad.h"
 #include "Strings/ShaderSource.h"
+#include "Tracy/tracy/Tracy.hpp"
 
 App::App(const std::string &title) :
     mWindow(800, 500, title), mRenderer(&mWindow), mCurrentScene(nullptr)
@@ -60,7 +61,7 @@ void App::run() {
         } catch (const std::exception& e) {
             std::cout << "Runtime error: " << e.what() << std::endl;
         }
-
+        FrameMark;
     }
 }
 

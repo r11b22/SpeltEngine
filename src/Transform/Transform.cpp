@@ -10,6 +10,7 @@
 #include "glm/ext/quaternion_trigonometric.hpp"
 #include "glm/ext/vector_float3.hpp"
 
+#include <Tracy/tracy/Tracy.hpp>
 #include <cmath>
 #include <stdexcept>
 
@@ -34,6 +35,7 @@ void Transform::rotate(float rad, const glm::vec3 &axis) {
 
 
 glm::mat4 Transform::getTransformationMatrix() const{
+    ZoneScoped;
     if (mCacheInvalid) {
         const glm::mat3 rot = glm::mat3_cast(mRotation);
 
@@ -60,6 +62,7 @@ inline glm::mat4 multiplyAffine(const glm::mat4 &a, const glm::mat4 &b) {
 }
 
 glm::mat4 Transform::getTransformationMatrix(glm::mat4 parent) const{
+    ZoneScoped;
     return multiplyAffine(parent, getTransformationMatrix());
 }
 

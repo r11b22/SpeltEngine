@@ -4,6 +4,7 @@
 
 #include "../../include/Renderer/Renderer.h"
 
+#include <Tracy/tracy/Tracy.hpp>
 #include <format>
 #include <iostream>
 #include <type_traits>
@@ -104,6 +105,7 @@ void Renderer::prepare() {
 }
 
 void Renderer::drawPass(const RenderQueue& queue, const Camera& camera, const std::vector<LightData>& lights) {
+    ZoneScoped;
     mInputFrameBuffer->bind();
     glClearColor(mScreenClearColor.x, mScreenClearColor.y, mScreenClearColor.z, mScreenClearColor.a);
     glClear(mClearBitField);
@@ -125,7 +127,7 @@ void Renderer::drawPass(const RenderQueue& queue, const Camera& camera, const st
 
 
 void Renderer::renderToScreen() {
-
+    ZoneScoped;
     Texture* output = nullptr;
     mPostProcessingPipeline->process();
     output = mPostProcessingPipeline->getOutput();
@@ -156,6 +158,8 @@ void Renderer::uploadStandardUniforms(ShaderProgram &program, const Camera& came
 
 
 void Renderer::draw(const RenderQueue& queue, const Camera& camera, const std::vector<LightData>& lights) {
+    ZoneScoped;
+
     drawPass(queue, camera, lights);
     renderToScreen();
 }
@@ -181,6 +185,7 @@ void Renderer::setSetting(GLenum setting, bool value){
 }
 
 void Renderer::executeRenderCommand(const RenderCommand& command, const Camera& camera, const std::vector<LightData>& lights) {
+    ZoneScoped;
     std::visit([this, &camera, &lights](auto&& arg) {
         using T = std::decay_t<decltype(arg)>;
 
@@ -195,6 +200,7 @@ void Renderer::executeRenderCommand(const RenderCommand& command, const Camera& 
 }
 
 void Renderer::executeDrawCommand(const DrawCommand& command, const Camera& camera, const std::vector<LightData>& lights) {
+    ZoneScoped;
     const std::string& shaderName = command.shaderName;
     if(!command.mesh.isNoReference()){
         IRenderable* toRender = mAssetManager->getAsset<Mesh>(command.mesh);
@@ -254,6 +260,7 @@ void Renderer::executeStateChangeCommand(const StateChangeCommand& command) {
 }
 
 void Renderer::executeClearCommand(const ClearCommand& command) {
+    ZoneScoped;
     GLbitfield mask = 0;
 
     if (command.clearColor) {

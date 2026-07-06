@@ -6,6 +6,7 @@
 
 #include "Renderer/RenderStateManager.h"
 #include "Renderer/RenderState.h"
+#include <Tracy/tracy/Tracy.hpp>
 
 // Helper to map custom StencilFunc to GL constants
 static GLenum getGLStencilFunc(StencilFunc func) {
@@ -142,6 +143,7 @@ void RenderStateManager::applyStartState(const RenderState& newState) {
 }
 
 void RenderStateManager::applyState(const RenderState &newState) {
+    ZoneScoped;
     // 1. Depth Testing
     if (mCurrentState.depthTest != newState.depthTest) {
         setDepthTestEnabled(newState.depthTest);

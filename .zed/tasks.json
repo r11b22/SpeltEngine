@@ -1,7 +1,13 @@
 [
   {
-    "label": "CMake: Configure",
-    "command": "cmake -B build -DCMAKE_BUILD_TYPE=Debug",
+    "label": "CMake: Configure (Debug w/ Profiling)",
+    "command": "cmake -B build -DCMAKE_BUILD_TYPE=Debug -DSPELT_BUILD_TEST_SCENE=ON -DENABLE_PROFILING=ON",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+  },
+  {
+    "label": "CMake: Configure (Benchmark/Release)",
+    "command": "cmake -B build_bench -DCMAKE_BUILD_TYPE=Release -DSPELT_BUILD_TEST_SCENE=ON -DENABLE_PROFILING=OFF",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
   },
@@ -14,7 +20,7 @@
   },
   {
     "label": "CMake: Run Test Scene",
-    "command": "cmake --build ../build && ../build/test_scene/SpeltEngineTestScene",
+    "command": "cmake --build ../build --target SpeltEngineTestScene && ../build/test_scene/SpeltEngineTestScene",
     "cwd": "$ZED_WORKTREE_ROOT/test_scene",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
@@ -29,7 +35,7 @@
   },
   {
     "label": "CMake: Benchmark Test Scene",
-    "command": "cmake --build ../build && MANGOHUD_CONFIG=procmem mangohud ../build/test_scene/SpeltEngineTestScene",
+    "command": "cmake --build ../build_bench --target SpeltEngineTestScene && MANGOHUD_CONFIG=procmem mangohud ../build_bench/test_scene/SpeltEngineTestScene",
     "cwd": "$ZED_WORKTREE_ROOT/test_scene",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
@@ -37,7 +43,7 @@
   },
   {
     "label": "CMake: Profile Test Scene (Hotspot)",
-    "command": "cmake --build ../build && perf record --call-graph dwarf -o perf.data ../build/test_scene/SpeltEngineTestScene && hotspot perf.data",
+    "command": "cmake --build ../build --target SpeltEngineTestScene && perf record --call-graph dwarf -o perf.data ../build/test_scene/SpeltEngineTestScene && hotspot perf.data",
     "cwd": "$ZED_WORKTREE_ROOT/test_scene",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,

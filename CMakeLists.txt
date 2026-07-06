@@ -49,6 +49,9 @@ if(SPELT_BUILD_TESTS AND NOT TARGET Catch2::Catch2WithMain)
     add_subdirectory(external/catch2)
 endif()
 
+
+option(ENABLE_PROFILING "Enable Tracy profiling" ON)
+
 # 2. GLFW + Assimp — vendored or system-provided
 if(SPELT_VENDORED_DEPS)
     if(NOT TARGET glfw)
@@ -309,6 +312,22 @@ target_link_libraries(${PROJECT_NAME_VAR}
         PRIVATE $<BUILD_INTERFACE:glfw>
         $<BUILD_INTERFACE:stb_image>
 )
+
+# Tracy
+
+if(ENABLE_PROFILING)
+    # Add Tracy header paths
+    target_include_directories(${PROJECT_NAME_VAR} PRIVATE external/tracy/public)
+
+    # Add Tracy source file to compilation
+    target_sources(${PROJECT_NAME_VAR} PRIVATE external/tracy/public/TracyClient.cpp)
+
+    # Enable Tracy macros globally for your target
+    target_compile_definitions(${PROJECT_NAME_VAR} PRIVATE TRACY_ENABLE)
+
+    # Linux requires pthreads and dl
+    target_link_libraries(${PROJECT_NAME_VAR} PRIVATE pthread dl)
+endif()
 
 # Linux requires Threads + X11
 if(UNIX AND NOT APPLE)

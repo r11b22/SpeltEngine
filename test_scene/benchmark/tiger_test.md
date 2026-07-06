@@ -86,3 +86,28 @@ These optimisations wore chosen after profiling the engine.
 |100|830|1.2|63|5|192.2|
 |1000|170|5.8|80|7|192.2|
 |10000|21|47-48|40|8|199.4|
+
+
+## Release mode
+
+This version does not improve any code. It justs enables release mode.
+
+These measurements were made to set a new benchmarking standard and should not be compared to previous results.
+
+
+### Specs
+* OS: Arch Linux x86_64
+* Kernel version: Linux 7.1.2-arch3-1
+* CPU: Intel(R) Core(TM) Ultra 7 255H (16) @ 5.10 GHz
+* GPU: NVIDIA RTX PRO 1000 Blackwell Generation Laptop GPU
+* Memory: 32GB
+* Resolution: 1920x1080
+
+
+### results
+|Count|FPS|Frame Time (ms)|GPU usage (%)|CPU usage (%)|Memory usage (MiB)|
+|-----|---|----------|---------|---------|------------|
+|100|2400|0.4|60|4|189.9|
+|1000|700|1.5|82|4|190.2|
+|10000|95-105|9.8|90|8|196.7|
+|50000|21|45.5-47.0|95|226.5|

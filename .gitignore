@@ -68,5 +68,8 @@ vcpkg_installed/
 Testing/
 .cache/
 
+# profiling
 test_scene/perf.data
 test_scene/perf.data.old
+
+traces

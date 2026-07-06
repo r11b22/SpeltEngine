@@ -8,6 +8,7 @@
 #include "Object/ObjectRepository.h"
 #include "Scene/Scene.hpp"
 #include "Transform/ITransformable.h"
+#include <Tracy/tracy/Tracy.hpp>
 
 TransformableObject::TransformableObject(const std::string &name)
     : Object(name), mTransform()
@@ -33,6 +34,7 @@ void TransformableObject::lookAt(glm::vec3 forward) {
 
 
 glm::mat4 TransformableObject::getTransformationMatrix() const {
+    ZoneScoped;
     return mTransform.getTransformationMatrix(getParentTransformationMatrix());
 }
 

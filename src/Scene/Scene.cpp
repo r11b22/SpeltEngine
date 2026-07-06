@@ -14,6 +14,7 @@
 #include "Texture/CubemapAsset.hpp"
 #include "Texture/TextureAsset.hpp"
 #include "Texture/TextureReference.hpp"
+#include <Tracy/tracy/Tracy.hpp>
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
@@ -51,6 +52,7 @@ void Scene::updateObjects(float deltaT) {
 // ---------------------------------------------------------------------------
 
 const RenderQueue& Scene::getRenderQueue() {
+    ZoneScoped;
     // TODO move this to somewhere else
     mRenderQueue.clear();
 
