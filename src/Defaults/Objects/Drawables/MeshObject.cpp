@@ -3,6 +3,7 @@
 //
 
 #include "Defaults/Objects/Drawables/MeshObject.h"
+#include "Material/Material.h"
 #include "Mesh/Mesh.h"
 #include "Mesh/MeshReference.hpp"
 #include "Renderer/Instancing/InstanceData.hpp"
@@ -38,6 +39,10 @@ void MeshObject::setShader(std::string shader) {
 
 void MeshObject::setMesh(MeshReference mesh){
     mMesh = mesh;
+}
+
+void MeshObject::setMaterial(Material material){
+    mMaterial = material;
 }
 
 Material MeshObject::getMaterial() {

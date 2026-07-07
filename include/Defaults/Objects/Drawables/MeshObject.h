@@ -22,6 +22,7 @@ public:
 
     void setShader(std::string shader);
     void setMesh(MeshReference mesh);
+    void setMaterial(Material material);
 
 protected:
     Material getMaterial();
