@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.15)
 add_executable(tests
         MainTest.cpp
         SceneTest.cpp
+        JsonTest.cpp
 )
 
 # Link your engine target (SpeltEngine) and the Catch2 target.

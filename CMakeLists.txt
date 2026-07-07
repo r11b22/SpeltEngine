@@ -132,6 +132,9 @@ set(ENGINE_SOURCES
         src/Object/Object.cpp
         src/Object/ObjectRepository.cpp
 
+        src/Serial/Json/Json.cpp
+        src/Serial/Json/JsonLoader.cpp
+
         src/Scene/Scene.cpp
         src/Scene/SceneHierarchyComponent.cpp
         src/Scene/SceneHierarchy.cpp
@@ -225,6 +228,9 @@ set(ENGINE_HEADERS
         include/Renderer/Instancing/InstanceRenderer.hpp
         include/Renderer/Instancing/InstanceData.hpp
         include/Renderer/Instancing/InstanceLayout.hpp
+
+        include/Serial/Json/Json.hpp
+        include/Serial/Json/JsonLoader.hpp
 
         include/Scene/Scene.hpp
         include/Scene/SceneHierarchyComponent.h

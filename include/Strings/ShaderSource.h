@@ -70,7 +70,6 @@ struct InstanceData {
     mat4 uModelMatrix;
 };
 
-// The SSBO bound by mInstanceStreamBuffer.bindBase(3)
 layout(std430, binding = 3) readonly buffer InstanceBuffer {
     InstanceData instances[];
 };
