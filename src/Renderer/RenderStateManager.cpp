@@ -116,30 +116,25 @@ void RenderStateManager::setStencilOp(StencilOp fail, StencilOp zfail, StencilOp
 void RenderStateManager::applyStartState(const RenderState& newState) {
     // 1. Depth Testing
     setDepthTestEnabled(newState.depthTest);
-    if (newState.depthTest) {
-        setDepthFunc(newState.depthFunc);
-    }
+    setDepthFunc(newState.depthFunc);
+
     setDepthWriteEnabled(newState.depthWrite);
 
     // 2. Face Culling
     setCullFaceEnabled(newState.cullFace);
-    if (newState.cullFace) {
-        setCullMode(newState.cullMode);
-    }
+    setCullMode(newState.cullMode);
+
 
     // 3. Blending
     setBlendEnabled(newState.blend);
-    if (newState.blend) {
-        setBlendFunc(newState.srcBlendFactor, newState.dstBlendFactor);
-    }
+    setBlendFunc(newState.srcBlendFactor, newState.dstBlendFactor);
 
     // 4. Stencil Testing
     setStencilTestEnabled(newState.stencilTest);
     setStencilWriteMask(newState.stencilWriteMask);
-    if (newState.stencilTest) {
-        setStencilFunc(newState.stencilFunc, newState.stencilRef, newState.stencilReadMask);
-        setStencilOp(newState.stencilFailOp, newState.stencilZFailOp, newState.stencilZPassOp);
-    }
+    setStencilFunc(newState.stencilFunc, newState.stencilRef, newState.stencilReadMask);
+    setStencilOp(newState.stencilFailOp, newState.stencilZFailOp, newState.stencilZPassOp);
+
 }
 
 void RenderStateManager::applyState(const RenderState &newState) {
