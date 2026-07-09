@@ -58,8 +58,9 @@ struct AssetLoader<Mesh> {
 };
 ```
 
-This struct has 2 important parts:
-* SourceType: This is the type that will be used in load to get all data that needs to be loaded. 
-* load: this function actually loads the thing into memory. In this function the translation between your own Loader Class/Function is defined.
+This struct implements the load function. This function actually loads the thing into memory. In this function the translation between your own Loader Class/Function is defined. There are 2 possible defenitions for load:
+`static Mesh load(AssetLoadInfo<Mesh> asset)`
+and
+`static Mesh load(AssetLoadInfo<Mesh> asset, AssetManager& manager)`.
 
 That is everything that is needed to call `getAssetManager().loadAsset<Mesh>(AssetLoadInfo<Mesh>{});`. Important to keep in mind is that the definition for loadAsset<Mesh> is now dependant on the header that defines the AssetLoader. Make sure this header is included when using asset loading.
