@@ -67,6 +67,7 @@ const std::vector<RenderCommand>& RenderQueue::getRenderCommands() const{
 
 void RenderQueue::clear() {
     mRenderCommands.clear();
+    mLastState = {};
     mLastDrawCommandIdx = -1;
     mLastDrawCommandHash = 0;
 }
