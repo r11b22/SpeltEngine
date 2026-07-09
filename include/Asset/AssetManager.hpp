@@ -30,7 +30,7 @@ class AssetManager {
         void clear();
 
         template<typename T>
-            requires LoadableAsset<T> || LoadableAssetWithManager<T>
+            requires LoadableAsset<T>
         AssetReference<T> loadAsset(AssetLoadInfo<T> source) {
             if constexpr (LoadableAssetWithManager<T>) {
                 return addAsset(std::move(AssetLoader<T>::load(source, *this)));
