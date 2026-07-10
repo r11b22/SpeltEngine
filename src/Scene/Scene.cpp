@@ -11,11 +11,14 @@
 #include "Object/Object.h"
 #include "Object/ObjectID.h"
 #include "Object/ObjectRepository.h"
+#include "Renderer/RenderPass.hpp"
 #include "Texture/CubemapAsset.hpp"
 #include "Texture/TextureAsset.hpp"
 #include "Texture/TextureReference.hpp"
 #include <Tracy/tracy/Tracy.hpp>
 #include <algorithm>
+#include <cstddef>
+#include <format>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -25,6 +28,7 @@
 // ---------------------------------------------------------------------------
 
 Scene::Scene() {
+    createRenderPass();
 }
 
 // ---------------------------------------------------------------------------
@@ -51,18 +55,25 @@ void Scene::updateObjects(float deltaT) {
 // Drawables / lights / camera
 // ---------------------------------------------------------------------------
 
-const RenderQueue& Scene::getRenderQueue() {
+const std::vector<RenderPass>& Scene::getRenderPasses() {
     ZoneScoped;
     // TODO move this to somewhere else
-    mRenderQueue.clear();
 
-    for (const auto& drawable : mDrawables) {
-        auto commands = drawable->getRenderCommands();
-
-        mRenderQueue.submitRenderCommands(commands);
+    for(RenderPass& pass : mRenderPasses){
+        pass.clearRenderQueue();
     }
 
-    return mRenderQueue;
+
+    for (const auto& drawable : mDrawables) {
+        auto passCommands = drawable->getRenderCommands();
+
+        for (const auto& pass : passCommands){
+            mRenderPasses[pass.pass].addToRenderQueue(pass.commands);
+        }
+
+    }
+
+    return mRenderPasses;
 }
 
 void Scene::addLight(ObjectReference<ILight> light) {
@@ -189,4 +200,20 @@ void Scene::loadAssets(AssetManager& assetManager) const{
     for (const auto& toLoad : mAssets){
         toLoad->load(assetManager);
     }
+}
+
+void Scene::createRenderPass() {
+    mRenderPasses.emplace_back();
+}
+
+size_t Scene::renderPassCount(){
+    return mRenderPasses.size();
+}
+
+RenderPass& Scene::getRenderPass(size_t idx){
+    if(idx >= renderPassCount()){
+        throw std::out_of_range(std::format("No render pass with index: {}", idx));
+    }
+
+    return mRenderPasses[idx];
 }

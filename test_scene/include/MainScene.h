@@ -26,7 +26,7 @@ public:
     void onLoad(Renderer &renderer, Window &window) override;
     void onUpdate(Renderer &renderer, Window &window, float deltaT) override;
 private:
-    void testCreateMeshAtRuntime();
+    void testUIRenderPass();
 };
 
 #endif //TOONSHADER_TOONSCENE_H

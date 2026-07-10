@@ -6,6 +6,7 @@
 #include "Material/Material.h"
 #include "Mesh/Mesh.h"
 #include "Mesh/MeshReference.hpp"
+#include "Renderer/IDrawable.h"
 #include "Renderer/Instancing/InstanceData.hpp"
 #include "Renderer/RenderCommand.h"
 
@@ -14,7 +15,7 @@ MeshObject::MeshObject(const std::string &name, MeshReference mesh, Material mat
 {
 }
 
-std::vector<RenderCommand> MeshObject::getRenderCommands() {
+std::vector<RenderPassCommands> MeshObject::getRenderCommands() {
     StateChangeCommand defaultState;
 
     DrawCommand command;
@@ -30,7 +31,7 @@ std::vector<RenderCommand> MeshObject::getRenderCommands() {
 
     command.instances.push_back(std::move(instance));
 
-    return {defaultState, command};
+    return {RenderPassCommands{mRenderPass, {defaultState, command}}};
 }
 
 void MeshObject::setShader(std::string shader) {
@@ -45,6 +46,10 @@ void MeshObject::setMaterial(Material material){
     mMaterial = material;
 }
 
+void MeshObject::setRenderPass(size_t pass){
+    mRenderPass = pass;
+}
+
 Material MeshObject::getMaterial() {
     return mMaterial;
 }
@@ -55,4 +60,8 @@ MeshReference MeshObject::getMesh() const {
 
 std::string MeshObject::getShader() const{
     return mShader;
+}
+
+size_t MeshObject::getRenderPass() const {
+    return mRenderPass;
 }

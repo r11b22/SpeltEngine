@@ -12,6 +12,7 @@
 #include "Object/Object.h"
 #include "Object/ObjectID.h"
 #include "Object/ObjectRepository.h"
+#include "Renderer/RenderPass.hpp"
 #include "Scene/SceneLoadRequest.hpp"
 #include "SceneHierarchy.h"
 #include "../Camera.h"
@@ -38,7 +39,7 @@ private:
     // root-level sibling chain. All real objects have IDs > 0.
     SceneHierarchy mHierarchy;
 
-    RenderQueue mRenderQueue;
+    std::vector<RenderPass> mRenderPasses;
 
     AssetManager* mAssetManager = nullptr;
 
@@ -72,7 +73,7 @@ public:
     /**
      * Get a list of all objects in the scene that can draw
      */
-    const RenderQueue& getRenderQueue();
+    const std::vector<RenderPass>& getRenderPasses();
 
     /**
      *
@@ -301,6 +302,11 @@ public:
     }
 
     void loadAssets(AssetManager& assetManager) const;
+
+    void createRenderPass();
+    size_t renderPassCount();
+
+    RenderPass& getRenderPass(size_t idx);
 
 private:
 

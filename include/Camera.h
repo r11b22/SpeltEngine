@@ -21,7 +21,8 @@ public:
     ~Camera();
 
     glm::mat4 getViewMatrix() const;
-    glm::mat4 getProjectionMatrix(const Window& window) const;
+    glm::mat4 getPerspectiveProjectionMatrix(const Window& window) const;
+    glm::mat4 getOrthographicProjectionMatrix(const Window& window) const;
     void changeSpeed(float offset);
 
 };

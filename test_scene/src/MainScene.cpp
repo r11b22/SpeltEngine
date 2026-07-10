@@ -10,6 +10,8 @@
 #include "Asset/AssetLoader.hpp"
 #include "Defaults/Objects/TransformableObject.h"
 #include "Mesh/MeshLoader.hpp"
+#include "Mesh/MeshReference.hpp"
+#include "Renderer/RenderPass.hpp"
 #include "Texture/Texture.h"
 #include "Texture/TextureLoader.h"
 #include "Texture/CubemapLoader.hpp"
@@ -24,6 +26,7 @@
 #include "Texture/CubemapTexture.hpp"
 #include "glm/ext/vector_float3.hpp"
 #include "Utilities/Random.h"
+#include <algorithm>
 #include <memory>
 
 
@@ -33,6 +36,10 @@ MainScene::MainScene() {
 
     AssetLoadInfo<Mesh> tigerTest = {"tiger", "Models/Animals/tiger/tiger.gltf"};
     addAsset(tigerTest);
+
+    createRenderPass();
+    getRenderPass(1).setProjectionType(ProjectionType::Orthographic);
+    getRenderPass(1).setCameraType(CameraType::UI);
 }
 
 void MainScene::onLoad(Renderer &renderer, Window &window) {
@@ -76,15 +83,41 @@ void MainScene::onLoad(Renderer &renderer, Window &window) {
 
     renderer.setClearColor({0.0f, 0.2f, 0.2f, 1.0f});
 
+    testUIRenderPass();
 
 }
 
 void MainScene::onUpdate(Renderer &renderer, Window &window, float deltaT) {
     // rotate the tiger
     int i = 0;
-    for (auto& tiger : getObjectsOfType<MeshObject>()){
-        tiger.rotate(glm::radians(10.0f)*deltaT, glm::vec3{0.0f, 1.0f, 0.0f});
+    for (auto& tiger : mTigers){
+        tiger->rotate(glm::radians(10.0f)*deltaT, glm::vec3{0.0f, 1.0f, 0.0f});
     }
+}
+
+void MainScene::testUIRenderPass(){
+    std::vector<float> vertices = {
+        -0.5f, -0.5f,  0.0f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
+         0.5f, -0.5f,  0.0f,  0.0f,  0.0f,  1.0f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.0f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.0f,  0.0f,  0.0f,  1.0f,  0.0f, 1.0f
+    };
+
+    std::vector<unsigned int> indices = {
+        0, 1, 2,
+        2, 3, 0
+    };
+
+    Mesh quad{"name"};
+    quad.setVertices(vertices);
+    quad.setIndices(indices);
+
+    MeshReference quadRef = getAssetManager().addAsset(std::move(quad));
+
+    ObjectReference<MeshObject> obj = createObject<MeshObject>("testQuad", quadRef, Material{"test", glm::vec3{1.0f}});
+    obj->setScale(glm::vec3{100.0f});
+    obj->setPosition(glm::vec3{100.0f, 100.0f, 0.0f});
+    obj->setRenderPass(1);
 }
 
 MainScene::~MainScene() {

@@ -125,6 +125,7 @@ set(ENGINE_SOURCES
         src/Renderer/RenderQueue.cpp
         src/Renderer/RenderState.cpp
         src/Renderer/RenderStateManager.cpp
+        src/Renderer/RenderPass.cpp
 
         src/Renderer/Instancing/InstanceRenderer.cpp
         src/Renderer/Instancing/InstanceData.cpp
@@ -224,6 +225,7 @@ set(ENGINE_HEADERS
         include/Renderer/RenderQueue.h
         include/Renderer/RenderState.h
         include/Renderer/RenderStateManager.h
+        include/Renderer/RenderPass.hpp
 
         include/Renderer/Instancing/InstanceRenderer.hpp
         include/Renderer/Instancing/InstanceData.hpp

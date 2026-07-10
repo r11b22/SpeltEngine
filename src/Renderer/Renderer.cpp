@@ -10,10 +10,13 @@
 #include <type_traits>
 
 #include "Asset/AssetManager.hpp"
+#include "Buffer/Buffer.h"
 #include "FrameBuffer/MultisampledFrameBuffer.h"
 #include "Renderer/Instancing/InstanceData.hpp"
 #include "Renderer/Instancing/InstanceRenderer.hpp"
 #include "Renderer/RenderCommand.h"
+#include "Renderer/RenderPass.hpp"
+#include "Renderer/RenderQueue.h"
 #include "Renderer/RenderState.h"
 #include "Strings/ShaderSource.h"
 #include "Texture/CubemapTexture.hpp"
@@ -22,6 +25,7 @@
 #include "Texture/Texture.h"
 #include "Texture/TextureReference.hpp"
 #include "Window.h"
+#include "glm/ext/vector_float3.hpp"
 #include "glm/ext/vector_float4.hpp"
 
 Renderer::Renderer(Window* target)
@@ -104,15 +108,39 @@ void Renderer::prepare() {
     mStateManager.applyStartState(RenderState());
 }
 
-void Renderer::drawPass(const RenderQueue& queue, const Camera& camera, const std::vector<LightData>& lights) {
+void Renderer::executeRenderPass(const RenderPass& pass, const Camera& camera, const std::vector<LightData>& lights){
     ZoneScoped;
-    mInputFrameBuffer->bind();
-    glClearColor(mScreenClearColor.x, mScreenClearColor.y, mScreenClearColor.z, mScreenClearColor.a);
-    glClear(mClearBitField);
+
+    const RenderQueue& queue = pass.getRenderQueue();
+
+    ProjectionType projType = pass.getProjectionType();
+
+    switch (projType) {
+        case ProjectionType::Perspective:
+        mProjectionMatrix = camera.getPerspectiveProjectionMatrix(*mTarget);
+        break;
+        case ProjectionType::Orthographic:
+        mProjectionMatrix = camera.getOrthographicProjectionMatrix(*mTarget);
+        break;
+    }
+
+    CameraType camType = pass.getCameraType();
+    switch (camType) {
+        case CameraType::UI:
+        mViewMatrix = glm::mat4{1.0f};
+        mCameraPosition = glm::vec3{0.0f};
+        break;
+        case CameraType::ThreeD:
+        mViewMatrix = camera.getViewMatrix();
+        mCameraPosition = camera.getPosition();
+        break;
+    }
 
     if (mCurrentProgram != nullptr){
         mCurrentProgram->use();
     }
+
+
 
     for (const auto& command : queue.getRenderCommands()) {
         executeRenderCommand(command, camera, lights);
@@ -120,6 +148,20 @@ void Renderer::drawPass(const RenderQueue& queue, const Camera& camera, const st
     // reset state
     // THIS IS A HOTFIX AND SHOULD BE REPLACED WITH EVERY RENDER SETTING THE STATE INSTEAD OF ONLY THESE ONES
     mStateManager.applyState(RenderState{});
+
+
+}
+
+void Renderer::drawPass(const std::vector<RenderPass>& passes, const Camera& camera, const std::vector<LightData>& lights) {
+    mInputFrameBuffer->bind();
+    glClearColor(mScreenClearColor.x, mScreenClearColor.y, mScreenClearColor.z, mScreenClearColor.a);
+    glClear(mClearBitField);
+
+    for (const RenderPass& pass : passes){
+        // TODO make this  configurable
+        glClear(GL_DEPTH_BUFFER_BIT);
+        executeRenderPass(pass, camera, lights);
+    }
 
     mInputFrameBuffer->unbind();
     mPostProcessingPipeline->blitToInput(*mInputFrameBuffer);
@@ -149,18 +191,18 @@ void Renderer::renderToScreen() {
 }
 
 void Renderer::uploadStandardUniforms(ShaderProgram &program, const Camera& camera, const std::vector<LightData>& lights) {
-    program.setUniformMat4x4("uProjectionMatrix", camera.getProjectionMatrix(*mTarget));
-    program.setUniformMat4x4("uViewMatrix", camera.getViewMatrix());
-    program.setUniformVec3("uCameraPos", camera.getPosition());
+    program.setUniformMat4x4("uProjectionMatrix", mProjectionMatrix);
+    program.setUniformMat4x4("uViewMatrix", mViewMatrix);
+    program.setUniformVec3("uCameraPos", mCameraPosition);
 
     mLightManager.applyLightData(program, lights);
 }
 
 
-void Renderer::draw(const RenderQueue& queue, const Camera& camera, const std::vector<LightData>& lights) {
+void Renderer::draw(const std::vector<RenderPass>& passes, const Camera& camera, const std::vector<LightData>& lights) {
     ZoneScoped;
 
-    drawPass(queue, camera, lights);
+    drawPass(passes, camera, lights);
     renderToScreen();
 }
 
