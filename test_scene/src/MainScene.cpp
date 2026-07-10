@@ -84,7 +84,7 @@ void MainScene::onLoad(Renderer &renderer, Window &window) {
     renderer.setClearColor({0.0f, 0.2f, 0.2f, 1.0f});
 
     testUIRenderPass();
-
+    testRemoveAsset();
 }
 
 void MainScene::onUpdate(Renderer &renderer, Window &window, float deltaT) {
@@ -118,6 +118,35 @@ void MainScene::testUIRenderPass(){
     obj->setScale(glm::vec3{100.0f});
     obj->setPosition(glm::vec3{100.0f, 100.0f, 0.0f});
     obj->setRenderPass(1);
+}
+
+void MainScene::testRemoveAsset(){
+    std::vector<float> vertices = {
+        -0.5f, -0.5f,  0.0f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
+         0.5f, -0.5f,  0.0f,  0.0f,  0.0f,  1.0f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.0f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.0f,  0.0f,  0.0f,  1.0f,  0.0f, 1.0f
+    };
+
+    std::vector<unsigned int> indices = {
+        0, 1, 2,
+        2, 3, 0
+    };
+
+    Mesh quad{"name"};
+    quad.setVertices(vertices);
+    quad.setIndices(indices);
+
+    MeshReference quadRef = getAssetManager().addAsset(std::move(quad));
+
+    getAssetManager().removeAsset(quadRef);
+
+    try{
+        Mesh* result = getAssetManager().getAsset(quadRef);
+        std::cout << "Asset not deleted" << std::endl;
+    }catch(...){
+        std::cout << "Delete succes" << std::endl;
+    }
 }
 
 MainScene::~MainScene() {

@@ -64,5 +64,11 @@ class AssetRepository {
 
             return mData.get(id);
         }
+
+        void removeAsset(AssetReference<T> reference){
+            int id = reference.getID();
+
+            mData.remove(id);
+        }
     private:
 };

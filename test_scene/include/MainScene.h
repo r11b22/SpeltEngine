@@ -27,6 +27,7 @@ public:
     void onUpdate(Renderer &renderer, Window &window, float deltaT) override;
 private:
     void testUIRenderPass();
+    void testRemoveAsset();
 };
 
 #endif //TOONSHADER_TOONSCENE_H

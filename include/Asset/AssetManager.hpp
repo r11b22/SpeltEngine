@@ -84,6 +84,14 @@ class AssetManager {
             return repo.getAsset(std::move(ref));
         }
 
+        template<typename T>
+            requires std::derived_from<T, Asset>
+        void removeAsset(AssetReference<T> ref) {
+            AssetRepository<T>& repo = getRepo<T>();
+
+            repo.removeAsset(ref);
+        }
+
     private:
 
         template<typename T>
