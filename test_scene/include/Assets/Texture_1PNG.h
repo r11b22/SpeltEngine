@@ -7,6 +7,7 @@
 #ifndef EMBEDDED_ASSET_STRUCT
 #define EMBEDDED_ASSET_STRUCT
 struct EmbeddedAsset {
+    const char* version;
     const unsigned char* data;
     const unsigned int size;
 };
@@ -57041,8 +57042,9 @@ inline const unsigned char Texture_1_png_raw_data[] = {
     0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
 };
 
-// Package containing the data pointer and size
+// Package containing the version, data pointer, and size
 inline const EmbeddedAsset Texture_1_png = {
+    "0.1.0",
     Texture_1_png_raw_data,
     684296
 };
