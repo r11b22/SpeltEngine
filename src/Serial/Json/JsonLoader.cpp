@@ -13,7 +13,7 @@ void JsonLoader::readRaw(EmbeddedAsset asset){
     mContents = embeddedAssetToString(asset);
 }
 
-Json JsonLoader::getJson(){
+Json JsonLoader::createJson(){
     return fromString(mContents);
 }
 
