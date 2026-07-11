@@ -63,7 +63,7 @@ void MainScene::onLoad(Renderer &renderer, Window &window) {
 
     ObjectReference<TransformableObject> testParent = createObject<TransformableObject>("parent");
     testParent->setPosition(glm::vec3{5.0f});
-
+    std::cout << testParent->isLoaded() << std::endl;
 
     // Spawn 100 tigers using your utility functions
     for (int i = 0; i < 10000; ++i) {
@@ -88,6 +88,7 @@ void MainScene::onLoad(Renderer &renderer, Window &window) {
 }
 
 void MainScene::onUpdate(Renderer &renderer, Window &window, float deltaT) {
+
     // rotate the tiger
     int i = 0;
     for (auto& tiger : mTigers){

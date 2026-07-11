@@ -26,6 +26,7 @@ private:
     std::string mName;
     Scene* mScene;
 
+    bool mLoaded;
 public:
     Object(std::string name);
     virtual ~Object() = default;
@@ -36,6 +37,9 @@ public:
     virtual void onLoad() {}
     virtual void onUpdate(float deltaT) {}
     virtual void onDestroy() {}
+
+    void setLoaded(bool loaded);
+    bool isLoaded() const;
 
     void destroy();
 

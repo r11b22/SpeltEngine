@@ -44,6 +44,13 @@ Scene &Object::getScene() const{
     return *mScene;
 }
 
+void Object::setLoaded(bool loaded){
+    mLoaded = loaded;
+}
+
+bool Object::isLoaded() const {
+    return mLoaded;
+}
 
 void Object::destroy() {
     if (mScene == nullptr) {

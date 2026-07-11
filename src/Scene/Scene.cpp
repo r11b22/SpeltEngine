@@ -42,6 +42,7 @@ void Scene::markRunning() {
 void Scene::loadObjects() {
     for (auto [id, object] : mObjects) {
         object->onLoad();
+        object->setLoaded(true);
     }
 }
 
@@ -131,6 +132,7 @@ void Scene::destroyObjectByID(ObjectID id) {
     // IDEA: use a on destroy lambda that has the id
     for(auto objID : destroyed){
         Object* object = mObjects.get(objID);
+        object->setLoaded(false);
         object->onDestroy();
     }
 
