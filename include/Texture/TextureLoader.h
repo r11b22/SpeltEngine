@@ -21,11 +21,11 @@ class TextureLoader {
 };
 
 
-struct PathLoadSource {
+struct TexturePathLoadSource {
     std::filesystem::path path;
 };
 
-struct RawLoadSource {
+struct TextureRawLoadSource {
     const unsigned char* binaryData;
     unsigned int binarySize;
 };
@@ -35,13 +35,13 @@ struct AssetLoadInfo<Texture> {
     std::string name;
     bool flipped;
 
-    std::variant<PathLoadSource, RawLoadSource> source;
+    std::variant<TexturePathLoadSource, TextureRawLoadSource> source;
 
     static AssetLoadInfo FromPath(std::string name, std::filesystem::path path, bool flipped = false) {
         return AssetLoadInfo(
             std::move(name),
             flipped,
-            PathLoadSource{std::move(path)}
+            TexturePathLoadSource{std::move(path)}
         );
     }
 
@@ -49,12 +49,12 @@ struct AssetLoadInfo<Texture> {
         return AssetLoadInfo(
             std::move(name),
             flipped,
-            RawLoadSource{embeddedAsset.data, embeddedAsset.size}
+            TextureRawLoadSource{embeddedAsset.data, embeddedAsset.size}
         );
     }
 
 private:
-    AssetLoadInfo(std::string n, bool f, std::variant<PathLoadSource, RawLoadSource> src)
+    AssetLoadInfo(std::string n, bool f, std::variant<TexturePathLoadSource, TextureRawLoadSource> src)
         : name(std::move(n)), flipped(f), source(std::move(src)) {}
 };
 
@@ -63,12 +63,12 @@ struct AssetLoader<Texture> {
     static Texture load(AssetLoadInfo<Texture> asset) {
         TextureLoader loader{};
 
-        if (std::holds_alternative<PathLoadSource>(asset.source)) {
-            const auto& pathSrc = std::get<PathLoadSource>(asset.source);
+        if (std::holds_alternative<TexturePathLoadSource>(asset.source)) {
+            const auto& pathSrc = std::get<TexturePathLoadSource>(asset.source);
             loader.readFile(pathSrc.path, asset.flipped);
         }
-        else if (std::holds_alternative<RawLoadSource>(asset.source)) {
-            const auto& rawSrc = std::get<RawLoadSource>(asset.source);
+        else if (std::holds_alternative<TextureRawLoadSource>(asset.source)) {
+            const auto& rawSrc = std::get<TextureRawLoadSource>(asset.source);
             loader.readRaw(rawSrc.binaryData, rawSrc.binarySize, asset.flipped);
         }
 
