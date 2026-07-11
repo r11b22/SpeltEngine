@@ -160,6 +160,7 @@ set(ENGINE_SOURCES
 
         src/Asset/AssetManager.cpp
         src/Asset/Asset.cpp
+        src/Asset/EmbeddedAsset.cpp
 
         src/Mesh/MeshReference.cpp
         src/Mesh/MeshAsset.cpp

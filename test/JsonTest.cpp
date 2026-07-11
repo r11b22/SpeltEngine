@@ -68,7 +68,7 @@ TEST_CASE("Json Arrays"){
 TEST_CASE("Loading: Empty Json Object"){
     JsonLoader loader{};
 
-    Json root = loader.getJson("{}");
+    Json root = loader.fromString("{}");
 
     REQUIRE(std::holds_alternative<std::monostate>(root.getData("")));
 }
@@ -76,23 +76,23 @@ TEST_CASE("Loading: Empty Json Object"){
 TEST_CASE("Loading: Single data Json Object") {
     JsonLoader loader{};
 
-    Json root = loader.getJson("{\"data\": 512}");
+    Json root = loader.fromString("{\"data\": 512}");
     REQUIRE(root.getNumber("data") == 512);
 
-    root = loader.getJson("{\"data\": true}");
+    root = loader.fromString("{\"data\": true}");
     REQUIRE(root.getBool("data") == true);
 
-    root = loader.getJson("{\"data\": \"string\"}");
+    root = loader.fromString("{\"data\": \"string\"}");
     REQUIRE(root.getString("data") == "string");
 
-    root = loader.getJson("{\"data\": null}");
+    root = loader.fromString("{\"data\": null}");
     REQUIRE(std::holds_alternative<std::monostate>(root.getData("data")));
 }
 
 TEST_CASE("Loading: Nested Json") {
     JsonLoader loader{};
 
-    Json root = loader.getJson("{\"data\": {\"value\" : 512}}");
+    Json root = loader.fromString("{\"data\": {\"value\" : 512}}");
 
     REQUIRE(root.getObject("data").getNumber("value") == 512);
 }
@@ -100,7 +100,7 @@ TEST_CASE("Loading: Nested Json") {
 TEST_CASE("Loading: Json Array") {
     JsonLoader loader{};
 
-    Json root = loader.getJson("{\"data\": [512, 128]}");
+    Json root = loader.fromString("{\"data\": [512, 128]}");
 
     REQUIRE(root.getArray("data").getNumber(0) == 512);
     REQUIRE(root.getArray("data").getNumber(1) == 128);
@@ -109,7 +109,7 @@ TEST_CASE("Loading: Json Array") {
 TEST_CASE("Loading: Json Array with Json") {
     JsonLoader loader{};
 
-    Json root = loader.getJson("{\"data\": [{\"value\": 512}, {\"value\" : 128}]}");
+    Json root = loader.fromString("{\"data\": [{\"value\": 512}, {\"value\" : 128}]}");
 
     REQUIRE(root.getArray("data").getObject(0).getNumber("value") == 512);
     REQUIRE(root.getArray("data").getObject(1).getNumber("value") == 128);

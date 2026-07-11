@@ -1,13 +1,20 @@
 #include "Serial/Json/JsonLoader.hpp"
+#include "Asset/EmbeddedAsset.hpp"
 #include "FileReader.h"
+#include "Serial/Json/Json.hpp"
 
 
 
-Json JsonLoader::readFile(const std::filesystem::path& path) {
-    std::string contents = FileReader::readFile(path);
+void JsonLoader::readFile(const std::filesystem::path& path) {
+    mContents = FileReader::readFile(path);
+}
 
+void JsonLoader::readRaw(EmbeddedAsset asset){
+    mContents = embeddedAssetToString(asset);
+}
 
-    return getJson(contents);
+Json JsonLoader::getJson(){
+    return fromString(mContents);
 }
 
 namespace {
@@ -172,7 +179,7 @@ namespace {
     }
 }
 
-Json JsonLoader::getJson(std::string json) {
+Json JsonLoader::fromString(std::string json) {
     size_t index = 0;
     std::string_view jsonView(json);
 
