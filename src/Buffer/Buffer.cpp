@@ -51,31 +51,33 @@ void Buffer::bindBase(int location) {
     glBindBufferBase(mType, location, mId);
 }
 
-void Buffer::setDataF(std::vector<float> data) {
-    setDataF(&data[0], data.size()); // vector black magic
-}
-
-void Buffer::setDataF(float* data, size_t len) {
+void Buffer::setData(const void* data, size_t bytes) {
     bind();
-    glBufferData(mType, len * sizeof(float), data, mUsageType);
+    glBufferData(mType, bytes, data, mUsageType);
 }
 
-void Buffer::setDataI(std::vector<int> data) {
-    setDataI(&data[0], data.size());
+void Buffer::setDataF(const std::vector<float>& data) {
+    setDataF(data.data(), data.size()); // vector black magic
 }
 
-void Buffer::setDataI(int *data, size_t len) {
-    bind();
-    glBufferData(mType, len * sizeof(int), data, mUsageType);
+void Buffer::setDataF(const float* data, size_t len) {
+    setData(data, len * sizeof(float));
 }
 
-void Buffer::setDataUI(std::vector<unsigned int> data) {
-    setDataUI(&data[0], data.size());
+void Buffer::setDataI(const std::vector<int>& data) {
+    setDataI(data.data(), data.size());
 }
 
-void Buffer::setDataUI(unsigned int *data, size_t len) {
-    bind();
-    glBufferData(mType, len * sizeof(unsigned int), data, mUsageType);
+void Buffer::setDataI(const int *data, size_t len) {
+    setData(data, len * sizeof(int));
+}
+
+void Buffer::setDataUI(const std::vector<unsigned int>& data) {
+    setDataUI(data.data(), data.size());
+}
+
+void Buffer::setDataUI(const unsigned int *data, size_t len) {
+    setData(data, len * sizeof(unsigned int));
 }
 
 void Buffer::setDataB(const std::vector<bool>& data) {
@@ -98,12 +100,12 @@ void Buffer::setDataB(const bool *data, size_t len) {
     setDataI(intData.data(), len);
 }
 
-void Buffer::setDataVec3(std::vector<glm::vec3> data) {
+void Buffer::setDataVec3(const std::vector<glm::vec3>& data) {
     // Pass the pointer to the first element and the count of vectors
     setDataVec3(data.data(), data.size());
 }
 
-void Buffer::setDataVec3(glm::vec3 *data, size_t len) {
+void Buffer::setDataVec3(const glm::vec3 *data, size_t len) {
     // 1. Create a temporary staging vector of vec4s to handle std430 16-byte alignment
     std::vector<glm::vec4> alignedData(len);
 
@@ -113,11 +115,9 @@ void Buffer::setDataVec3(glm::vec3 *data, size_t len) {
     }
 
     // 2. Bind the current buffer instance
-    bind();
-
     // 3. Upload the aligned vec4 data instead of the raw vec3 data
     // Total bytes = number of elements * 16 bytes (sizeof(glm::vec4))
-    glBufferData(mType, len * sizeof(glm::vec4), alignedData.data(), mUsageType);
+    setData(alignedData.data(), len * sizeof(glm::vec4));
 }
 
 void Buffer::setDataAndOrphan(const void* data, size_t bytes){

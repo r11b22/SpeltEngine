@@ -34,16 +34,16 @@ public:
     void bindBase(int location);
 
     // float setters
-    void setDataF(std::vector<float> data);
-    void setDataF(float* data, size_t len);
+    void setDataF(const std::vector<float>& data);
+    void setDataF(const float* data, size_t len);
 
     // int setters
-    void setDataI(std::vector<int> data);
-    void setDataI(int *data, size_t len);
+    void setDataI(const std::vector<int>& data);
+    void setDataI(const int *data, size_t len);
 
     // uint setters
-    void setDataUI(std::vector<unsigned int> data);
-    void setDataUI(unsigned int *data, size_t len);
+    void setDataUI(const std::vector<unsigned int>& data);
+    void setDataUI(const unsigned int *data, size_t len);
 
     // bool setters
     /**
@@ -59,7 +59,7 @@ public:
      * Warning: vec3 arrays are padded to vec4 arrays, make sure to use vec4's in your shader
      * @param data the vector of vec3's
      */
-    void setDataVec3(std::vector<glm::vec3> data);
+    void setDataVec3(const std::vector<glm::vec3>& data);
 
     /**
      * Uploades a list of vec3's to the buffer
@@ -67,7 +67,7 @@ public:
      * @param data the pointer to the vec3 array
      * @param len the length of the array
      */
-    void setDataVec3(glm::vec3 *data, size_t len);
+    void setDataVec3(const glm::vec3 *data, size_t len);
 
     /**
      * Uploades data to the buffer. Size is given in bytes
@@ -93,6 +93,7 @@ public:
      */
     void unmap();
 private:
+    void setData(const void* data, size_t bytes);
 };
 
 #endif //GCVCPROJECT_BUFFER_H
