@@ -29,10 +29,13 @@
 #include <algorithm>
 #include <memory>
 
+#include "Assets/Texture_1PNG.h"
+
+
 
 
 MainScene::MainScene() {
-    addAsset(AssetLoadInfo<Texture>{"tiger", "Models/Animals/tiger/Texture_1.png"});
+    addAsset(AssetLoadInfo<Texture>::FromEmbedded("tiger", Texture_1_png));
 
     AssetLoadInfo<Mesh> tigerTest = {"tiger", "Models/Animals/tiger/tiger.gltf"};
     addAsset(tigerTest);

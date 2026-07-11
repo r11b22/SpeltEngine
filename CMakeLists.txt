@@ -270,6 +270,7 @@ set(ENGINE_HEADERS
         include/Asset/AssetReference.hpp
         include/Asset/AssetLoader.hpp
         include/Asset/Asset.hpp
+        include/Asset/EmbeddedAsset.hpp
 
         include/Mesh/MeshReference.hpp
         include/Mesh/MeshAsset.hpp

@@ -30,6 +30,7 @@ add_executable(${PROJECT_NAME}
         main.cpp
         src/MainScene.cpp
         include/MainScene.h
+        include/Assets/Texture_1PNG.h
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

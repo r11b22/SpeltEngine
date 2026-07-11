@@ -25,3 +25,17 @@ void TextureLoader::readFile(const std::filesystem::path &path, bool flipVertica
 
     mData = {texData, texWidth, texHeight, channelCount};
 }
+
+void TextureLoader::readRaw(const unsigned char* binary, unsigned int size, bool flipVertical) {
+    stbi_set_flip_vertically_on_load(flipVertical);
+    int texWidth, texHeight, channelCount;
+
+    // stbi_load_from_memory takes the raw encoded file buffer (e.g., the PNG file data)
+    unsigned char* texData = stbi_load_from_memory(binary, size, &texWidth, &texHeight, &channelCount, 0);
+
+    if (!texData) {
+        throw std::runtime_error("Could not load texture from memory buffer.");
+    }
+
+    mData = {texData, texWidth, texHeight, channelCount};
+}

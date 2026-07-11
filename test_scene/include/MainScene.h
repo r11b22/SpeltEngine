@@ -10,6 +10,7 @@
 #include "Scene/Scene.hpp"
 #include "Texture/TextureReference.hpp"
 
+
 class MainScene : public Scene {
 private:
     InputManager* inputManager = nullptr;
