@@ -33,10 +33,14 @@ void Mesh::drawInstanced(ShaderProgram &shaderProgram, int instanceCount) {
 }
 
 void Mesh::setVertices(std::vector<float> vertices) {
+    // Bind the VAO to make sure the changes get pushed to the VAO
+    mVAO.bind();
     mVertexBuffer.setDataF(vertices);
 }
 
 void Mesh::setIndices(std::vector<unsigned int> indices) {
+    // Bind the VAO to make sure the changes get pushed to the VAO
+    mVAO.bind();
     mVAO.getElementBuffer().setDataUI(indices);
     mVertexCount = indices.size();
 }
