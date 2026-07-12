@@ -5,6 +5,8 @@
 #include <vector>
 #include "Serial/Json/Json.hpp"
 
+using namespace Spelt;
+
 TEST_CASE("Create empty Json Object") {
     Json json{};
     REQUIRE(true);

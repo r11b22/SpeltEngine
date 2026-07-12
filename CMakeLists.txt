@@ -191,6 +191,8 @@ set(ENGINE_HEADERS
         include/Defaults/PostProcessing/Bloom.h
         include/Defaults/PostProcessing/Blur.h
 
+        include/Error/Result.hpp
+
         include/FileReader.h
 
         include/FrameBuffer/FrameBuffer.h
@@ -261,6 +263,7 @@ set(ENGINE_HEADERS
         include/Transform/Transform.h
 
         include/Utilities/Random.h
+        include/Utilities/VariantVisitHelper.hpp
 
         include/VertexArray.h
 
