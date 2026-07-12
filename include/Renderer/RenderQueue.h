@@ -2,28 +2,29 @@
 // Created by joost on 6/4/26.
 //
 
-#ifndef CGVCPROJECT_RENDERQUEUE_H
-#define CGVCPROJECT_RENDERQUEUE_H
+#pragma once
+
 #include <vector>
 
 #include "RenderCommand.h"
 
-class RenderQueue {
-private:
-    std::vector<RenderCommand> mRenderCommands;
+namespace Spelt {
+    class RenderQueue {
+    private:
+        std::vector<RenderCommand> mRenderCommands;
 
-    StateChangeCommand mLastState{};
-    size_t mLastDrawCommandHash = 0;
-    int mLastDrawCommandIdx = -1;
-public:
+        StateChangeCommand mLastState{};
+        size_t mLastDrawCommandHash = 0;
+        int mLastDrawCommandIdx = -1;
+    public:
 
-    const std::vector<RenderCommand>& getRenderCommands() const;
+        const std::vector<RenderCommand>& getRenderCommands() const;
 
-    void submitRenderCommands(std::vector<RenderCommand> commands);
+        void submitRenderCommands(std::vector<RenderCommand> commands);
 
-    void clear();
-private:
-    void mergeDrawCommand(DrawCommand* into, DrawCommand& toMerge) const;
-};
+        void clear();
+    private:
+        void mergeDrawCommand(DrawCommand* into, DrawCommand& toMerge) const;
+    };
 
-#endif //CGVCPROJECT_RENDERQUEUE_H
+}

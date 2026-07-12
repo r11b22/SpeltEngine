@@ -7,7 +7,7 @@
 #include "MainScene.h"
 
 int main() {
-    App app{"Toon Shader Experiment"};
+    Spelt::App app{"Toon Shader Experiment"};
 
     MainScene scene{};
 

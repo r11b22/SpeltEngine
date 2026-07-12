@@ -2,29 +2,29 @@
 // Created by joost on 5/25/26.
 //
 
-#ifndef CGVCPROJECT_APP_H
-#define CGVCPROJECT_APP_H
+#pragma once
 
 #include "Asset/AssetManager.hpp"
 #include "Renderer/Renderer.h"
 #include "Window.h"
 
-class App {
-private:
-    Window mWindow;
-    Renderer mRenderer;
-    Scene* mCurrentScene;
-    AssetManager mAssetManager;
+namespace Spelt {
 
-    float mDeltaT, mLastT;
+    class App {
+    private:
+        Window mWindow;
+        Renderer mRenderer;
+        Scene* mCurrentScene;
+        AssetManager mAssetManager;
 
-public:
-    explicit App(const std::string &title);
-    void loadScene(Scene* scene);
-    void run();
-private:
+        float mDeltaT, mLastT;
 
-    void loadSceneAssets(const Scene& scene);
-};
+    public:
+        explicit App(const std::string &title);
+        void loadScene(Scene* scene);
+        void run();
+    private:
 
-#endif //CGVCPROJECT_APP_H
+        void loadSceneAssets(const Scene& scene);
+    };
+}

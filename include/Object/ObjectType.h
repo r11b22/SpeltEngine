@@ -2,7 +2,9 @@
 
 #include <concepts>
 
-class Object;
+namespace Spelt {
+    class Object;
 
-template <typename T>
-concept ObjectType = std::derived_from<T, Object>;
+    template <typename T>
+    concept ObjectType = std::derived_from<T, Object>;
+}

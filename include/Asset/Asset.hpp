@@ -1,12 +1,14 @@
 #pragma once
 
 #include <string>
-class Asset {
-    private:
-        std::string mName;
-    public:
-        Asset(std::string name);
+namespace Spelt {
+    class Asset {
+        private:
+            std::string mName;
+        public:
+            Asset(std::string name);
 
-        const std::string& getName() const;
-    private:
-};
+            const std::string& getName() const;
+        private:
+    };
+}

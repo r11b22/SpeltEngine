@@ -2,14 +2,15 @@
 #include "Defaults/Objects/Lighting/DirectionalLight.h"
 #include "Lighting/LightData.h"
 
+namespace Spelt::Defaults {
+    DirectionalLight::DirectionalLight(const std::string& name, glm::vec3 direction, glm::vec3 color)
+        : Object(name),
+        mLightData(direction, color, color)
+    {
 
-DirectionalLight::DirectionalLight(const std::string& name, glm::vec3 direction, glm::vec3 color)
-    : Object(name),
-    mLightData(direction, color, color)
-{
+    }
 
-}
-
-LightData DirectionalLight::getLightData() const {
-    return mLightData;
+    LightData DirectionalLight::getLightData() const {
+        return mLightData;
+    }
 }

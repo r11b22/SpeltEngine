@@ -3,17 +3,20 @@
 #include "Asset/EmbeddedAsset.hpp"
 #include "Serial/Json/Json.hpp"
 #include <filesystem>
-class JsonLoader {
-    private:
-        std::string mContents;
-    public:
 
-        void readFile(const std::filesystem::path& path);
-        void readRaw(EmbeddedAsset asset);
+namespace Spelt {
+    class JsonLoader {
+        private:
+            std::string mContents;
+        public:
 
-        Json createJson();
+            void readFile(const std::filesystem::path& path);
+            void readRaw(EmbeddedAsset asset);
 
-        Json fromString(std::string json);
-    private:
+            Json createJson();
 
-};
+            Json fromString(std::string json);
+        private:
+
+    };
+}

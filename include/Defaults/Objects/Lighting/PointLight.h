@@ -7,14 +7,15 @@
 #include "Lighting/LightData.h"
 #include "Lighting/PointLightData.h"
 
+namespace Spelt::Defaults {
+    class PointLight : public TransformableObject, public ILight{
 
-class PointLight : public TransformableObject, public ILight{
+    private:
+        PointLightData mLightData;
 
-private:
-    PointLightData mLightData;
+    public:
+        PointLight(const std::string& name, glm::vec3 color);
 
-public:
-    PointLight(const std::string& name, glm::vec3 color);
-
-    LightData getLightData() const override;
-};
+        LightData getLightData() const override;
+    };
+}

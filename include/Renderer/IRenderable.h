@@ -2,17 +2,16 @@
 // Created by joost on 6/12/26.
 //
 
-#ifndef SPELTENGINE_IRENDERABLE_H
-#define SPELTENGINE_IRENDERABLE_H
+#pragma once
 #include "Shader/ShaderProgram.h"
 
-class IRenderable{
-public:
-    virtual ~IRenderable() = default;
-    virtual void draw(ShaderProgram& shaderProgram) = 0;
+namespace Spelt {
+    class IRenderable{
+    public:
+        virtual ~IRenderable() = default;
+        virtual void draw(ShaderProgram& shaderProgram) = 0;
 
-    // TODO make this optional
-    virtual void drawInstanced(ShaderProgram& shaderProgram, int instanceCount) = 0;
-};
-
-#endif //SPELTENGINE_IRENDERABLE_H
+        // TODO make this optional
+        virtual void drawInstanced(ShaderProgram& shaderProgram, int instanceCount) = 0;
+    };
+}

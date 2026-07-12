@@ -2,11 +2,12 @@
 // Created by joost on 5/29/26.
 //
 
-#ifndef CGVCPROJECT_BLUR_H
-#define CGVCPROJECT_BLUR_H
+#pragma once
 #include "PostProcessing/PostProcessingGroup.h"
 
-class Blur : public PostProcessingGroup {
-    void setup() override;
-};
-#endif //CGVCPROJECT_BLUR_H
+namespace Spelt::Defaults {
+namespace Spelt::Defaults {
+    class Blur : public PostProcessingGroup {
+        void setup() override;
+    };
+}

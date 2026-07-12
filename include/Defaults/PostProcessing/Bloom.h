@@ -2,12 +2,11 @@
 // Created by joost on 5/29/26.
 //
 
-#ifndef CGVCPROJECT_BLOOM_H
-#define CGVCPROJECT_BLOOM_H
+#pragma once
+
 #include "PostProcessing/PostProcessingGroup.h"
-
-class Bloom : public PostProcessingGroup {
-    void setup() override;
-};
-
-#endif //CGVCPROJECT_BLOOM_H
+namespace Spelt::Defaults {
+    class Bloom : public PostProcessingGroup {
+        void setup() override;
+    };
+}

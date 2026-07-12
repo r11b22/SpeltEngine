@@ -4,19 +4,23 @@
 #include "Renderer/Instancing/InstanceLayout.hpp"
 #include "Shader/ShaderUniform.h"
 #include <vector>
-class InstanceData {
-    private:
-        std::vector<ShaderUniform> mUniforms;
-    public:
 
-        void addUniform(ShaderUniform uniform);
 
-        const std::vector<ShaderUniform>& getUniforms() const;
+namespace Spelt {
+    class InstanceData {
+        private:
+            std::vector<ShaderUniform> mUniforms;
+        public:
 
-        bool isInstanceOf(const InstanceData& other) const;
+            void addUniform(ShaderUniform uniform);
 
-        InstanceLayout getLayout() const;
+            const std::vector<ShaderUniform>& getUniforms() const;
 
-        void writeToBuffer(std::byte* dst, const InstanceLayout& layout) const;
-    private:
-};
+            bool isInstanceOf(const InstanceData& other) const;
+
+            InstanceLayout getLayout() const;
+
+            void writeToBuffer(std::byte* dst, const InstanceLayout& layout) const;
+        private:
+    };
+}

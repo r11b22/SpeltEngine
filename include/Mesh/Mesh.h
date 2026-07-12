@@ -2,8 +2,7 @@
 // Created by joost on 4/12/26.
 //
 
-#ifndef GCVCPROJECT_MESH_H
-#define GCVCPROJECT_MESH_H
+#pragma once
 
 #include "Asset/Asset.hpp"
 #include "Buffer/Buffer.h"
@@ -11,32 +10,33 @@
 #include "Shader/ShaderProgram.h"
 #include "VertexArray.h"
 
-class Mesh : public IRenderable, public Asset {
-private:
-    Buffer mVertexBuffer;
-    VertexArray mVAO;
+namespace Spelt {
+    class Mesh : public IRenderable, public Asset {
+    private:
+        Buffer mVertexBuffer;
+        VertexArray mVAO;
 
-    int mVertexCount;
-
-
-public:
-    Mesh(std::string name);
-    ~Mesh() override = default;
-
-    Mesh(const Mesh&) = delete;
-    Mesh& operator=(const Mesh&) = delete;
-
-    Mesh(Mesh&& other) noexcept = default;
-    Mesh& operator=(Mesh&& other) noexcept = default;
+        int mVertexCount;
 
 
-    void draw(ShaderProgram& shaderProgram) override;
-    void drawInstanced(ShaderProgram& shaderProgram, int instanceCount) override;
+    public:
+        Mesh(std::string name);
+        ~Mesh() override = default;
 
-    void setVertices(std::vector<float> vertices);
-    void setIndices(std::vector<unsigned int> indices);
+        Mesh(const Mesh&) = delete;
+        Mesh& operator=(const Mesh&) = delete;
 
-private:
-};
+        Mesh(Mesh&& other) noexcept = default;
+        Mesh& operator=(Mesh&& other) noexcept = default;
 
-#endif //GCVCPROJECT_MESH_H
+
+        void draw(ShaderProgram& shaderProgram) override;
+        void drawInstanced(ShaderProgram& shaderProgram, int instanceCount) override;
+
+        void setVertices(std::vector<float> vertices);
+        void setIndices(std::vector<unsigned int> indices);
+
+    private:
+    };
+
+}

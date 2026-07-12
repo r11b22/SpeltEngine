@@ -6,11 +6,13 @@
 
 #ifndef EMBEDDED_ASSET_STRUCT
 #define EMBEDDED_ASSET_STRUCT
-struct EmbeddedAsset {
-    const char* version;
-    const unsigned char* data;
-    const unsigned int size;
-};
+namespace Spelt {
+   struct EmbeddedAsset {
+       const char* version;
+       const unsigned char* data;
+       const unsigned int size;
+   };
+}
 #endif // EMBEDDED_ASSET_STRUCT
 
 // Automatically generated raw data from Texture_1.png
@@ -57043,7 +57045,7 @@ inline const unsigned char Texture_1_png_raw_data[] = {
 };
 
 // Package containing the version, data pointer, and size
-inline const EmbeddedAsset Texture_1_png = {
+inline const Spelt::EmbeddedAsset Texture_1_png = {
     "0.1.0",
     Texture_1_png_raw_data,
     684296

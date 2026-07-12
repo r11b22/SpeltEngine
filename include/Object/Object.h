@@ -2,8 +2,7 @@
 // Created by joost on 5/29/26.
 //
 
-#ifndef CGVCPROJECT_OBJECT_H
-#define CGVCPROJECT_OBJECT_H
+#pragma once
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -12,43 +11,43 @@
 #include "Asset/AssetManager.hpp"
 #include "ObjectID.h"
 
+namespace Spelt {
+    class IObjectReference;
 
-class IObjectReference;
+    class Scene;
 
-class Scene;
+    /**
+    * An abstract object interface for use in scenes
+    */
+    class Object {
+    private:
+        ObjectID mID;
+        std::string mName;
+        Scene* mScene;
 
-/**
- * An abstract object interface for use in scenes
- */
-class Object {
-private:
-    ObjectID mID;
-    std::string mName;
-    Scene* mScene;
+        bool mLoaded;
+    public:
+        Object(std::string name);
+        virtual ~Object() = default;
 
-    bool mLoaded;
-public:
-    Object(std::string name);
-    virtual ~Object() = default;
+        [[nodiscard]] const std::string& getName() const;
+        [[nodiscard]] uint64_t getID() const;
 
-    [[nodiscard]] const std::string& getName() const;
-    [[nodiscard]] uint64_t getID() const;
+        virtual void onLoad() {}
+        virtual void onUpdate(float deltaT) {}
+        virtual void onDestroy() {}
 
-    virtual void onLoad() {}
-    virtual void onUpdate(float deltaT) {}
-    virtual void onDestroy() {}
+        void setLoaded(bool loaded);
+        bool isLoaded() const;
 
-    void setLoaded(bool loaded);
-    bool isLoaded() const;
+        void destroy();
 
-    void destroy();
+        void setParent(IObjectReference& obj);
 
-    void setParent(IObjectReference& obj);
+        void setScene(Scene* scene);
+        Scene& getScene() const;
 
-    void setScene(Scene* scene);
-    Scene& getScene() const;
-
-    AssetManager& getAssetManager();
-    const AssetManager& getAssetManager() const;
-};
-#endif //CGVCPROJECT_OBJECT_H
+        AssetManager& getAssetManager();
+        const AssetManager& getAssetManager() const;
+    };
+}

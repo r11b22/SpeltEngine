@@ -2,4 +2,7 @@
 
 #include "Asset/AssetReference.hpp"
 #include "Texture/CubemapTexture.hpp"
-using CubemapTextureReference = AssetReference<CubemapTexture>;
+
+namespace Spelt {
+    using CubemapTextureReference = AssetReference<CubemapTexture>;
+}

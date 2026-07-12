@@ -10,58 +10,60 @@
 #include "Renderer/Instancing/InstanceData.hpp"
 #include "Renderer/RenderCommand.h"
 
-MeshObject::MeshObject(const std::string &name, MeshReference mesh, Material material)
-    : TransformableObject(name), mMesh(mesh), mMaterial(material)
-{
-}
+namespace Spelt::Defaults {
+    MeshObject::MeshObject(const std::string &name, MeshReference mesh, Material material)
+        : TransformableObject(name), mMesh(mesh), mMaterial(material)
+    {
+    }
 
-std::vector<RenderPassCommands> MeshObject::getRenderCommands() {
-    StateChangeCommand defaultState;
+    std::vector<RenderPassCommands> MeshObject::getRenderCommands() {
+        StateChangeCommand defaultState;
 
-    DrawCommand command;
+        DrawCommand command;
 
-    command.material = mMaterial;
-    command.mesh = mMesh;
-    command.shaderName = mShader;
+        command.material = mMaterial;
+        command.mesh = mMesh;
+        command.shaderName = mShader;
 
-    glm::mat4 transformationMatrix = getTransformationMatrix();
-    InstanceData instance;
+        glm::mat4 transformationMatrix = getTransformationMatrix();
+        InstanceData instance;
 
-    instance.addUniform({"uModelMatrix", transformationMatrix});
+        instance.addUniform({"uModelMatrix", transformationMatrix});
 
-    command.instances.push_back(std::move(instance));
+        command.instances.push_back(std::move(instance));
 
-    return {RenderPassCommands{mRenderPass, {defaultState, command}}};
-}
+        return {RenderPassCommands{mRenderPass, {defaultState, command}}};
+    }
 
-void MeshObject::setShader(std::string shader) {
-    mShader = std::move(shader);
-}
+    void MeshObject::setShader(std::string shader) {
+        mShader = std::move(shader);
+    }
 
-void MeshObject::setMesh(MeshReference mesh){
-    mMesh = mesh;
-}
+    void MeshObject::setMesh(MeshReference mesh){
+        mMesh = mesh;
+    }
 
-void MeshObject::setMaterial(Material material){
-    mMaterial = material;
-}
+    void MeshObject::setMaterial(Material material){
+        mMaterial = material;
+    }
 
-void MeshObject::setRenderPass(size_t pass){
-    mRenderPass = pass;
-}
+    void MeshObject::setRenderPass(size_t pass){
+        mRenderPass = pass;
+    }
 
-Material MeshObject::getMaterial() {
-    return mMaterial;
-}
+    Material MeshObject::getMaterial() {
+        return mMaterial;
+    }
 
-MeshReference MeshObject::getMesh() const {
-    return mMesh;
-}
+    MeshReference MeshObject::getMesh() const {
+        return mMesh;
+    }
 
-std::string MeshObject::getShader() const{
-    return mShader;
-}
+    std::string MeshObject::getShader() const{
+        return mShader;
+    }
 
-size_t MeshObject::getRenderPass() const {
-    return mRenderPass;
+    size_t MeshObject::getRenderPass() const {
+        return mRenderPass;
+    }
 }

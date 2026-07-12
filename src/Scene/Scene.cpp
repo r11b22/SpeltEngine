@@ -23,199 +23,202 @@
 #include <stdexcept>
 #include <vector>
 
-// ---------------------------------------------------------------------------
-// Constructor — seed the sentinel root node
-// ---------------------------------------------------------------------------
 
-Scene::Scene() {
-    createRenderPass();
-}
+namespace Spelt {
+    // ---------------------------------------------------------------------------
+    // Constructor — seed the sentinel root node
+    // ---------------------------------------------------------------------------
 
-// ---------------------------------------------------------------------------
-// Lifecycle
-// ---------------------------------------------------------------------------
-
-void Scene::markRunning() {
-    mRunning = true;
-}
-
-void Scene::loadObjects() {
-    for (auto [id, object] : mObjects) {
-        object->onLoad();
-        object->setLoaded(true);
-    }
-}
-
-void Scene::updateObjects(float deltaT) {
-    for (auto [id, object] : mObjects) {
-        object->onUpdate(deltaT);
-    }
-}
-
-// ---------------------------------------------------------------------------
-// Drawables / lights / camera
-// ---------------------------------------------------------------------------
-
-const std::vector<RenderPass>& Scene::getRenderPasses() {
-    ZoneScoped;
-    // TODO move this to somewhere else
-
-    for(RenderPass& pass : mRenderPasses){
-        pass.clearRenderQueue();
+    Scene::Scene() {
+        createRenderPass();
     }
 
+    // ---------------------------------------------------------------------------
+    // Lifecycle
+    // ---------------------------------------------------------------------------
 
-    for (const auto& drawable : mDrawables) {
-        auto passCommands = drawable->getRenderCommands();
+    void Scene::markRunning() {
+        mRunning = true;
+    }
 
-        for (const auto& pass : passCommands){
-            mRenderPasses[pass.pass].addToRenderQueue(pass.commands);
+    void Scene::loadObjects() {
+        for (auto [id, object] : mObjects) {
+            object->onLoad();
+            object->setLoaded(true);
+        }
+    }
+
+    void Scene::updateObjects(float deltaT) {
+        for (auto [id, object] : mObjects) {
+            object->onUpdate(deltaT);
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Drawables / lights / camera
+    // ---------------------------------------------------------------------------
+
+    const std::vector<RenderPass>& Scene::getRenderPasses() {
+        ZoneScoped;
+        // TODO move this to somewhere else
+
+        for(RenderPass& pass : mRenderPasses){
+            pass.clearRenderQueue();
         }
 
-    }
 
-    return mRenderPasses;
-}
+        for (const auto& drawable : mDrawables) {
+            auto passCommands = drawable->getRenderCommands();
 
-void Scene::addLight(ObjectReference<ILight> light) {
-    mLights.push_back(light);
-}
-
-void Scene::removeLight(ObjectReference<ILight> light) {
-    mLights.erase(std::remove(mLights.begin(), mLights.end(), light), mLights.end());
-}
-
-void Scene::addDrawable(ObjectReference<IDrawable> drawable) {
-    mDrawables.push_back(std::move(drawable));
-}
-
-void Scene::removeDrawable(ObjectReference<IDrawable> drawable) {
-    mDrawables.erase(std::remove(mDrawables.begin(), mDrawables.end(), drawable), mDrawables.end());
-}
-
-
-std::vector<LightData> Scene::getLightData() {
-    std::vector<LightData> result;
-
-    // This is a patch between the new light system and an older Object system
-    // When a propper non heap object system is created this should be replaced by that
-    for (const auto& light : mLights)
-    {
-        result.push_back(light->getLightData());
-    }
-
-    return std::move(result);
-}
-
-Camera* Scene::getCamera() const {
-    if (mCurrentCamera.isNoReference()) {
-        std::cerr << "Warning: no camera attached to scene!" << std::endl;
-    }
-    return mCurrentCamera.get();
-}
-
-// ---------------------------------------------------------------------------
-// Object management
-// ---------------------------------------------------------------------------
-
-
-
-void Scene::destroyObject(IObjectReference& object) {
-    ObjectID id = object.getUntyped()->getID();
-    destroyObjectByID(id);
-}
-
-void Scene::destroyObjectByID(ObjectID id) {
-    std::vector<ObjectID> destroyed = mHierarchy.removeObject(id);
-
-    // FIXME: this should be done layer per layer instead of all at once
-    // IDEA: use a on destroy lambda that has the id
-    for(auto objID : destroyed){
-        Object* object = mObjects.get(objID);
-        object->setLoaded(false);
-        object->onDestroy();
-    }
-
-    for(auto objID : destroyed){
-        ObjectReference<Object> ref = mObjects.makeReference<Object>(objID);
-
-        ObjectReference<IDrawable> asDrawable = ref.template as<IDrawable>();
-        if(!asDrawable.isNoReference()){
-            removeDrawable(asDrawable);
-        }
-
-        ObjectReference<ILight> asLight = ref.template as<ILight>();
-        if(!asLight.isNoReference()){
-            removeLight(asLight);
-        }
-
-        ObjectReference<Camera> asCamera = ref.template as<Camera>();
-        if(!asCamera.isNoReference()){
-            if(mCurrentCamera == asCamera){
-                 mCurrentCamera = {};
+            for (const auto& pass : passCommands){
+                mRenderPasses[pass.pass].addToRenderQueue(pass.commands);
             }
+
         }
 
-        mObjects.remove(objID);
-    }
-}
-
-
-
-// ---------------------------------------------------------------------------
-// Public hierarchy API
-// ---------------------------------------------------------------------------
-
-void Scene::setParent(IObjectReference& obj, IObjectReference& parent) {
-    ObjectID objID    = obj.getUntyped()->getID();
-    ObjectID parentID = parent.getUntyped()->getID();
-
-    setParentByID(objID, parentID);
-}
-
-void Scene::setParentByID(ObjectID objID, ObjectID parentID) {
-    mHierarchy.setParent(objID, parentID);
-}
-
-/*
- * Assets
- *
- */
-
-void Scene::setAssetManager(AssetManager* assetManager){
-    mAssetManager = assetManager;
-}
-
-
-
-
-AssetManager& Scene::getAssetManager() {
-    if(mAssetManager){
-        return *mAssetManager;
-    }else{
-        throw std::runtime_error("The Scene was not yet loaded! Changing assets can only be done after the scene is loaded!");
-    }
-}
-
-
-void Scene::loadAssets(AssetManager& assetManager) const{
-    for (const auto& toLoad : mAssets){
-        toLoad->load(assetManager);
-    }
-}
-
-void Scene::createRenderPass() {
-    mRenderPasses.emplace_back();
-}
-
-size_t Scene::renderPassCount(){
-    return mRenderPasses.size();
-}
-
-RenderPass& Scene::getRenderPass(size_t idx){
-    if(idx >= renderPassCount()){
-        throw std::out_of_range(std::format("No render pass with index: {}", idx));
+        return mRenderPasses;
     }
 
-    return mRenderPasses[idx];
+    void Scene::addLight(ObjectReference<ILight> light) {
+        mLights.push_back(light);
+    }
+
+    void Scene::removeLight(ObjectReference<ILight> light) {
+        mLights.erase(std::remove(mLights.begin(), mLights.end(), light), mLights.end());
+    }
+
+    void Scene::addDrawable(ObjectReference<IDrawable> drawable) {
+        mDrawables.push_back(std::move(drawable));
+    }
+
+    void Scene::removeDrawable(ObjectReference<IDrawable> drawable) {
+        mDrawables.erase(std::remove(mDrawables.begin(), mDrawables.end(), drawable), mDrawables.end());
+    }
+
+
+    std::vector<LightData> Scene::getLightData() {
+        std::vector<LightData> result;
+
+        // This is a patch between the new light system and an older Object system
+        // When a propper non heap object system is created this should be replaced by that
+        for (const auto& light : mLights)
+        {
+            result.push_back(light->getLightData());
+        }
+
+        return std::move(result);
+    }
+
+    Camera* Scene::getCamera() const {
+        if (mCurrentCamera.isNoReference()) {
+            std::cerr << "Warning: no camera attached to scene!" << std::endl;
+        }
+        return mCurrentCamera.get();
+    }
+
+    // ---------------------------------------------------------------------------
+    // Object management
+    // ---------------------------------------------------------------------------
+
+
+
+    void Scene::destroyObject(IObjectReference& object) {
+        ObjectID id = object.getUntyped()->getID();
+        destroyObjectByID(id);
+    }
+
+    void Scene::destroyObjectByID(ObjectID id) {
+        std::vector<ObjectID> destroyed = mHierarchy.removeObject(id);
+
+        // FIXME: this should be done layer per layer instead of all at once
+        // IDEA: use a on destroy lambda that has the id
+        for(auto objID : destroyed){
+            Object* object = mObjects.get(objID);
+            object->setLoaded(false);
+            object->onDestroy();
+        }
+
+        for(auto objID : destroyed){
+            ObjectReference<Object> ref = mObjects.makeReference<Object>(objID);
+
+            ObjectReference<IDrawable> asDrawable = ref.template as<IDrawable>();
+            if(!asDrawable.isNoReference()){
+                removeDrawable(asDrawable);
+            }
+
+            ObjectReference<ILight> asLight = ref.template as<ILight>();
+            if(!asLight.isNoReference()){
+                removeLight(asLight);
+            }
+
+            ObjectReference<Camera> asCamera = ref.template as<Camera>();
+            if(!asCamera.isNoReference()){
+                if(mCurrentCamera == asCamera){
+                    mCurrentCamera = {};
+                }
+            }
+
+            mObjects.remove(objID);
+        }
+    }
+
+
+
+    // ---------------------------------------------------------------------------
+    // Public hierarchy API
+    // ---------------------------------------------------------------------------
+
+    void Scene::setParent(IObjectReference& obj, IObjectReference& parent) {
+        ObjectID objID    = obj.getUntyped()->getID();
+        ObjectID parentID = parent.getUntyped()->getID();
+
+        setParentByID(objID, parentID);
+    }
+
+    void Scene::setParentByID(ObjectID objID, ObjectID parentID) {
+        mHierarchy.setParent(objID, parentID);
+    }
+
+    /*
+    * Assets
+    *
+    */
+
+    void Scene::setAssetManager(AssetManager* assetManager){
+        mAssetManager = assetManager;
+    }
+
+
+
+
+    AssetManager& Scene::getAssetManager() {
+        if(mAssetManager){
+            return *mAssetManager;
+        }else{
+            throw std::runtime_error("The Scene was not yet loaded! Changing assets can only be done after the scene is loaded!");
+        }
+    }
+
+
+    void Scene::loadAssets(AssetManager& assetManager) const{
+        for (const auto& toLoad : mAssets){
+            toLoad->load(assetManager);
+        }
+    }
+
+    void Scene::createRenderPass() {
+        mRenderPasses.emplace_back();
+    }
+
+    size_t Scene::renderPassCount(){
+        return mRenderPasses.size();
+    }
+
+    RenderPass& Scene::getRenderPass(size_t idx){
+        if(idx >= renderPassCount()){
+            throw std::out_of_range(std::format("No render pass with index: {}", idx));
+        }
+
+        return mRenderPasses[idx];
+    }
 }

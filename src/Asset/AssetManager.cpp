@@ -9,11 +9,13 @@
 #include "Texture/TextureLoader.h"
 #include "Texture/TextureReference.hpp"
 
-AssetManager::~AssetManager(){
-    clear();
-}
+namespace Spelt {
+    AssetManager::~AssetManager(){
+        clear();
+    }
 
 
-void AssetManager::clear() {
-    mRepos.clear();
+    void AssetManager::clear() {
+        mRepos.clear();
+    }
 }

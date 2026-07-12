@@ -6,17 +6,20 @@
 #include "Lighting/LightData.h"
 #include "Lighting/PointLightData.h"
 
-PointLight::PointLight(const std::string& name, glm::vec3 color)
-    :
-    TransformableObject(name),
-    mLightData(color, color)
-{
 
-}
+namespace Spelt::Defaults {
+    PointLight::PointLight(const std::string& name, glm::vec3 color)
+        :
+        TransformableObject(name),
+        mLightData(color, color)
+    {
 
-LightData PointLight::getLightData() const {
-    PointLightData result = mLightData;
+    }
 
-    result.position = getPosition();
-    return std::move(result);
+    LightData PointLight::getLightData() const {
+        PointLightData result = mLightData;
+
+        result.position = getPosition();
+        return std::move(result);
+    }
 }

@@ -2,8 +2,8 @@
 // Created by joost on 6/8/26.
 //
 
-#ifndef TOONSHADER_TOONSCENE_H
-#define TOONSHADER_TOONSCENE_H
+#pragma once
+
 #include "Defaults/Objects/Drawables/MeshObject.h"
 #include "Mesh/MeshReference.hpp"
 #include "Object/ObjectRepository.h"
@@ -11,24 +11,22 @@
 #include "Texture/TextureReference.hpp"
 
 
-class MainScene : public Scene {
+class MainScene : public Spelt::Scene {
 private:
-    InputManager* inputManager = nullptr;
+    Spelt::InputManager* inputManager = nullptr;
 
-    MeshReference mTigerMesh;
-    TextureReference mTigerTexture;
+    Spelt::MeshReference mTigerMesh;
+    Spelt::TextureReference mTigerTexture;
 
-    std::vector<ObjectReference<MeshObject>> mTigers;
+    std::vector<Spelt::ObjectReference<Spelt::Defaults::MeshObject>> mTigers;
 
 public:
     MainScene();
     ~MainScene();
 
-    void onLoad(Renderer &renderer, Window &window) override;
-    void onUpdate(Renderer &renderer, Window &window, float deltaT) override;
+    void onLoad(Spelt::Renderer &renderer, Spelt::Window &window) override;
+    void onUpdate(Spelt::Renderer &renderer, Spelt::Window &window, float deltaT) override;
 private:
     void testUIRenderPass();
     void testRemoveAsset();
 };
-
-#endif //TOONSHADER_TOONSCENE_H

@@ -4,33 +4,34 @@
 #include <utility>
 #include <vector>
 
+namespace Spelt {
+    void RenderPass::addToRenderQueue(std::vector<RenderCommand> command){
+        mQueue.submitRenderCommands(std::move(command));
+    }
 
-void RenderPass::addToRenderQueue(std::vector<RenderCommand> command){
-    mQueue.submitRenderCommands(std::move(command));
-}
-
-const RenderQueue& RenderPass::getRenderQueue() const{
-    return mQueue;
-}
-
-
-void RenderPass::setProjectionType(ProjectionType type){
-    mProjectionType = std::move(type);
-}
-
-ProjectionType RenderPass::getProjectionType() const{
-    return mProjectionType;
-}
+    const RenderQueue& RenderPass::getRenderQueue() const{
+        return mQueue;
+    }
 
 
-void RenderPass::setCameraType(CameraType type) {
-    mCamerType = type;
-}
+    void RenderPass::setProjectionType(ProjectionType type){
+        mProjectionType = std::move(type);
+    }
 
-CameraType RenderPass::getCameraType() const{
-    return mCamerType;
-}
+    ProjectionType RenderPass::getProjectionType() const{
+        return mProjectionType;
+    }
 
-void RenderPass::clearRenderQueue(){
-    mQueue.clear();
+
+    void RenderPass::setCameraType(CameraType type) {
+        mCamerType = type;
+    }
+
+    CameraType RenderPass::getCameraType() const{
+        return mCamerType;
+    }
+
+    void RenderPass::clearRenderQueue(){
+        mQueue.clear();
+    }
 }

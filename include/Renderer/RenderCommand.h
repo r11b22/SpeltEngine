@@ -2,8 +2,8 @@
 // Created by joost on 6/12/26.
 //
 
-#ifndef SPELTENGINE_RENDERENGINE_H
-#define SPELTENGINE_RENDERENGINE_H
+#pragma once
+
 #include <memory>
 #include <variant>
 #include <vector>
@@ -19,67 +19,70 @@
 #include "Hashing/Hashing.hpp"
 
 
+namespace Spelt {
+    struct DrawCommand {
+        std::string shaderName = "";
+        MeshReference mesh;
+        Material material{"noname", glm::vec3{1.0f}};
+        std::vector<ShaderUniform> staticUniforms = {};
+        std::vector<TextureUniform> textureUniforms = {};
 
-struct DrawCommand {
-    std::string shaderName = "";
-    MeshReference mesh;
-    Material material{"noname", glm::vec3{1.0f}};
-    std::vector<ShaderUniform> staticUniforms = {};
-    std::vector<TextureUniform> textureUniforms = {};
-
-    bool isInstanceOf(const DrawCommand& other) const;
+        bool isInstanceOf(const DrawCommand& other) const;
 
 
-    std::vector<InstanceData> instances = {};
-};
+        std::vector<InstanceData> instances = {};
+    };
 
-struct StateChangeCommand {
-    RenderState state;
-};
+    struct StateChangeCommand {
+        RenderState state;
+    };
 
-struct ClearCommand {
-    bool clearColor   = true;
-    bool clearDepth   = true;
-    bool clearStencil = false;
+    struct ClearCommand {
+        bool clearColor   = true;
+        bool clearDepth   = true;
+        bool clearStencil = false;
 
-    float color[4]    = { 0.0f, 0.0f, 0.0f, 1.0f };
-    float depth       = 1.0f;
-    int stencil       = 0;
-};
+        float color[4]    = { 0.0f, 0.0f, 0.0f, 1.0f };
+        float depth       = 1.0f;
+        int stencil       = 0;
+    };
 
-using RenderCommand = std::variant<
-    DrawCommand,
-    StateChangeCommand,
-    ClearCommand
->;
+    using RenderCommand = std::variant<
+        DrawCommand,
+        StateChangeCommand,
+        ClearCommand
+    >;
 
+
+
+
+
+}
 
 
 namespace std {
     template <>
-    struct hash<DrawCommand> {
-        std::size_t operator()(const DrawCommand& k) const {
+    struct hash<Spelt::DrawCommand> {
+        std::size_t operator()(const Spelt::DrawCommand& k) const {
             std::size_t seed = 0;
-            hash_combine(seed, k.shaderName);
-            hash_combine(seed, k.mesh.getID());
-            hash_combine(seed, k.material);
+            Spelt::hash_combine(seed, k.shaderName);
+            Spelt::hash_combine(seed, k.mesh.getID());
+            Spelt::hash_combine(seed, k.material);
 
             // Hash the sizes of the uniforms as a quick safety check
-            hash_combine(seed, k.staticUniforms.size());
-            hash_combine(seed, k.textureUniforms.size());
+            Spelt::hash_combine(seed, k.staticUniforms.size());
+            Spelt::hash_combine(seed, k.textureUniforms.size());
 
             return seed;
         }
     };
 
     template <>
-    struct hash<StateChangeCommand> {
-        std::size_t operator()(const StateChangeCommand& k) const {
+    struct hash<Spelt::StateChangeCommand> {
+        std::size_t operator()(const Spelt::StateChangeCommand& k) const {
             std::size_t seed = 0;
-            hash_combine(seed, k.state);
+            Spelt::hash_combine(seed, k.state);
             return seed;
         }
     };
 }
-
-#endif //SPELTENGINE_RENDERENGINE_H

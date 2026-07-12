@@ -7,73 +7,75 @@
 #include "Asset/AssetLoader.hpp"
 #include "Asset/EmbeddedAsset.hpp"
 
-class TextureLoader {
-    private:
-        TextureData mData;
-    public:
-        ~TextureLoader();
-        void readFile(const std::filesystem::path& path, bool flipVertical = false);
-        void readRaw(const unsigned char* binary, unsigned int size, bool flipVertical = false);
+namespace Spelt {
+    class TextureLoader {
+        private:
+            TextureData mData;
+        public:
+            ~TextureLoader();
+            void readFile(const std::filesystem::path& path, bool flipVertical = false);
+            void readRaw(const unsigned char* binary, unsigned int size, bool flipVertical = false);
 
-        Texture createTexture(std::string name);
-    private:
+            Texture createTexture(std::string name);
+        private:
 
-};
+    };
 
 
-struct TexturePathLoadSource {
-    std::filesystem::path path;
-};
+    struct TexturePathLoadSource {
+        std::filesystem::path path;
+    };
 
-struct TextureRawLoadSource {
-    const unsigned char* binaryData;
-    unsigned int binarySize;
-};
+    struct TextureRawLoadSource {
+        const unsigned char* binaryData;
+        unsigned int binarySize;
+    };
 
-template <>
-struct AssetLoadInfo<Texture> {
-    std::string name;
-    bool flipped;
+    template <>
+    struct AssetLoadInfo<Texture> {
+        std::string name;
+        bool flipped;
 
-    std::variant<TexturePathLoadSource, TextureRawLoadSource> source;
+        std::variant<TexturePathLoadSource, TextureRawLoadSource> source;
 
-    static AssetLoadInfo FromPath(std::string name, std::filesystem::path path, bool flipped = false) {
-        return AssetLoadInfo(
-            std::move(name),
-            flipped,
-            TexturePathLoadSource{std::move(path)}
-        );
-    }
-
-    static AssetLoadInfo FromEmbedded(std::string name, EmbeddedAsset embeddedAsset, bool flipped = false) {
-        return AssetLoadInfo(
-            std::move(name),
-            flipped,
-            TextureRawLoadSource{embeddedAsset.data, embeddedAsset.size}
-        );
-    }
-
-private:
-    AssetLoadInfo(std::string n, bool f, std::variant<TexturePathLoadSource, TextureRawLoadSource> src)
-        : name(std::move(n)), flipped(f), source(std::move(src)) {}
-};
-
-template <>
-struct AssetLoader<Texture> {
-    static Texture load(AssetLoadInfo<Texture> asset) {
-        TextureLoader loader{};
-
-        if (std::holds_alternative<TexturePathLoadSource>(asset.source)) {
-            const auto& pathSrc = std::get<TexturePathLoadSource>(asset.source);
-            loader.readFile(pathSrc.path, asset.flipped);
-        }
-        else if (std::holds_alternative<TextureRawLoadSource>(asset.source)) {
-            const auto& rawSrc = std::get<TextureRawLoadSource>(asset.source);
-            loader.readRaw(rawSrc.binaryData, rawSrc.binarySize, asset.flipped);
+        static AssetLoadInfo FromPath(std::string name, std::filesystem::path path, bool flipped = false) {
+            return AssetLoadInfo(
+                std::move(name),
+                flipped,
+                TexturePathLoadSource{std::move(path)}
+            );
         }
 
-        Texture texture = loader.createTexture(asset.name);
+        static AssetLoadInfo FromEmbedded(std::string name, EmbeddedAsset embeddedAsset, bool flipped = false) {
+            return AssetLoadInfo(
+                std::move(name),
+                flipped,
+                TextureRawLoadSource{embeddedAsset.data, embeddedAsset.size}
+            );
+        }
 
-        return std::move(texture);
-    }
-};
+    private:
+        AssetLoadInfo(std::string n, bool f, std::variant<TexturePathLoadSource, TextureRawLoadSource> src)
+            : name(std::move(n)), flipped(f), source(std::move(src)) {}
+    };
+
+    template <>
+    struct AssetLoader<Texture> {
+        static Texture load(AssetLoadInfo<Texture> asset) {
+            TextureLoader loader{};
+
+            if (std::holds_alternative<TexturePathLoadSource>(asset.source)) {
+                const auto& pathSrc = std::get<TexturePathLoadSource>(asset.source);
+                loader.readFile(pathSrc.path, asset.flipped);
+            }
+            else if (std::holds_alternative<TextureRawLoadSource>(asset.source)) {
+                const auto& rawSrc = std::get<TextureRawLoadSource>(asset.source);
+                loader.readRaw(rawSrc.binaryData, rawSrc.binarySize, asset.flipped);
+            }
+
+            Texture texture = loader.createTexture(asset.name);
+
+            return std::move(texture);
+        }
+    };
+}

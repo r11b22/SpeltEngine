@@ -7,70 +7,73 @@
 
 #include <stdexcept>
 
-VertexArray::VertexArray()
-    : mId(0), mElementBuffer(GL_ELEMENT_ARRAY_BUFFER)
-{
-    glGenVertexArrays(1, &mId);
+namespace Spelt {
 
-    if (mId == 0) {
-        throw std::runtime_error("Could not create Vertex Array!");
+    VertexArray::VertexArray()
+        : mId(0), mElementBuffer(GL_ELEMENT_ARRAY_BUFFER)
+    {
+        glGenVertexArrays(1, &mId);
+
+        if (mId == 0) {
+            throw std::runtime_error("Could not create Vertex Array!");
+        }
+
+        // Bind the element buffer to this VAO
+        bind();
+        mElementBuffer.bind();
     }
 
-    // Bind the element buffer to this VAO
-    bind();
-    mElementBuffer.bind();
-}
-
-VertexArray::~VertexArray() {
-    if (mId != 0)
-        glDeleteVertexArrays(1, &mId);
-}
-
-VertexArray::VertexArray(VertexArray&& other) noexcept
-    : mId(other.mId), mElementBuffer(std::move(other.mElementBuffer))
-{
-    other.mId = 0;
-}
-
-VertexArray& VertexArray::operator=(VertexArray&& other) noexcept {
-    if (this != &other) {
+    VertexArray::~VertexArray() {
         if (mId != 0)
             glDeleteVertexArrays(1, &mId);
-        mId            = other.mId;
-        mElementBuffer = std::move(other.mElementBuffer);
-        other.mId      = 0;
-    }
-    return *this;
-}
-
-void VertexArray::addVertexBuffer(Buffer &buffer, const std::vector<VertexAttribute> &layout) {
-    bind();
-    buffer.bind();
-
-    size_t stride = 0;
-    for (const auto &attr : layout) {
-        stride += attr.componentSize;
     }
 
-    size_t offset = 0;
-    for (const auto &attr : layout) {
-        glVertexAttribPointer(
-            attr.location,
-            attr.componentCount,
-            attr.type,
-            GL_FALSE,
-            stride,
-            (const void*)offset
-        );
-        glEnableVertexAttribArray(attr.location);
-        offset += attr.componentSize;
+    VertexArray::VertexArray(VertexArray&& other) noexcept
+        : mId(other.mId), mElementBuffer(std::move(other.mElementBuffer))
+    {
+        other.mId = 0;
     }
-}
 
-Buffer &VertexArray::getElementBuffer() {
-    return mElementBuffer;
-}
+    VertexArray& VertexArray::operator=(VertexArray&& other) noexcept {
+        if (this != &other) {
+            if (mId != 0)
+                glDeleteVertexArrays(1, &mId);
+            mId            = other.mId;
+            mElementBuffer = std::move(other.mElementBuffer);
+            other.mId      = 0;
+        }
+        return *this;
+    }
 
-void VertexArray::bind() {
-    glBindVertexArray(mId);
+    void VertexArray::addVertexBuffer(Buffer &buffer, const std::vector<VertexAttribute> &layout) {
+        bind();
+        buffer.bind();
+
+        size_t stride = 0;
+        for (const auto &attr : layout) {
+            stride += attr.componentSize;
+        }
+
+        size_t offset = 0;
+        for (const auto &attr : layout) {
+            glVertexAttribPointer(
+                attr.location,
+                attr.componentCount,
+                attr.type,
+                GL_FALSE,
+                stride,
+                (const void*)offset
+            );
+            glEnableVertexAttribArray(attr.location);
+            offset += attr.componentSize;
+        }
+    }
+
+    Buffer &VertexArray::getElementBuffer() {
+        return mElementBuffer;
+    }
+
+    void VertexArray::bind() {
+        glBindVertexArray(mId);
+    }
 }

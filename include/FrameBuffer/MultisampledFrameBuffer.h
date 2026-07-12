@@ -4,53 +4,55 @@
 #include "Texture/Texture.h"
 #include "Window.h"
 
-class MultisampledFrameBuffer {
+namespace Spelt {
+    class MultisampledFrameBuffer {
 
-    private:
-        int mWidth, mHeight;
+        private:
+            int mWidth, mHeight;
 
-        uint32_t mFrameBuffer;
-        uint32_t mRenderBuffer;
-        Window* mWindow;
-        std::vector<MultisampledTexture*> mAttachedTextures;
+            uint32_t mFrameBuffer;
+            uint32_t mRenderBuffer;
+            Window* mWindow;
+            std::vector<MultisampledTexture*> mAttachedTextures;
 
-        int mCallbackId = -1;
-        int mSamples;
-    public:
-        MultisampledFrameBuffer(Window *window, int samples);
+            int mCallbackId = -1;
+            int mSamples;
+        public:
+            MultisampledFrameBuffer(Window *window, int samples);
 
-        ~MultisampledFrameBuffer();
-        // Disable copying
-        MultisampledFrameBuffer(const MultisampledFrameBuffer&) = delete;
-        MultisampledFrameBuffer& operator=(const MultisampledFrameBuffer&) = delete;
+            ~MultisampledFrameBuffer();
+            // Disable copying
+            MultisampledFrameBuffer(const MultisampledFrameBuffer&) = delete;
+            MultisampledFrameBuffer& operator=(const MultisampledFrameBuffer&) = delete;
 
-        // Move Constructor
-        MultisampledFrameBuffer(MultisampledFrameBuffer&& other) noexcept;
+            // Move Constructor
+            MultisampledFrameBuffer(MultisampledFrameBuffer&& other) noexcept;
 
-        // Move Assignment
-        MultisampledFrameBuffer& operator=(MultisampledFrameBuffer&& other) noexcept;
+            // Move Assignment
+            MultisampledFrameBuffer& operator=(MultisampledFrameBuffer&& other) noexcept;
 
-        void bind();
+            void bind();
 
-        void bindRead();
-        void bindDraw();
+            void bindRead();
+            void bindDraw();
 
-        void unbind();
-        void unbindRead();
-        void unbindDraw();
+            void unbind();
+            void unbindRead();
+            void unbindDraw();
 
-        void attachTexture(MultisampledTexture *tex, GLenum attachment);
+            void attachTexture(MultisampledTexture *tex, GLenum attachment);
 
-        void clearAttachments();
+            void clearAttachments();
 
-        void setAttachments(const std::vector<GLenum> &attachments);
+            void setAttachments(const std::vector<GLenum> &attachments);
 
-        int getWidth() const;
-        int getHeight() const;
+            int getWidth() const;
+            int getHeight() const;
 
-    private:
-        void cleanup();
-        void resize(int width, int height);
-        void checkCompleteness();
+        private:
+            void cleanup();
+            void resize(int width, int height);
+            void checkCompleteness();
 
-};
+    };
+}

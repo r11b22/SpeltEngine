@@ -3,32 +3,35 @@
 #include "Renderer/RenderCommand.h"
 #include "Renderer/RenderQueue.h"
 
-enum class ProjectionType {
-    Perspective,
-    Orthographic
-};
+namespace Spelt {
 
-enum class CameraType {
-    UI,
-    ThreeD,
-};
+    enum class ProjectionType {
+        Perspective,
+        Orthographic
+    };
 
-class RenderPass {
-    private:
-        ProjectionType mProjectionType = ProjectionType::Perspective;
-        CameraType mCamerType = CameraType::ThreeD;
+    enum class CameraType {
+        UI,
+        ThreeD,
+    };
 
-        RenderQueue mQueue;
-    public:
-        void addToRenderQueue(std::vector<RenderCommand> command);
-        const RenderQueue& getRenderQueue() const;
+    class RenderPass {
+        private:
+            ProjectionType mProjectionType = ProjectionType::Perspective;
+            CameraType mCamerType = CameraType::ThreeD;
 
-        void setProjectionType(ProjectionType type);
-        ProjectionType getProjectionType() const;
+            RenderQueue mQueue;
+        public:
+            void addToRenderQueue(std::vector<RenderCommand> command);
+            const RenderQueue& getRenderQueue() const;
 
-        void setCameraType(CameraType type);
-        CameraType getCameraType() const;
+            void setProjectionType(ProjectionType type);
+            ProjectionType getProjectionType() const;
 
-        void clearRenderQueue();
-    private:
-};
+            void setCameraType(CameraType type);
+            CameraType getCameraType() const;
+
+            void clearRenderQueue();
+        private:
+    };
+}

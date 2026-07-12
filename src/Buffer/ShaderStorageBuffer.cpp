@@ -2,8 +2,10 @@
 #include "Buffer/Buffer.h"
 
 
-ShaderStorageBuffer::ShaderStorageBuffer(GLenum usage)
-    : Buffer(GL_SHADER_STORAGE_BUFFER, usage)
-{
+namespace Spelt {
+    ShaderStorageBuffer::ShaderStorageBuffer(GLenum usage)
+        : Buffer(GL_SHADER_STORAGE_BUFFER, usage)
+    {
 
+    }
 }
