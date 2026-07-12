@@ -38,6 +38,8 @@ result.match(
     );
 ```
 
+Types must be trivially castable to the actual type of the Result for them to be accepted as input parameters.
+
 `result.match()` Can actually return a value. The important thing to keep in mind here is that each lambda must return the same type for this to compile.
 
 ```cpp
