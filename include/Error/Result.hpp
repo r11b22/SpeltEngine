@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include <format>
 #include <stdexcept>
 #include <variant>
 #include "Utilities/VariantVisitHelper.hpp"
@@ -15,23 +16,23 @@ namespace Spelt {
     };
 
     template <typename V, typename E>
-    class Result {
+    class [[nodiscard]] Result {
     private:
         std::variant<V, E> mData;
     public:
         static Result<V, E> createValue(V value){
-            return Result<V, E>(value);
+            return Result<V, E>(std::move(value));
         }
 
         static Result<V, E> createError(E error){
-            return Result<V, E>(error);
+            return Result<V, E>(std::move(error));
         }
 
-        bool isValue(){
+        bool isValue() const{
             return std::holds_alternative<V>(mData);
         }
 
-        bool isError(){
+        bool isError() const{
             return std::holds_alternative<E>(mData);
         }
 
@@ -131,9 +132,85 @@ namespace Spelt {
             }, mData);
         }
 
+        void throwOnError() const{
+            if (isError()){
+                throw std::runtime_error("An unexpected error occurred");
+            }
+        }
+
+        void throwOnError(const std::string& str) const{
+            if (isError()){
+                throw std::runtime_error(std::format("An unexpected error occurred: {}", str));
+            }
+        }
+
     private:
         Result(std::variant<V, E> data)
-            : mData(data)
+            : mData(std::move(data))
         {}
     };
+
+
+    template <typename E>
+    class [[nodiscard]] Result<void, E> {
+    private:
+        // We use std::monostate as a dummy placeholder type for "success with no data"
+        Result<std::monostate, E> mResult;
+
+        Result(Result<std::monostate, E> result) : mResult(std::move(result)) {}
+
+    public:
+        static Result<void, E> createValue() {
+            return Result<void, E>(Result<std::monostate, E>::createValue(std::monostate{}));
+        }
+
+        static Result<void, E> createError(E error) {
+            return Result<void, E>(Result<std::monostate, E>::createError(error));
+        }
+
+        bool isValue() const {
+            return mResult.isValue();
+        }
+
+        bool isError() const {
+            return mResult.isError();
+        }
+
+        // value() returns void now, and just acts as an assertion/throw check
+        void value() const {
+            if (mResult.isValue()) {
+                return;
+            }
+            throw ResultError("Tried to get value on Result containing error");
+        }
+
+        E& error() {
+            return mResult.error();
+        }
+
+        const E& error() const {
+            return mResult.error();
+        }
+
+        // Match method variations updated because the success lambda takes no arguments
+        template <typename FuncV, typename FuncE>
+        auto match(FuncV&& valFunc, FuncE&& errFunc) {
+            return mResult.match([&](std::monostate) { return std::forward<FuncV>(valFunc)(); }, std::forward<FuncE>(errFunc));
+        }
+
+        template <typename FuncV, typename FuncE>
+        auto match(FuncV&& valFunc, FuncE&& errFunc) const {
+            return mResult.match([&](std::monostate) { return std::forward<FuncV>(valFunc)(); }, std::forward<FuncE>(errFunc));
+        }
+
+
+        void throwOnError() const{
+            mResult.throwOnError();
+        }
+
+        void throwOnError(const std::string& str) const{
+            mResult.throwOnError(str);
+        }
+    };
+
 }

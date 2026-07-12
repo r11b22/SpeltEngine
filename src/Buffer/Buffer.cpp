@@ -5,11 +5,14 @@
 
 #include "Buffer/Buffer.h"
 #include "Buffer/BufferMap.h"
+#include "Error/Result.hpp"
 #include "Window.h"
 
 #include <stdexcept>
 
 namespace Spelt {
+
+
     Buffer::Buffer(GLenum type, GLenum usage)
         : mType(type), mId(0), mUsageType(usage)
     {
@@ -128,37 +131,39 @@ namespace Spelt {
         glBufferSubData(mType, 0, bytes, data);
     }
 
-    BufferMap<float> Buffer::mapDataFloat(GLenum accessType) {
+    Result<BufferMap<float>, BufferError> Buffer::mapDataFloat(GLenum accessType) {
         if (mMapped) {
-            throw std::runtime_error("Can not map an already mapped Buffer!");
+            return Result<BufferMap<float>, BufferError>::createError(BufferError::AlreadyMapped);
         }
 
         bind();
         float* ptr = (float*)glMapBuffer(mType, accessType);
         mMapped = true;
 
-        return BufferMap<float>(ptr, this);
+        return Result<BufferMap<float>, BufferError>::createValue(BufferMap<float>(ptr, this));
     }
 
-    BufferMap<glm::vec4> Buffer::mapDataVec4(GLenum accessType) {
+    Result<BufferMap<glm::vec4>, BufferError> Buffer::mapDataVec4(GLenum accessType) {
         if (mMapped) {
-            throw std::runtime_error("Can not map an already mapped Buffer!");
+            return Result<BufferMap<glm::vec4>, BufferError>::createError(BufferError::AlreadyMapped);
         }
 
         bind();
         glm::vec4* ptr = (glm::vec4*)glMapBuffer(mType, accessType);
         mMapped = true;
 
-        return BufferMap<glm::vec4>(ptr, this);
+        return Result<BufferMap<glm::vec4>, BufferError>::createValue(BufferMap<glm::vec4>(ptr, this));
     }
 
-    void Buffer::unmap() {
+    Result<void, BufferError> Buffer::unmap() {
         if (!mMapped) {
-            throw std::runtime_error("Can not unmap a non mapped Buffer!");
+            return Result<void, BufferError>::createError(BufferError::NotMapped);
         }
 
         bind();
         mMapped = false;
         glUnmapBuffer(mType);
+
+        return Result<void, BufferError>::createValue();
     }
 }

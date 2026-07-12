@@ -5,10 +5,16 @@
 #pragma once
 #include <vector>
 
+#include "Error/Result.hpp"
 #include "glad/glad.h"
 #include "glm/glm.hpp"
 
 namespace Spelt {
+    enum class BufferError{
+        AlreadyMapped,
+        NotMapped
+    };
+
     template <typename T>
     class BufferMap;
 
@@ -79,19 +85,19 @@ namespace Spelt {
         * Creates a mapping for the cpu to read from the gpu buffer
         * @return
         */
-        BufferMap<float> mapDataFloat(GLenum accessType);
+        Result<BufferMap<float>, BufferError> mapDataFloat(GLenum accessType);
 
         /**
         * Creates a mapping for the cpu to read from the gpu buffer
         * @return
         */
-        BufferMap<glm::vec4> mapDataVec4(GLenum accessType);
+        Result<BufferMap<glm::vec4>, BufferError> mapDataVec4(GLenum accessType);
 
         /**
         * Unmaps all memory maps made for this buffer
         * Warning: do not call this from non engine code
         */
-        void unmap();
+        Result<void, BufferError> unmap();
     private:
         void setData(const void* data, size_t bytes);
     };

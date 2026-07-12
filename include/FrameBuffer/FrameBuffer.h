@@ -9,12 +9,17 @@
 #include <stdexcept>
 #include <vector>
 
+#include "Error/Result.hpp"
 #include "Texture/Texture.h"
 #include "Window.h"
 #include "glad/glad.h"
 
 
 namespace Spelt {
+    enum class FrameBufferError {
+        Incomplete
+    };
+
     template <typename T>
     class FrameBuffer {
     private:
@@ -179,20 +184,20 @@ namespace Spelt {
             bind();
             glDrawBuffers(static_cast<GLsizei>(attachments.size()), attachments.data());
 
-            checkCompleteness();
+            checkCompleteness().throwOnError("Framebuffer is not complete");
             unbind();
         }
 
-        T getAtPixel(int x, int y) {
+        Result<T, FrameBufferError> getAtPixel(int x, int y) {
             if (!mAttachedTextures.empty() && mAttachedTextures[0]) {
                 bind();
                 T result = 0;
                 glReadPixels(x, y, 1, 1, mAttachedTextures[0]->getFormat(), mAttachedTextures[0]->getDatatype(), &result);
                 unbind();
 
-                return result;
+                return Result<T, FrameBufferError>::createValue(result);
             }
-            throw std::runtime_error("Can not get pixel data from incomplete FrameBuffer, attach a texture before calling getPixelAt!");
+            return Result<T, FrameBufferError>::createError(FrameBufferError::Incomplete);
         }
 
         int getWidth() const {
@@ -231,13 +236,16 @@ namespace Spelt {
             glBindRenderbuffer(GL_RENDERBUFFER, mRenderBuffer);
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, mWidth, mHeight);
         }
-        void checkCompleteness() {
+        Result<void, FrameBufferError> checkCompleteness() {
             GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
             if (status != GL_FRAMEBUFFER_COMPLETE) {
                 std::string errorMsg = "Framebuffer did not complete! Error code: 0x";
                 std::cerr << errorMsg << std::hex << status << std::dec << std::endl;
-                throw std::runtime_error("Framebuffer completeness check failed.");
+
+                // should be replaced with a generic panic
+                return Result<void, FrameBufferError>::createError(FrameBufferError::Incomplete);
             }
+            return Result<void, FrameBufferError>::createValue();
         }
     };
 
