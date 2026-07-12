@@ -59,3 +59,13 @@ TEST_CASE("Result Error Match"){
 
     REQUIRE(reached);
 }
+
+TEST_CASE("Result valueOr"){
+    Result<int, std::string> valueResult = Result<int, std::string>::createValue(0);
+
+    REQUIRE(valueResult.valueOr(2) == 0);
+
+    Result<int, std::string> errorResult = Result<int, std::string>::createError("");
+
+    REQUIRE(errorResult.valueOr(1) == 1);
+}

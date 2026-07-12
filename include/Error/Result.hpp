@@ -58,6 +58,18 @@ namespace Spelt {
         }
 
         /**
+         * Returns a copy of the value
+         * If the result is an Error it returns a default value
+         */
+        V valueOr(V other) const{
+            if (const auto* val = std::get_if<V>(&mData)) {
+                return *val;
+            }
+
+            return other;
+        }
+
+        /**
          * Throws an excpetion if result is value
          */
         E& error() {
