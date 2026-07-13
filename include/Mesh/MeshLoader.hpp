@@ -11,6 +11,11 @@
 
 
 namespace Spelt {
+    enum class MeshLoaderError {
+        ReadFail,
+        NoFile
+    };
+
     class MeshLoader {
         private:
             Assimp::Importer* mImporter = nullptr;
@@ -18,10 +23,10 @@ namespace Spelt {
         public:
             MeshLoader();
             ~MeshLoader();
-            void readFile(const std::filesystem::path& path, bool collapse = true);
+            Result<void, MeshLoaderError> readFile(const std::filesystem::path& path, bool collapse = true);
 
-            std::vector<float> getVertices(int mesh, glm::vec3 = glm::vec3{1.0f});
-            std::vector<unsigned int> getIndices(int mesh);
+            Result<std::vector<float>, MeshLoaderError> getVertices(int mesh, glm::vec3 = glm::vec3{1.0f});
+            Result<std::vector<unsigned int>, MeshLoaderError> getIndices(int mesh);
 
             Mesh createMesh(std::string name, int mesh, glm::vec3 scale = glm::vec3{1.0f});
         private:
@@ -39,7 +44,7 @@ namespace Spelt {
     struct AssetLoader<Mesh> {
         static Mesh load(AssetLoadInfo<Mesh> asset) {
             MeshLoader loader{};
-            loader.readFile(asset.path);
+            loader.readFile(asset.path).throwOnError(std::format("Could not load requested asset with path: {}", asset.path.c_str()));
 
             Mesh mesh = loader.createMesh(asset.name, asset.meshIdx, asset.scale);
 

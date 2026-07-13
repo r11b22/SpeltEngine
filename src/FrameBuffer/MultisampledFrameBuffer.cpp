@@ -1,4 +1,6 @@
 #include "FrameBuffer/MultisampledFrameBuffer.h"
+#include "Error/Result.hpp"
+#include "FrameBuffer/FrameBuffer.h"
 #include "Texture/MultisampledTexture.h"
 #include <algorithm>
 #include <iostream>
@@ -157,7 +159,7 @@ namespace Spelt {
         bind();
         glDrawBuffers(static_cast<GLsizei>(attachments.size()), attachments.data());
 
-        checkCompleteness();
+        checkCompleteness().throwOnError("Multisampled Framebuffer is not complete!");
         unbind();
     }
 
@@ -197,12 +199,14 @@ namespace Spelt {
         glBindRenderbuffer(GL_RENDERBUFFER, mRenderBuffer);
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, mSamples, GL_DEPTH24_STENCIL8, mWidth, mHeight);
     }
-    void MultisampledFrameBuffer::checkCompleteness() {
+    Result<void, FrameBufferError> MultisampledFrameBuffer::checkCompleteness() {
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE) {
             std::string errorMsg = "Framebuffer did not complete! Error code: 0x";
             std::cerr << errorMsg << std::hex << status << std::dec << std::endl;
-            throw std::runtime_error("Framebuffer completeness check failed.");
+            return Result<void, FrameBufferError>::createError(FrameBufferError::Incomplete);
         }
+
+        return Result<void, FrameBufferError>::createValue();
     }
 }

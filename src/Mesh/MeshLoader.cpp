@@ -1,8 +1,10 @@
 #include "Mesh/MeshLoader.hpp"
+#include "Error/Result.hpp"
 #include "Mesh/MeshAsset.hpp"
 #include "glm/ext/vector_float3.hpp"
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <vector>
 
 namespace Spelt {
     MeshLoader::MeshLoader() {
@@ -13,7 +15,7 @@ namespace Spelt {
         delete mImporter;
     }
 
-    void MeshLoader::readFile(const std::filesystem::path &path, bool collapse) {
+    Result<void, MeshLoaderError> MeshLoader::readFile(const std::filesystem::path &path, bool collapse) {
 
         if (collapse) {
             mScene = mImporter->ReadFile(path.string().c_str(),
@@ -29,16 +31,17 @@ namespace Spelt {
         }
 
         if (!mScene || mScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !mScene->mRootNode) {
-            throw std::runtime_error(mImporter->GetErrorString());
+            return Result<void, MeshLoaderError>::createError(MeshLoaderError::ReadFail);
         }
 
+        return Result<void, MeshLoaderError>::createValue();
     }
 
 
-    std::vector<float> MeshLoader::getVertices(int idx, glm::vec3 scale) {
+    Result<std::vector<float>, MeshLoaderError> MeshLoader::getVertices(int idx, glm::vec3 scale) {
 
         if (!mScene) {
-            throw std::runtime_error("Could not get vertices: No file was read!");
+            return Result<std::vector<float>, MeshLoaderError>::createError(MeshLoaderError::NoFile);
         }
 
         aiMesh* mesh = mScene->mMeshes[idx];
@@ -78,12 +81,12 @@ namespace Spelt {
             }
         }
 
-        return std::move(vertices);
+        return Result<std::vector<float>, MeshLoaderError>::createValue(std::move(vertices));
     }
 
-    std::vector<unsigned int> MeshLoader::getIndices(int idx) {
+    Result<std::vector<unsigned int>, MeshLoaderError> MeshLoader::getIndices(int idx) {
         if (!mScene) {
-            throw std::runtime_error("Could not get vertices: No file was read!");
+            return Result<std::vector<unsigned int>, MeshLoaderError>::createError(MeshLoaderError::NoFile);
         }
 
 
@@ -98,14 +101,14 @@ namespace Spelt {
             }
         }
 
-        return std::move(indices);
+        return Result<std::vector<unsigned int>, MeshLoaderError>::createValue(std::move(indices));
     }
 
     Mesh MeshLoader::createMesh(std::string name, int idx, glm::vec3 scale){
         Mesh newMesh{name};
 
-        newMesh.setVertices(getVertices(idx, scale));
-        newMesh.setIndices(getIndices(idx));
+        newMesh.setVertices(getVertices(idx, scale).value());
+        newMesh.setIndices(getIndices(idx).value());
 
         return std::move(newMesh);
     }

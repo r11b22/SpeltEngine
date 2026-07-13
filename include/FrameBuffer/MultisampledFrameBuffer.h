@@ -1,10 +1,12 @@
 #pragma once
 
+#include "FrameBuffer/FrameBuffer.h"
 #include "Texture/MultisampledTexture.h"
 #include "Texture/Texture.h"
 #include "Window.h"
 
 namespace Spelt {
+
     class MultisampledFrameBuffer {
 
         private:
@@ -52,7 +54,7 @@ namespace Spelt {
         private:
             void cleanup();
             void resize(int width, int height);
-            void checkCompleteness();
+            Result<void, FrameBufferError> checkCompleteness();
 
     };
 }
