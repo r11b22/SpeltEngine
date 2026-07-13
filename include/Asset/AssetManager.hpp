@@ -5,6 +5,7 @@
 #include "Asset/AssetReference.hpp"
 #include "Asset/AssetRepository.hpp"
 #include "Error/Option.hpp"
+#include "Error/Result.hpp"
 #include "Mesh/Mesh.h"
 #include "Mesh/MeshAsset.hpp"
 #include "Mesh/MeshReference.hpp"
@@ -21,6 +22,10 @@
 #include <any>
 
 namespace Spelt {
+    enum class AssetManagerError {
+        AssetNotFound
+    };
+
     class AssetManager {
         private:
             // Makes sure to keep track of destructors
@@ -52,10 +57,10 @@ namespace Spelt {
             template<typename T>
                 requires std::derived_from<T, Asset>
             AssetReference<T> getAssetByName(const std::string& name) const{
-                Option<const AssetRepository<T>*> repo = getRepo<T>();
+                Option<const AssetRepository<T>&> repo = getRepo<T>();
 
                 return repo.match(
-                    [&name](const AssetRepository<T>* repoRef){ return repoRef->getAssetByName(name);},
+                    [&name](const AssetRepository<T>& repoRef){ return repoRef.getAssetByName(name);},
                     [](){ return AssetReference<T>(); }
                 );
             }
@@ -63,10 +68,10 @@ namespace Spelt {
             template<typename T>
                 requires std::derived_from<T, Asset>
             bool hasAssetOfName(const std::string& name) const{
-                Option<const AssetRepository<T>*> repo = getRepo<T>();
+                Option<const AssetRepository<T>&> repo = getRepo<T>();
 
                 return repo.match(
-                    [&name](const AssetRepository<T>* repoRef){ return repoRef->hasAssetOfName(name);},
+                    [&name](const AssetRepository<T>& repoRef){ return repoRef.hasAssetOfName(name);},
                     [](){ return false; }
                 );
             }
@@ -83,11 +88,11 @@ namespace Spelt {
             template<typename T>
                 requires std::derived_from<T, Asset>
             const T* getAsset(AssetReference<T> ref) const{
-                Option<const AssetRepository<T>*> repo = getRepo<T>();
+                Option<const AssetRepository<T>&> repo = getRepo<T>();
 
                 return repo.match(
-                    [&ref](const AssetRepository<T>* repoRef){
-                        return repoRef->getAsset(std::move(ref));
+                    [&ref](const AssetRepository<T>& repoRef){
+                        return repoRef.getAsset(std::move(ref));
                     },
                     [](){
                         return nullptr;
@@ -96,10 +101,10 @@ namespace Spelt {
 
             template<typename T>
                 requires std::derived_from<T, Asset>
-            void removeAsset(AssetReference<T> ref) {
+            Result<void, AssetManagerError> removeAsset(AssetReference<T> ref) {
                 AssetRepository<T>& repo = getRepo<T>();
 
-                repo.removeAsset(ref);
+                return repo.removeAsset(ref).replaceError(AssetManagerError::AssetNotFound);
             }
 
         private:
@@ -126,12 +131,12 @@ namespace Spelt {
             }
 
             template<typename T>
-            Option<const AssetRepository<T>*> getRepo() const {
+            Option<const AssetRepository<T>&> getRepo() const {
                 auto it = mRepos.find(typeid(T));
                 if (it == mRepos.end()) {
-                    return Option<const AssetRepository<T>*>::createNone();
+                    return Option<const AssetRepository<T>&>::createNone();
                 }
-                return Option<const AssetRepository<T>*>::createValue(static_cast<const AssetRepository<T>*>(it->second.get()));
+                return Option<const AssetRepository<T>&>::createValue(*static_cast<const AssetRepository<T>*>(it->second.get()));
             }
     };
 }

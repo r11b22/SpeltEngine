@@ -21,7 +21,7 @@ namespace Spelt {
     }
 
     ComputeShader ComputeShader::createFromPath(const std::filesystem::path &path, int groupXSize, int groupYSize, int groupZSize) {
-        const std::string source = FileReader::readFile(path);
+        const std::string source = FileReader::readFile(path).value();
         return ComputeShader{source, groupXSize, groupYSize, groupZSize};
     }
 

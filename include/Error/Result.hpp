@@ -111,6 +111,34 @@ namespace Spelt {
             throw ResultError("Tried to get const error on Result containing value");
         }
 
+        /**
+         * If this Result contains an error, replaces it with a new error value.
+         * Otherwise, forwards the current value.
+         */
+        template <typename NewE>
+        constexpr Result<V, NewE> replaceError(NewE newErr) &&
+            noexcept(std::is_nothrow_move_constructible_v<V> && std::is_nothrow_move_constructible_v<NewE>)
+        {
+            if (isError()) {
+                return Result<V, NewE>::createError(std::move(newErr));
+            }
+            return Result<V, NewE>::createValue(std::move(value()));
+        }
+
+        /**
+         * If this Result contains an error, replaces it with a new error value.
+         * Otherwise, forwards the current value.
+         */
+        template <typename NewE>
+        constexpr Result<V, NewE> replaceError(NewE newErr) const &
+            noexcept(std::is_nothrow_copy_constructible_v<V> && std::is_nothrow_move_constructible_v<NewE>)
+        {
+            if (isError()) {
+                return Result<V, NewE>::createError(std::move(newErr));
+            }
+            return Result<V, NewE>::createValue(value());
+        }
+
         template <typename FuncV, typename FuncE>
         constexpr auto match(FuncV&& valFunc, FuncE&& errFunc)
             noexcept(std::is_nothrow_invocable_v<FuncV, V&> &&
@@ -215,6 +243,34 @@ namespace Spelt {
 
         constexpr const E& error() const {
             return mResult.error();
+        }
+
+        /**
+         * If this void Result contains an error, replaces it with a new error value.
+         * Otherwise, forwards the success state.
+         */
+        template <typename NewE>
+        constexpr Result<void, NewE> replaceError(NewE newErr) const &
+            noexcept(std::is_nothrow_move_constructible_v<NewE>)
+        {
+            if (isError()) {
+                return Result<void, NewE>::createError(std::move(newErr));
+            }
+            return Result<void, NewE>::createValue();
+        }
+
+        /**
+         * If this void Result contains an error, replaces it with a new error value.
+         * Otherwise, forwards the success state.
+         */
+        template <typename NewE>
+        constexpr Result<void, NewE> replaceError(NewE newErr) &&
+            noexcept(std::is_nothrow_move_constructible_v<NewE>)
+        {
+            if (isError()) {
+                return Result<void, NewE>::createError(std::move(newErr));
+            }
+            return Result<void, NewE>::createValue();
         }
 
         // Match method variations updated because the success lambda takes no arguments

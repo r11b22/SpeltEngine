@@ -2,21 +2,22 @@
 // Created by joost on 4/9/26.
 //
 #include "FileReader.h"
+#include "Error/Result.hpp"
 
 namespace Spelt {
-    std::string FileReader::readFile(const std::filesystem::path& path) {
+    Result<std::string, FileReaderError> FileReader::readFile(const std::filesystem::path& path) {
         if (!std::filesystem::exists(path)) {
-            throw std::runtime_error("File not found: " + path.string());
+            return Result<std::string, FileReaderError>::createError(FileReaderError::FileNotFound);
         }
 
         std::ifstream fileStream(path, std::ios::in | std::ios::binary);
 
         if (!fileStream.is_open()) {
-            throw std::runtime_error("Could not open file: " + path.string());
+            return Result<std::string, FileReaderError>::createError(FileReaderError::CouldNotOpen);
         }
 
         std::stringstream buffer;
         buffer << fileStream.rdbuf();
-        return buffer.str();
+        return Result<std::string, FileReaderError>::createValue(buffer.str());
     }
 }

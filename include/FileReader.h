@@ -4,14 +4,20 @@
 
 #pragma once
 
+#include "Error/Result.hpp"
 #include <filesystem>
 #include <string>
 #include <fstream>
 #include <sstream>
 
 namespace Spelt {
+    enum class FileReaderError {
+        FileNotFound,
+        CouldNotOpen
+    };
+
     class FileReader {
     public:
-        static std::string readFile(const std::filesystem::path& path);
+        static Result<std::string, FileReaderError> readFile(const std::filesystem::path& path);
     };
 }

@@ -143,12 +143,13 @@ void MainScene::testRemoveAsset(){
 
     Spelt::MeshReference quadRef = getAssetManager().addAsset(std::move(quad));
 
-    getAssetManager().removeAsset(quadRef);
+    getAssetManager().removeAsset(quadRef).throwOnError("Failed to delete asset due to missing asset");
 
-    try{
-        Spelt::Mesh* result = getAssetManager().getAsset(quadRef);
+
+    Spelt::Mesh* result = getAssetManager().getAsset(quadRef);
+    if (result != nullptr){
         std::cout << "Asset not deleted" << std::endl;
-    }catch(...){
+    }else{
         std::cout << "Delete succes" << std::endl;
     }
 }

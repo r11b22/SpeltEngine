@@ -1,4 +1,6 @@
 #pragma once
+#include "Error/Option.hpp"
+#include "Error/Result.hpp"
 #include <stdexcept>
 #include <format>
 #include <utility>
@@ -6,6 +8,10 @@
 
 
 namespace Spelt {
+    enum class SparseSetError {
+        NotFound
+    };
+
     template <typename T>
     class SparseSet {
     private:
@@ -114,21 +120,21 @@ namespace Spelt {
             mDenseToSparse[newIndex] = id;
         }
 
-        T* get(int id) {
+        Option<T*> get(int id) {
             if (!contains(id))
-                throw std::runtime_error(std::format("{} is not contained in SparseSet", id));
-            return &mDense[mSparse[id]];
+                return Option<T*>::createNone();
+            return Option<T*>::createValue(&mDense[mSparse[id]]);
         }
 
-        const T* get(int id) const {
+        Option<const T*> get(int id) const {
             if (!contains(id))
-                throw std::runtime_error(std::format("{} is not contained in SparseSet", id));
-            return &mDense[mSparse[id]];
+                return Option<const T*>::createNone();
+            return Option<const T*>::createValue(&mDense[mSparse[id]]);
         }
 
-        void remove(int id) {
+        Result<void, SparseSetError> remove(int id) {
             if (!contains(id))
-                throw std::runtime_error(std::format("{} is not contained in SparseSet", id));
+                return Result<void, SparseSetError>::createError(SparseSetError::NotFound);
             int indexToRemove = mSparse[id];
             int lastIndex     = static_cast<int>(mDense.size() - 1);
             if (indexToRemove != lastIndex) {
@@ -140,6 +146,7 @@ namespace Spelt {
             mDense.pop_back();
             mDenseToSparse.pop_back();
             mSparse[id] = null_id;
+            return Result<void, SparseSetError>::createValue();
         }
 
     private:

@@ -6,7 +6,7 @@
 
 namespace Spelt {
     void JsonLoader::readFile(const std::filesystem::path& path) {
-        mContents = FileReader::readFile(path);
+        mContents = FileReader::readFile(path).value();
     }
 
     void JsonLoader::readRaw(EmbeddedAsset asset){

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -131,4 +132,74 @@ namespace Spelt {
         }
     };
 
+
+    // Partial specialization for lvalue references
+    template <typename T>
+    class [[nodiscard]] Option<T&> {
+    private:
+        // We delegate the storage and logic to the primary Option class
+        // using std::reference_wrapper to satisfy std::optional constraints.
+        Option<std::reference_wrapper<T>> mUnderlying;
+
+        // Private constructor for internal factories
+        constexpr explicit Option(Option<std::reference_wrapper<T>> underlying) noexcept
+            : mUnderlying(underlying) {}
+
+    public:
+        static constexpr Option<T&> createValue(T& value) noexcept {
+            return Option<T&>(Option<std::reference_wrapper<T>>::createValue(std::ref(value)));
+        }
+
+        static constexpr Option<T&> createNone() noexcept {
+            return Option<T&>(Option<std::reference_wrapper<T>>::createNone());
+        }
+
+        [[nodiscard]] constexpr bool isValue() const noexcept {
+            return mUnderlying.isValue();
+        }
+
+        [[nodiscard]] constexpr bool isNone() const noexcept {
+            return mUnderlying.isNone();
+        }
+
+        /**
+         * Unwraps the reference wrapper and returns a true lvalue reference
+         */
+        constexpr T& value() {
+            return mUnderlying.value().get();
+        }
+
+        constexpr const T& value() const {
+            return mUnderlying.value().get();
+        }
+
+        /**
+         * Returns a copy of the object being referenced, or `other` if empty
+         */
+        constexpr T valueOr(T other) const {
+            if (mUnderlying.isValue()) [[likely]] {
+                return mUnderlying.value().get();
+            }
+            return other;
+        }
+
+        // --- Pattern Matching Forwarding ---
+
+        template <typename FuncV, typename FuncN>
+        constexpr auto match(FuncV&& valFunc, FuncN&& noneFunc) {
+            if (mUnderlying.isValue()) [[likely]] {
+                // Forward the actual underlying reference (T&), not the wrapper
+                return std::forward<FuncV>(valFunc)(mUnderlying.value().get());
+            }
+            return std::forward<FuncN>(noneFunc)();
+        }
+
+        template <typename FuncV, typename FuncN>
+        constexpr auto match(FuncV&& valFunc, FuncN&& noneFunc) const {
+            if (mUnderlying.isValue()) [[likely]] {
+                return std::forward<FuncV>(valFunc)(mUnderlying.value().get());
+            }
+            return std::forward<FuncN>(noneFunc)();
+        }
+    };
 }

@@ -12,7 +12,7 @@ namespace Spelt {
                                             int inputCount,
                                             int outputCount)
     {
-        return PostProcessingEffect(FileReader::readFile(effectPath), inputCount, outputCount);
+        return PostProcessingEffect(FileReader::readFile(effectPath).value(), inputCount, outputCount);
     }
     PostProcessingEffect::PostProcessingEffect(const std::string& effectSource,
                                             int inputCount,

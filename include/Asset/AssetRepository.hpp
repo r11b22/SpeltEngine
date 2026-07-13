@@ -3,10 +3,16 @@
 #include "Asset/Asset.hpp"
 #include "Asset/AssetReference.hpp"
 #include "DataStructures/SparseSet.hpp"
+#include "Error/Option.hpp"
+#include "Error/Result.hpp"
 #include <concepts>
 #include <stdexcept>
 
 namespace Spelt {
+    enum class AssetRepositoryError {
+        NotFound
+    };
+
     template <typename   T>
     requires std::derived_from<T, Asset>
     class AssetRepository {
@@ -57,19 +63,29 @@ namespace Spelt {
             T* getAsset(AssetReference<T> reference){
                 int id = reference.getID();
 
-                return mData.get(id);
+                Option<T*> result = mData.get(id);
+
+                return result.match(
+                    [](T* asset){ return asset; },
+                    []() { return static_cast<T*>(nullptr); }
+                );
             }
 
             const T* getAsset(AssetReference<T> reference) const {
                 int id = reference.getID();
 
-                return mData.get(id);
+                Option<const T*> result = mData.get(id);
+
+                return result.match(
+                    [](const T* asset){ return asset; },
+                    []() { return nullptr; }
+                );
             }
 
-            void removeAsset(AssetReference<T> reference){
+            Result<void, AssetRepositoryError> removeAsset(AssetReference<T> reference){
                 int id = reference.getID();
 
-                mData.remove(id);
+                return mData.remove(id).replaceError(AssetRepositoryError::NotFound);
             }
         private:
     };
