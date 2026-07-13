@@ -6,6 +6,7 @@ add_executable(tests
         SceneTest.cpp
         JsonTest.cpp
         ResultTest.cpp
+        OptionTest.cpp
 )
 
 # Link your engine target (SpeltEngine) and the Catch2 target.

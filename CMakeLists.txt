@@ -192,6 +192,7 @@ set(ENGINE_HEADERS
         include/Defaults/PostProcessing/Blur.h
 
         include/Error/Result.hpp
+        include/Error/Option.hpp
 
         include/FileReader.h
 
