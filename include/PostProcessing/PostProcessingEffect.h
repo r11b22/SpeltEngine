@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "PostProcessing/PostProcessingComputeUnit.h"
 #include "Shader/ShaderProgram.h"
 #include "Texture/Texture.h"
 
@@ -24,6 +25,10 @@ namespace Spelt {
         std::vector<std::pair<std::string, bool>>  boolUniforms;
     };
 
+    enum class PostProcessingEffectError {
+        TextureCountMismatch,
+        InvalidPassIndex
+    };
 
     class PostProcessingEffect {
     private:
@@ -62,12 +67,12 @@ namespace Spelt {
         /**
         * Binds each texture to its sampler slot and sets the corresponding uniform on the shader.
         */
-        void setupInputTextures(const std::vector<Texture*>& textures);
+        Result<void, PostProcessingEffectError> setupInputTextures(const std::vector<Texture*>& textures);
 
         /**
         * Uploads the uniforms of the given pass index to the currently active shader.
         */
-        void applyPassUniforms(std::size_t passIndex);
+        Result<void, PostProcessingEffectError> applyPassUniforms(std::size_t passIndex);
 
         /**
         * Returns true when the output count of `previousEffect` matches this effect's input count.

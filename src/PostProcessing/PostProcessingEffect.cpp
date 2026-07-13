@@ -3,6 +3,7 @@
 //
 
 #include "PostProcessing/PostProcessingEffect.h"
+#include "Error/Result.hpp"
 #include "FileReader.h"
 #include "Strings/ShaderSource.h"
 
@@ -51,11 +52,9 @@ namespace Spelt {
         mShader->use();
     }
 
-    void PostProcessingEffect::setupInputTextures(const std::vector<Texture*>& textures) {
+    Result<void, PostProcessingEffectError> PostProcessingEffect::setupInputTextures(const std::vector<Texture*>& textures) {
         if (static_cast<int>(textures.size()) != mInputCount) {
-            throw std::runtime_error(
-                "PostProcessingEffect: expected " + std::to_string(mInputCount) +
-                " input textures, got "           + std::to_string(textures.size()));
+            return Error(PostProcessingEffectError::TextureCountMismatch);
         }
 
         for (int i = 0; i < mInputCount; ++i) {
@@ -67,13 +66,13 @@ namespace Spelt {
             mShader->setUniformInt("uStaticTexture"+std::to_string(i), i+mInputCount);
             mStaticTexture[i].bind(i+mInputCount);
         }
+
+        return Success{};
     }
 
-    void PostProcessingEffect::applyPassUniforms(std::size_t passIndex) {
+    Result<void, PostProcessingEffectError> PostProcessingEffect::applyPassUniforms(std::size_t passIndex) {
         if (passIndex >= mPasses.size()) {
-            throw std::runtime_error(
-                "PostProcessingEffect: pass index " + std::to_string(passIndex) +
-                " is out of range (pass count: "    + std::to_string(mPasses.size()) + ").");
+            return Error(PostProcessingEffectError::InvalidPassIndex);
         }
 
         const EffectPass& pass = mPasses[passIndex];
@@ -87,6 +86,8 @@ namespace Spelt {
         for (const auto& [name, val] : pass.boolUniforms) {
             mShader->setUniformBool(name, val);
         }
+
+        return Success{};
     }
 
     bool PostProcessingEffect::checkInputCompatibility(const PostProcessingEffect& previousEffect) const {

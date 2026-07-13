@@ -47,7 +47,7 @@ namespace Spelt {
                 });
 
                 if (it == mData.end()){
-                    throw std::runtime_error("Could not find asset with name!");
+                    return AssetReference<T>();
                 }
 
                 return AssetReference<T>{static_cast<unsigned int>((*it).first)};

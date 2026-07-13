@@ -5,6 +5,7 @@
 
 #include "Buffer/Buffer.h"
 #include "Buffer/BufferMap.h"
+#include "Error/Panic.hpp"
 #include "Error/Result.hpp"
 #include "Window.h"
 
@@ -19,7 +20,7 @@ namespace Spelt {
         glGenBuffers(1, &mId);
 
         if (mId == 0) {
-            throw std::runtime_error("Failed to create new buffer!");
+            fatalPanic("Failed to create new buffer!");
         }
     }
 

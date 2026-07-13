@@ -3,7 +3,12 @@
 //
 
 #include "PostProcessing/PostProcessingComputeUnit.h"
+#include "Error/Panic.hpp"
+#include "Error/Result.hpp"
 #include "PostProcessing/PostProcessingEffect.h"
+#include "Texture/Texture.h"
+#include <format>
+#include <vector>
 
 
 namespace Spelt {
@@ -14,7 +19,7 @@ namespace Spelt {
         mFrameBufferB(window)
     {
         if (inputCount < 1 || outputCount < 1) {
-            throw std::runtime_error(
+            fatalPanic(
                 "PostProcessingComputeUnit: inputCount and outputCount must both be >= 1.");
         }
 
@@ -68,24 +73,19 @@ namespace Spelt {
         return *this;
     }
 
-    std::vector<Texture*> PostProcessingComputeUnit::execute(PostProcessingEffect& effect,
+    Result<std::vector<Texture*>, PostProcessingComputeError> PostProcessingComputeUnit::execute(PostProcessingEffect& effect,
                                                             const std::vector<Texture*>& inputTextures,
                                                             Mesh& quadMesh)
     {
         glDisable(GL_DEPTH_TEST);
 
         if (static_cast<int>(inputTextures.size()) != mInputCount) {
-            throw std::runtime_error(
-                "PostProcessingComputeUnit: input texture count mismatch. "
-                "Expected " + std::to_string(mInputCount) +
-                ", got "    + std::to_string(inputTextures.size()));
+            return Result<std::vector<Texture*>, PostProcessingComputeError>::createError(PostProcessingComputeError::TextureCountMismatch);
         }
 
         const std::size_t passCount = effect.getPassCount();
         if (passCount == 0) {
-            throw std::runtime_error(
-                "PostProcessingComputeUnit: effect has no committed passes. "
-                "Call commitPass() at least once before executing.");
+            return Result<std::vector<Texture*>, PostProcessingComputeError>::createError(PostProcessingComputeError::NoPasses);
         }
 
         effect.useShader();
@@ -104,8 +104,12 @@ namespace Spelt {
                                 : bankPointers(writeToA ? mOutputCount : 0);
 
             writeFB.bind();  // bind next, don't unbind previous first
-            effect.setupInputTextures(sampledTextures);
-            effect.applyPassUniforms(passIndex);
+            effect.setupInputTextures(sampledTextures).panicOnError(
+                std::format("Failed to setup input textures for post processing effect: inputTexture count: {} | required: {}", sampledTextures.size(), effect.getInputCount())
+            );
+            effect.applyPassUniforms(passIndex).panicOnError(
+                std::format("Faild to apply pass uniforms: passIndx: {} | passCount: {}", passIndex, effect.getPassCount())
+            );
             quadMesh.draw(*effect.getShaderProgram());
 
             // Don't unbind here — just let the next bind() overwrite the state
@@ -120,7 +124,7 @@ namespace Spelt {
         // After the loop, writeToA has already been flipped, so the last written bank is
         // the opposite of the current value of writeToA.
         int lastWrittenBankOffset = writeToA ? mOutputCount : 0;
-        return bankPointers(lastWrittenBankOffset);
+        return Result<std::vector<Texture*>, PostProcessingComputeError>::createValue(bankPointers(lastWrittenBankOffset));
     }
 
     std::vector<Texture*> PostProcessingComputeUnit::bankPointers(int bankOffset) {

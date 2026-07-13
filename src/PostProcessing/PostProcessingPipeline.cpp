@@ -3,10 +3,13 @@
 //
 
 #include "PostProcessing/PostProcessingPipeline.h"
+#include "Error/Panic.hpp"
 #include "FrameBuffer/MultisampledFrameBuffer.h"
+#include "PostProcessing/PostProcessingComputeUnit.h"
 
 #include <algorithm>
 #include <limits>
+#include <vector>
 
 
 namespace Spelt {
@@ -290,7 +293,20 @@ namespace Spelt {
             if (!entry.enabled) {
                 continue;
             }
-            currentInputs = entry.computeUnit.execute(entry.effect, currentInputs, mQuadMesh);
+
+            entry.computeUnit.execute(entry.effect, currentInputs, mQuadMesh).match(
+                [&currentInputs](std::vector<Texture*> ouputs){ currentInputs = ouputs; }
+                ,[&currentInputs, &entry](PostProcessingComputeError err){
+                    switch (err) {
+                        case PostProcessingComputeError::TextureCountMismatch:
+                        fatalPanic(std::format("The amount of input textures do not match the required amount of input textures: input: {} | required: {}", currentInputs.size(), entry.computeUnit.getInputCount()));
+                        break;
+                        case Spelt::PostProcessingComputeError::NoPasses:
+                        fatalPanic("No passes were added to the requested post processing effect");
+                        break;
+                    }
+                }
+            );
         }
 
         mOutputTexture = currentInputs[0];

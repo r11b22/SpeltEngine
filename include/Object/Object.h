@@ -16,6 +16,10 @@ namespace Spelt {
 
     class Scene;
 
+    enum class ObjectError {
+        NoScene
+    };
+
     /**
     * An abstract object interface for use in scenes
     */
@@ -40,14 +44,14 @@ namespace Spelt {
         void setLoaded(bool loaded);
         bool isLoaded() const;
 
-        void destroy();
+        Result<void, ObjectError> destroy();
 
         void setParent(IObjectReference& obj);
 
         void setScene(Scene* scene);
-        Scene& getScene() const;
+        Option<Scene&> getScene() const;
 
-        AssetManager& getAssetManager();
-        const AssetManager& getAssetManager() const;
+        Result<AssetManager&, ObjectError> getAssetManager();
+        Result<const AssetManager&, ObjectError> getAssetManager() const;
     };
 }

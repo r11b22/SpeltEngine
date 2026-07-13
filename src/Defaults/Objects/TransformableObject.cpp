@@ -45,7 +45,8 @@ namespace Spelt::Defaults {
         // FIXME: this only checks the immediate parent not all parents
         // TODO cache result
         while (true) {
-            ObjectReference<ITransformable> current = getScene().getParentByID<ITransformable>(getID());
+            ObjectReference<ITransformable> current = getScene().value("Can not get the parent for an object that does not contain a scene!")
+                                                            .getParentByID<ITransformable>(getID());
             if (current.isNoReference()) {
                 return {1.0f};
             }else{

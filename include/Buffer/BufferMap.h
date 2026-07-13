@@ -58,7 +58,7 @@ namespace Spelt {
 
         void free() {
             if (mValid && mOwner) {
-                mOwner->unmap().throwOnError("Tried to unmap a map from a buffer that is no longer mapped!");
+                mOwner->unmap().panicOnError("Tried to unmap a map from a buffer that is no longer mapped!");
                 mValid = false;
                 mData = nullptr;
             }

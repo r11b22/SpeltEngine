@@ -8,14 +8,38 @@
 #include "Error/Panic.hpp"
 #include "Utilities/VariantVisitHelper.hpp"
 
-
-
 namespace Spelt {
     class ResultError : public std::runtime_error {
     public:
         explicit ResultError(const std::string& message)
             : std::runtime_error(message) {}
     };
+
+    template <typename V>
+    struct Value {
+        V value;
+
+        /**
+         * An easy value constructor for Result
+         * Does not work with references
+         */
+        constexpr explicit Value(V v) : value(std::move(v)) {}
+    };
+
+    template <typename V> Value(V) -> Value<V>;
+
+    template <typename E>
+    struct Error {
+        E error;
+        /**
+         * An easy error constructor for Result
+         */
+        constexpr explicit Error(E e) : error(std::move(e)) {}
+    };
+
+    template <typename E> Error(E) -> Error<E>;
+
+    struct Success {};
 
     template <typename V, typename E>
     class [[nodiscard]] Result {
@@ -33,6 +57,18 @@ namespace Spelt {
         {}
 
     public:
+        template <typename V2>
+        constexpr Result(Value<V2> val)
+            noexcept(std::is_nothrow_constructible_v<V, V2&&>)
+            : mData(std::in_place_index<0>, std::move(val.value))
+        {}
+
+        template <typename E2>
+        constexpr Result(Error<E2> err)
+            noexcept(std::is_nothrow_constructible_v<E, E2&&>)
+            : mData(std::in_place_index<1>, std::move(err.error))
+        {}
+
         static constexpr Result<V, E> createValue(V value)
             noexcept(std::is_nothrow_move_constructible_v<V>)
         {
@@ -67,12 +103,34 @@ namespace Spelt {
         /**
          * Throws an exception if result is error
          */
+        constexpr V& value(const std::string& msg, std::source_location loc = std::source_location::current()) {
+            if (auto* val = std::get_if<V>(&mData)) [[likely]] {
+                return *val;
+            }
+
+            fatalPanic(msg, loc);
+        }
+
+        /**
+         * Throws an exception if result is error
+         */
         constexpr const V& value(std::source_location loc = std::source_location::current()) const {
             if (const auto* val = std::get_if<V>(&mData)) [[likely]] {
                 return *val;
             }
 
             fatalPanic("Tried to get const value on Result containing error", loc);
+        }
+
+        /**
+         * Throws an exception if result is error
+         */
+        constexpr const V& value(const std::string& msg, std::source_location loc = std::source_location::current()) const {
+            if (const auto* val = std::get_if<V>(&mData)) [[likely]] {
+                return *val;
+            }
+
+            fatalPanic(msg, loc);
         }
 
         /**
@@ -104,12 +162,34 @@ namespace Spelt {
         /**
          * Throws an excpetion if result is value
          */
+        constexpr E& error(const std::string& msg, std::source_location loc = std::source_location::current()) {
+            if (auto* err = std::get_if<E>(&mData)) [[likely]] {
+                return *err;
+            }
+
+            fatalPanic(msg, loc);
+        }
+
+        /**
+         * Throws an excpetion if result is value
+         */
         constexpr const E& error(std::source_location loc = std::source_location::current()) const {
             if (const auto* err = std::get_if<E>(&mData)) [[likely]] {
                 return *err;
             }
 
             fatalPanic("Tried to get const error on Result containing value", loc);
+        }
+
+        /**
+         * Throws an excpetion if result is value
+         */
+        constexpr const E& error(const std::string& msg, std::source_location loc = std::source_location::current()) const {
+            if (const auto* err = std::get_if<E>(&mData)) [[likely]] {
+                return *err;
+            }
+
+            fatalPanic(msg, loc);
         }
 
         /**
@@ -211,6 +291,17 @@ namespace Spelt {
         {}
 
     public:
+        constexpr Result(Success)
+            noexcept(noexcept(Result<std::monostate, E>::createValue(std::monostate{})))
+            : mResult(Result<std::monostate, E>::createValue(std::monostate{}))
+        {}
+
+        template <typename E2>
+        constexpr Result(Error<E2> err)
+            noexcept(std::is_nothrow_constructible_v<E, E2&&>)
+            : mResult(Result<std::monostate, E>::createError(std::move(err.error)))
+        {}
+
         static constexpr Result<void, E> createValue()
             noexcept(noexcept(Result<std::monostate, E>::createValue(std::monostate{})))
         {
@@ -238,12 +329,27 @@ namespace Spelt {
             fatalPanic("Tried to get value on Result containing error", loc);
         }
 
+        constexpr void value(const std::string& msg, std::source_location loc = std::source_location::current()) const {
+            if (mResult.isValue()) [[likely]] {
+                return;
+            }
+            fatalPanic(msg, loc);
+        }
+
         constexpr E& error(std::source_location loc = std::source_location::current()) {
             return mResult.error(loc);
         }
 
+        constexpr E& error(const std::string& msg, std::source_location loc = std::source_location::current()) {
+            return mResult.error(msg, loc);
+        }
+
         constexpr const E& error(std::source_location loc = std::source_location::current()) const {
             return mResult.error(loc);
+        }
+
+        constexpr const E& error(const std::string& msg, std::source_location loc = std::source_location::current()) const {
+            return mResult.error(msg, loc);
         }
 
         /**
@@ -281,8 +387,9 @@ namespace Spelt {
                      std::is_nothrow_invocable_v<FuncE, E&>)
         {
             return mResult.match(
-                [&](std::monostate) { return std::forward<FuncV>(valFunc)(); },
-                std::forward<FuncE>(errFunc));
+                    [&](std::monostate) { return std::forward<FuncV>(valFunc)(); },
+                    std::forward<FuncE>(errFunc)
+                );
         }
 
         template <typename FuncV, typename FuncE>
@@ -291,17 +398,139 @@ namespace Spelt {
                      std::is_nothrow_invocable_v<FuncE, const E&>)
         {
             return mResult.match(
-                [&](std::monostate) { return std::forward<FuncV>(valFunc)(); },
-                std::forward<FuncE>(errFunc));
+                    [&](std::monostate) { return std::forward<FuncV>(valFunc)(); },
+                    std::forward<FuncE>(errFunc)
+                );
         }
 
-
-
-        constexpr void throwOnError(std::source_location loc = std::source_location::current()) const {
+        constexpr void panicOnError(std::source_location loc = std::source_location::current()) const {
             mResult.panicOnError(loc);
         }
 
-        void throwOnError(const std::string& str, std::source_location loc = std::source_location::current()) const {
+        void panicOnError(const std::string& str, std::source_location loc = std::source_location::current()) const {
+            mResult.panicOnError(str, loc);
+        }
+    };
+
+    template <typename V, typename E>
+    class [[nodiscard]] Result<V&, E> {
+    private:
+        using RefWrapper = std::reference_wrapper<V>;
+        Result<RefWrapper, E> mResult;
+
+        constexpr explicit Result(Result<RefWrapper, E> result) noexcept
+            : mResult(std::move(result))
+        {}
+
+    public:
+        template <typename E2>
+        constexpr Result(Error<E2> err)
+            noexcept(std::is_nothrow_constructible_v<E, E2&&>)
+            : mResult(Result<RefWrapper, E>::createError(std::move(err.error)))
+        {}
+
+        static constexpr Result<V&, E> createValue(V& value) noexcept {
+            return Result<V&, E>(Result<RefWrapper, E>::createValue(RefWrapper(value)));
+        }
+
+        static constexpr Result<V&, E> createError(E error)
+            noexcept(std::is_nothrow_move_constructible_v<E>)
+        {
+            return Result<V&, E>(Result<RefWrapper, E>::createError(std::move(error)));
+        }
+
+        [[nodiscard]] constexpr bool isValue() const noexcept {
+            return mResult.isValue();
+        }
+
+        [[nodiscard]] constexpr bool isError() const noexcept {
+            return mResult.isError();
+        }
+
+        constexpr V& value(std::source_location loc = std::source_location::current()) {
+            return mResult.value(loc).get();
+        }
+
+        constexpr V& value(const std::string& msg, std::source_location loc = std::source_location::current()) {
+            return mResult.value(msg, loc).get();
+        }
+
+        constexpr const V& value(std::source_location loc = std::source_location::current()) const {
+            return mResult.value(loc).get();
+        }
+
+        constexpr const V& value(const std::string& msg, std::source_location loc = std::source_location::current()) const {
+            return mResult.value(msg, loc).get();
+        }
+
+        constexpr V& valueOr(V& other) const noexcept {
+            if (mResult.isValue()) [[likely]] {
+                return mResult.value().get();
+            }
+            return other;
+        }
+
+        constexpr E& error(std::source_location loc = std::source_location::current()) {
+            return mResult.error(loc);
+        }
+
+        constexpr E& error(const std::string& msg, std::source_location loc = std::source_location::current()) {
+            return mResult.error(msg, loc);
+        }
+
+        constexpr const E& error(std::source_location loc = std::source_location::current()) const {
+            return mResult.error(loc);
+        }
+
+        constexpr const E& error(const std::string& msg, std::source_location loc = std::source_location::current()) const {
+            return mResult.error(msg, loc);
+        }
+
+        template <typename NewE>
+        constexpr Result<V&, NewE> replaceError(NewE newErr) &&
+            noexcept(std::is_nothrow_move_constructible_v<NewE>)
+        {
+            if (isError()) {
+                return Result<V&, NewE>::createError(std::move(newErr));
+            }
+            return Result<V&, NewE>::createValue(value());
+        }
+
+        template <typename NewE>
+        constexpr Result<V&, NewE> replaceError(NewE newErr) const &
+            noexcept(std::is_nothrow_move_constructible_v<NewE>)
+        {
+            if (isError()) {
+                return Result<V&, NewE>::createError(std::move(newErr));
+            }
+            return Result<V&, NewE>::createValue(value());
+        }
+
+        template <typename FuncV, typename FuncE>
+        constexpr auto match(FuncV&& valFunc, FuncE&& errFunc)
+            noexcept(std::is_nothrow_invocable_v<FuncV, V&> &&
+                        std::is_nothrow_invocable_v<FuncE, E&>)
+        {
+            return mResult.match(
+                [&](RefWrapper wrapper) { return std::forward<FuncV>(valFunc)(wrapper.get()); },
+                std::forward<FuncE>(errFunc));
+        }
+
+        template <typename FuncV, typename FuncE>
+        constexpr auto match(FuncV&& valFunc, FuncE&& errFunc) const
+            noexcept(std::is_nothrow_invocable_v<FuncV, const V&> &&
+                        std::is_nothrow_invocable_v<FuncE, const E&>)
+        {
+            return mResult.match(
+                [&](RefWrapper wrapper) { return std::forward<FuncV>(valFunc)(wrapper.get()); },
+                std::forward<FuncE>(errFunc));
+        }
+
+        constexpr void panicOnError(std::source_location loc = std::source_location::current()) const {
+            mResult.panicOnError(loc);
+        }
+
+        void panicOnError(const std::string& str, std::source_location loc = std::source_location::current()) const {
             mResult.panicOnError(str, loc);
         }
     };

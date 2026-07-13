@@ -14,6 +14,11 @@
 namespace Spelt {
     class PostProcessingEffect;
 
+    enum class PostProcessingComputeError {
+        TextureCountMismatch,
+        NoPasses
+    };
+
     /**
     * Owns the GPU resources (framebuffers + textures) needed to execute one PostProcessingEffect,
     * including all of its passes.
@@ -44,7 +49,7 @@ namespace Spelt {
         * Returns pointers to the textures written by the final pass.
         * The returned pointers remain valid for the lifetime of this unit.
         */
-        std::vector<Texture*> execute(PostProcessingEffect& effect,
+        Result<std::vector<Texture*>, PostProcessingComputeError> execute(PostProcessingEffect& effect,
                                     const std::vector<Texture*>& inputTextures,
                                     Mesh& quadMesh);
 

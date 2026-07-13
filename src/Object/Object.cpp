@@ -7,9 +7,12 @@
 
 #include <atomic>
 #include <iostream>
+#include <optional>
 #include <stdexcept>
 
 #include "Asset/AssetManager.hpp"
+#include "Error/Option.hpp"
+#include "Error/Result.hpp"
 #include "Object/ObjectRepository.h"
 #include "Scene/Scene.hpp"
 
@@ -30,19 +33,19 @@ namespace Spelt {
     }
 
     void Object::setParent(IObjectReference& obj) {
-        getScene().setParentByID(getID(), obj.getUntyped()->getID());
+        getScene().value("Object was not added to a scene! Could not get parent.").setParentByID(getID(), obj.getUntyped()->getID());
     }
 
     void Object::setScene(Scene *scene) {
         mScene = scene;
     }
 
-    Scene &Object::getScene() const{
+    Option<Scene&> Object::getScene() const{
         if (mScene == nullptr) {
-            throw std::runtime_error("Tried to get the scene for an object that is not part of a scene!");
+            return Option<Scene&>::createNone();
         }
 
-        return *mScene;
+        return Option<Scene&>::createValue(*mScene);
     }
 
     void Object::setLoaded(bool loaded){
@@ -53,27 +56,29 @@ namespace Spelt {
         return mLoaded;
     }
 
-    void Object::destroy() {
+    Result<void, ObjectError> Object::destroy() {
         if (mScene == nullptr) {
-            throw std::runtime_error("You can not destroy an object that is not yet part of a scene!");
+            return Result<void, ObjectError>::createError(ObjectError::NoScene);
         }
 
         mScene->destroyObjectByID(getID());
+
+        return Result<void, ObjectError>::createValue();
     }
 
-    AssetManager& Object::getAssetManager() {
+    Result<AssetManager&, ObjectError> Object::getAssetManager() {
         if (mScene == nullptr) {
-            throw std::runtime_error("You can not manage assets inside an object that is not yet part of a scene!");
+            return Result<AssetManager&, ObjectError>::createError(ObjectError::NoScene);
         }
 
-        return mScene->getAssetManager();
+        return Result<AssetManager&, ObjectError>::createValue(mScene->getAssetManager());
     }
 
-    const AssetManager& Object::getAssetManager() const{
+    Result<const AssetManager&, ObjectError> Object::getAssetManager() const{
         if (mScene == nullptr) {
-            throw std::runtime_error("You can not manage assets inside an object that is not yet part of a scene!");
+            return Result<const AssetManager&, ObjectError>::createError(ObjectError::NoScene);
         }
 
-        return mScene->getAssetManager();
+        return Result<const AssetManager&, ObjectError>::createValue(mScene->getAssetManager());
     }
 }

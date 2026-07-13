@@ -46,23 +46,45 @@ namespace Spelt {
         /**
          * Throws an exception if the option is empty
          */
-        constexpr T& value() {
+        constexpr T& value(std::source_location loc = std::source_location::current()) {
             if (mData.has_value()) [[likely]] {
                 return *mData;
             }
 
-            throw OptionError("Tried to get value on an empty Option");
+            fatalPanic("Tried to get value on an empty Option", loc);
         }
 
         /**
          * Throws an exception if the option is empty
          */
-        constexpr const T& value() const {
+        constexpr T& value(const std::string& msg, std::source_location loc = std::source_location::current()) {
             if (mData.has_value()) [[likely]] {
                 return *mData;
             }
 
-            throw OptionError("Tried to get const value on an empty Option");
+            fatalPanic(msg, loc);
+        }
+
+        /**
+         * Throws an exception if the option is empty
+         */
+        constexpr const T& value(std::source_location loc = std::source_location::current()) const {
+            if (mData.has_value()) [[likely]] {
+                return *mData;
+            }
+
+            fatalPanic("Tried to get const value on an empty Option", loc);
+        }
+
+        /**
+         * Throws an exception if the option is empty
+         */
+        constexpr const T& value(const std::string& msg, std::source_location loc = std::source_location::current()) const {
+            if (mData.has_value()) [[likely]] {
+                return *mData;
+            }
+
+            fatalPanic(msg, loc);
         }
 
         /**
@@ -130,18 +152,20 @@ namespace Spelt {
                 fatalPanic("Option that should not be none was none!", loc);
             }
         }
+
+        constexpr void panicOnNone(const std::string& msg, std::source_location loc = std::source_location::current()) const {
+            if (isNone()) [[unlikely]] {
+                fatalPanic(msg, loc);
+            }
+        }
     };
 
 
-    // Partial specialization for lvalue references
     template <typename T>
     class [[nodiscard]] Option<T&> {
     private:
-        // We delegate the storage and logic to the primary Option class
-        // using std::reference_wrapper to satisfy std::optional constraints.
         Option<std::reference_wrapper<T>> mUnderlying;
 
-        // Private constructor for internal factories
         constexpr explicit Option(Option<std::reference_wrapper<T>> underlying) noexcept
             : mUnderlying(underlying) {}
 
@@ -165,12 +189,20 @@ namespace Spelt {
         /**
          * Unwraps the reference wrapper and returns a true lvalue reference
          */
-        constexpr T& value() {
-            return mUnderlying.value().get();
+        constexpr T& value(std::source_location loc = std::source_location::current()) {
+            return mUnderlying.value(loc).get();
         }
 
-        constexpr const T& value() const {
-            return mUnderlying.value().get();
+        constexpr T& value(const std::string& msg, std::source_location loc = std::source_location::current()) {
+            return mUnderlying.value(msg, loc).get();
+        }
+
+        constexpr const T& value(std::source_location loc = std::source_location::current()) const {
+            return mUnderlying.value(loc).get();
+        }
+
+        constexpr const T& value(const std::string& msg, std::source_location loc = std::source_location::current()) const {
+            return mUnderlying.value(msg, loc).get();
         }
 
         /**
@@ -183,12 +215,10 @@ namespace Spelt {
             return other;
         }
 
-        // --- Pattern Matching Forwarding ---
 
         template <typename FuncV, typename FuncN>
         constexpr auto match(FuncV&& valFunc, FuncN&& noneFunc) {
             if (mUnderlying.isValue()) [[likely]] {
-                // Forward the actual underlying reference (T&), not the wrapper
                 return std::forward<FuncV>(valFunc)(mUnderlying.value().get());
             }
             return std::forward<FuncN>(noneFunc)();
@@ -204,6 +234,10 @@ namespace Spelt {
 
         constexpr void panicOnNone(std::source_location loc = std::source_location::current()) const {
             mUnderlying.panicOnNone(loc);
+        }
+
+        constexpr void panicOnNone(const std::string& msg, std::source_location loc = std::source_location::current()) const {
+            mUnderlying.panicOnNone(msg, loc);
         }
     };
 }

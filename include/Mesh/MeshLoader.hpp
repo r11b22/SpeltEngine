@@ -44,7 +44,7 @@ namespace Spelt {
     struct AssetLoader<Mesh> {
         static Mesh load(AssetLoadInfo<Mesh> asset) {
             MeshLoader loader{};
-            loader.readFile(asset.path).throwOnError(std::format("Could not load requested asset with path: {}", asset.path.c_str()));
+            loader.readFile(asset.path).panicOnError(std::format("Could not load requested asset with path: {}", asset.path.c_str()));
 
             Mesh mesh = loader.createMesh(asset.name, asset.meshIdx, asset.scale);
 

@@ -1,4 +1,5 @@
 #include "FrameBuffer/MultisampledFrameBuffer.h"
+#include "Error/Panic.hpp"
 #include "Error/Result.hpp"
 #include "FrameBuffer/FrameBuffer.h"
 #include "Texture/MultisampledTexture.h"
@@ -18,14 +19,14 @@ namespace Spelt {
     {
         glGenFramebuffers(1, &mFrameBuffer);
         if (mFrameBuffer == 0) {
-            throw std::runtime_error("Failed to create FrameBuffer!");
+            fatalPanic("Failed to create MultisampledFrameBuffer!");
         }
 
         glGenRenderbuffers(1, &mRenderBuffer);
         if (mRenderBuffer == 0) {
             glDeleteFramebuffers(1, &mFrameBuffer);
             mFrameBuffer = 0;
-            throw std::runtime_error("Failed to create FrameBuffer depth buffer!");
+            fatalPanic("Failed to create MultisampledFrameBuffer depth buffer!");
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffer);
@@ -159,7 +160,7 @@ namespace Spelt {
         bind();
         glDrawBuffers(static_cast<GLsizei>(attachments.size()), attachments.data());
 
-        checkCompleteness().throwOnError("Multisampled Framebuffer is not complete!");
+        checkCompleteness().panicOnError("Multisampled Framebuffer is not complete!");
         unbind();
     }
 
