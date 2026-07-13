@@ -3,6 +3,7 @@
 //
 
 #include "PostProcessing/PostProcessingGroup.h"
+#include "Error/Result.hpp"
 
 
 namespace Spelt {
@@ -10,23 +11,27 @@ namespace Spelt {
         mEffects.push_back(std::move(effect));
     }
 
-    EffectHandle PostProcessingGroup::apply(PostProcessingPipeline& pipeline) {
+    Result<EffectHandle, PostProcessingError> PostProcessingGroup::apply(PostProcessingPipeline& pipeline) {
         if (mApplied) {
-            throw std::runtime_error("PostProcessingGroup::apply() called more than once.");
+            return Error(PostProcessingError::MultipleApplies);
         }
 
         setup();
 
         if (mEffects.empty()) {
-            throw std::runtime_error(
-                "PostProcessingGroup::setup() did not add any effects.");
+            return Error(PostProcessingError::NoEffect);
         }
 
         // Submit every effect and let the pipeline allocate a group handle for them.
         std::vector<PostProcessingEffect> effects = std::move(mEffects);
-        EffectHandle groupHandle = pipeline.addGroup(std::move(effects));
+        auto groupHandleResult = pipeline.addGroup(std::move(effects));
 
+        if(groupHandleResult.isError()){
+            return Error(groupHandleResult.error());
+        }
+
+        EffectHandle groupHandle = groupHandleResult.value();
         mApplied = true;
-        return groupHandle;
+        return Value(groupHandle);
     }
 }

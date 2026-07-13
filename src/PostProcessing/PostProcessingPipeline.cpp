@@ -4,8 +4,10 @@
 
 #include "PostProcessing/PostProcessingPipeline.h"
 #include "Error/Panic.hpp"
+#include "Error/Result.hpp"
 #include "FrameBuffer/MultisampledFrameBuffer.h"
 #include "PostProcessing/PostProcessingComputeUnit.h"
+#include "PostProcessing/PostProcessingError.h"
 
 #include <algorithm>
 #include <limits>
@@ -77,7 +79,7 @@ namespace Spelt {
             [handle](const EffectEntry& e) { return e.handle == handle; });
 
         if (it == mEntries.end()) {
-            throw std::runtime_error(
+            fatalPanic(
                 "PostProcessingPipeline: invalid EffectHandle " + std::to_string(handle) + ".");
         }
         return it;
@@ -89,7 +91,7 @@ namespace Spelt {
             [handle](const EffectEntry& e) { return e.handle == handle; });
 
         if (it == mEntries.end()) {
-            throw std::runtime_error(
+            fatalPanic(
                 "PostProcessingPipeline: invalid EffectHandle " + std::to_string(handle) + ".");
         }
         return it;
@@ -125,21 +127,15 @@ namespace Spelt {
 
     // ─── Effect management ────────────────────────────────────────────────────────
 
-    EffectHandle PostProcessingPipeline::addEffectInternal(PostProcessingEffect effect,
+    Result<EffectHandle, PostProcessingError> PostProcessingPipeline::addEffectInternal(PostProcessingEffect effect,
                                                             EffectHandle groupHandle) {
         if (!mEntries.empty()) {
             const PostProcessingEffect& prev = mEntries.back().effect;
             if (!effect.checkInputCompatibility(prev)) {
-                throw std::runtime_error(
-                    "PostProcessingPipeline: effect input count (" +
-                    std::to_string(effect.getInputCount()) +
-                    ") does not match previous effect output count (" +
-                    std::to_string(prev.getOutputCount()) + ").");
+                return Error(PostProcessingError::TextureCountMismatch);
             }
         } else if (effect.getInputCount() != 1) {
-            throw std::runtime_error(
-                "PostProcessingPipeline: the first effect must have exactly 1 input texture, "
-                "but has " + std::to_string(effect.getInputCount()) + ".");
+            return Error(PostProcessingError::WrongInitialEntry);
         }
 
         EffectHandle handle      = mNextHandle++;
@@ -155,26 +151,29 @@ namespace Spelt {
         });
 
         mDirty = true;
-        return handle;
+        return Value(handle);
     }
 
-    EffectHandle PostProcessingPipeline::addEffect(PostProcessingEffect effect) {
+    Result<EffectHandle, PostProcessingError> PostProcessingPipeline::addEffect(PostProcessingEffect effect) {
         return addEffectInternal(std::move(effect), kInvalidEffectHandle);
     }
 
-    EffectHandle PostProcessingPipeline::addGroup(std::vector<PostProcessingEffect> effects) {
+    Result<EffectHandle, PostProcessingError> PostProcessingPipeline::addGroup(std::vector<PostProcessingEffect> effects) {
         if (effects.empty()) {
-            throw std::runtime_error("PostProcessingPipeline::addGroup(): effect list is empty.");
+            return Error(PostProcessingError::NoEffect);
         }
 
         // Reserve a dedicated group handle that is never used as an effect handle.
         EffectHandle groupHandle = mNextHandle++;
 
         for (auto& effect : effects) {
-            addEffectInternal(std::move(effect), groupHandle);
+            auto result = addEffectInternal(std::move(effect), groupHandle);
+            if (result.isError()){
+                return Error(result.error());
+            }
         }
 
-        return groupHandle;
+        return Value(groupHandle);
     }
 
     void PostProcessingPipeline::removeEffect(EffectHandle handle) {
@@ -191,34 +190,40 @@ namespace Spelt {
         mDirty = true;
     }
 
-    void PostProcessingPipeline::validateSymmetryForDisable(const EffectEntry& entry) const {
+    Result<void, PostProcessingError> PostProcessingPipeline::validateSymmetryForDisable(const EffectEntry& entry) const {
         if (entry.effect.getInputCount() != entry.effect.getOutputCount()) {
-            throw std::runtime_error(
-                "PostProcessingPipeline: cannot disable effect with handle " +
-                std::to_string(entry.handle) +
-                " because its input count (" +
-                std::to_string(entry.effect.getInputCount()) +
-                ") != output count (" +
-                std::to_string(entry.effect.getOutputCount()) +
-                "). Disabling an asymmetric effect would break the chain.");
+            return Error(PostProcessingError::TextureCountMismatch);
         }
+
+        return Success{};
     }
 
-    void PostProcessingPipeline::disableEffect(EffectHandle handle) {
+    Result<void, PostProcessingError> PostProcessingPipeline::disableEffect(EffectHandle handle) {
         if (isGroupHandle(handle)) {
             auto members = entriesForGroup(handle);
             // Validate symmetry for every member before touching any of them.
             for (const EffectEntry* e : members) {
-                validateSymmetryForDisable(*e);
+
+                auto result = validateSymmetryForDisable(*e);
+                if (result.isError()){
+                    return Error(result.error());
+                }
+
             }
             for (EffectEntry* e : members) {
                 e->enabled = false;
             }
         } else {
             auto it = entryForHandle(handle);
-            validateSymmetryForDisable(*it);
+
+            auto result = validateSymmetryForDisable(*it);
+            if (result.isError()){
+                return Error(result.error());
+            }
+
             it->enabled = false;
         }
+        return Success{};
     }
 
     void PostProcessingPipeline::enableEffect(EffectHandle handle) {
@@ -281,10 +286,9 @@ namespace Spelt {
         mDirty = false;
     }
 
-    void PostProcessingPipeline::process() {
+    Result<void, PostProcessingError> PostProcessingPipeline::process() {
         if (mDirty) {
-            throw std::runtime_error(
-                "PostProcessingPipeline: prepare() must be called after adding or removing effects.");
+            return Error(PostProcessingError::Unprepared);
         }
 
         std::vector<Texture*> currentInputs = { &mSceneInputTexture };
@@ -294,22 +298,21 @@ namespace Spelt {
                 continue;
             }
 
-            entry.computeUnit.execute(entry.effect, currentInputs, mQuadMesh).match(
-                [&currentInputs](std::vector<Texture*> ouputs){ currentInputs = ouputs; }
-                ,[&currentInputs, &entry](PostProcessingComputeError err){
-                    switch (err) {
-                        case PostProcessingComputeError::TextureCountMismatch:
-                        fatalPanic(std::format("The amount of input textures do not match the required amount of input textures: input: {} | required: {}", currentInputs.size(), entry.computeUnit.getInputCount()));
-                        break;
-                        case Spelt::PostProcessingComputeError::NoPasses:
-                        fatalPanic("No passes were added to the requested post processing effect");
-                        break;
-                    }
-                }
-            );
+            auto result = entry.computeUnit.execute(entry.effect, currentInputs, mQuadMesh);
+
+            if (result.isError()) {
+                return Error(result.error());
+            }
+
+            currentInputs = result.value();
+        }
+
+        if (currentInputs.empty()) {
+            return Error(PostProcessingError::NoEffect);
         }
 
         mOutputTexture = currentInputs[0];
+        return Success{};
     }
 
     Texture* PostProcessingPipeline::getOutput() const {

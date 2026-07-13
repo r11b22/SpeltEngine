@@ -6,6 +6,7 @@
 #include "Error/Panic.hpp"
 #include "Error/Result.hpp"
 #include "PostProcessing/PostProcessingEffect.h"
+#include "PostProcessing/PostProcessingError.h"
 #include "Texture/Texture.h"
 #include <format>
 #include <vector>
@@ -73,19 +74,19 @@ namespace Spelt {
         return *this;
     }
 
-    Result<std::vector<Texture*>, PostProcessingComputeError> PostProcessingComputeUnit::execute(PostProcessingEffect& effect,
+    Result<std::vector<Texture*>, PostProcessingError> PostProcessingComputeUnit::execute(PostProcessingEffect& effect,
                                                             const std::vector<Texture*>& inputTextures,
                                                             Mesh& quadMesh)
     {
         glDisable(GL_DEPTH_TEST);
 
         if (static_cast<int>(inputTextures.size()) != mInputCount) {
-            return Result<std::vector<Texture*>, PostProcessingComputeError>::createError(PostProcessingComputeError::TextureCountMismatch);
+            return Result<std::vector<Texture*>, PostProcessingError>::createError(PostProcessingError::TextureCountMismatch);
         }
 
         const std::size_t passCount = effect.getPassCount();
         if (passCount == 0) {
-            return Result<std::vector<Texture*>, PostProcessingComputeError>::createError(PostProcessingComputeError::NoPasses);
+            return Result<std::vector<Texture*>, PostProcessingError>::createError(PostProcessingError::NoPasses);
         }
 
         effect.useShader();
@@ -124,7 +125,7 @@ namespace Spelt {
         // After the loop, writeToA has already been flipped, so the last written bank is
         // the opposite of the current value of writeToA.
         int lastWrittenBankOffset = writeToA ? mOutputCount : 0;
-        return Result<std::vector<Texture*>, PostProcessingComputeError>::createValue(bankPointers(lastWrittenBankOffset));
+        return Result<std::vector<Texture*>, PostProcessingError>::createValue(bankPointers(lastWrittenBankOffset));
     }
 
     std::vector<Texture*> PostProcessingComputeUnit::bankPointers(int bankOffset) {

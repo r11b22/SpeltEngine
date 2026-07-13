@@ -224,6 +224,7 @@ set(ENGINE_HEADERS
         include/PostProcessing/PostProcessingEffect.h
         include/PostProcessing/PostProcessingGroup.h
         include/PostProcessing/PostProcessingPipeline.h
+        include/PostProcessing/PostProcessingError.h
 
         include/Renderer/IDrawable.h
         include/Renderer/IRenderable.h

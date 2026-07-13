@@ -52,9 +52,9 @@ namespace Spelt {
         mShader->use();
     }
 
-    Result<void, PostProcessingEffectError> PostProcessingEffect::setupInputTextures(const std::vector<Texture*>& textures) {
+    Result<void, PostProcessingError> PostProcessingEffect::setupInputTextures(const std::vector<Texture*>& textures) {
         if (static_cast<int>(textures.size()) != mInputCount) {
-            return Error(PostProcessingEffectError::TextureCountMismatch);
+            return Error(PostProcessingError::TextureCountMismatch);
         }
 
         for (int i = 0; i < mInputCount; ++i) {
@@ -70,9 +70,9 @@ namespace Spelt {
         return Success{};
     }
 
-    Result<void, PostProcessingEffectError> PostProcessingEffect::applyPassUniforms(std::size_t passIndex) {
+    Result<void, PostProcessingError> PostProcessingEffect::applyPassUniforms(std::size_t passIndex) {
         if (passIndex >= mPasses.size()) {
-            return Error(PostProcessingEffectError::InvalidPassIndex);
+            return Error(PostProcessingError::InvalidPassIndex);
         }
 
         const EffectPass& pass = mPasses[passIndex];

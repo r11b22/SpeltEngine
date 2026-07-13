@@ -10,7 +10,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Error/Result.hpp"
 #include "FrameBuffer/MultisampledFrameBuffer.h"
+#include "PostProcessing/PostProcessingError.h"
 #include "PostProcessingComputeUnit.h"
 #include "PostProcessingEffect.h"
 #include "FrameBuffer/FrameBuffer.h"
@@ -21,6 +23,7 @@
 
 
 namespace Spelt {
+
     /**
     * Opaque handle returned by addEffect() or addGroup().
     * Use it to enable, disable, or remove an effect (or a whole group) without
@@ -43,7 +46,7 @@ namespace Spelt {
         * Each subsequent effect must accept as many inputs as the previous effect produces.
         * Marks the pipeline dirty; prepare() must be called again before process().
         */
-        EffectHandle addEffect(PostProcessingEffect effect);
+        Result<EffectHandle, PostProcessingError> addEffect(PostProcessingEffect effect);
 
         /**
         * Removes the effect identified by handle from the chain.
@@ -63,7 +66,7 @@ namespace Spelt {
         * Does not mark the pipeline dirty; no prepare() call is needed.
         * Throws if the handle is invalid.
         */
-        void disableEffect(EffectHandle handle);
+        Result<void, PostProcessingError> disableEffect(EffectHandle handle);
 
         /**
         * Re-enables an effect or group that was previously disabled.
@@ -90,7 +93,7 @@ namespace Spelt {
         * Marks the pipeline dirty; prepare() must be called again before process().
         * Throws if the vector is empty.
         */
-        EffectHandle addGroup(std::vector<PostProcessingEffect> effects);
+        Result<EffectHandle, PostProcessingError> addGroup(std::vector<PostProcessingEffect> effects);
 
         // ── Pipeline lifecycle ─────────────────────────────────────────────────
 
@@ -116,7 +119,7 @@ namespace Spelt {
         * Throws if the pipeline is dirty (i.e. prepare() has not been called since the last
         * structural change).
         */
-        void process();
+        Result<void, PostProcessingError> process();
 
         /**
         * Returns a pointer to the texture produced by the last effect.
@@ -172,12 +175,12 @@ namespace Spelt {
         * Core addEffect implementation shared by addEffect() and addGroup().
         * Validates chain compatibility, appends the entry, marks dirty.
         */
-        EffectHandle addEffectInternal(PostProcessingEffect effect, EffectHandle groupHandle);
+        Result<EffectHandle, PostProcessingError> addEffectInternal(PostProcessingEffect effect, EffectHandle groupHandle);
 
         /**
         * Validates that a disabled effect can safely be skipped (inputCount == outputCount).
         */
-        void validateSymmetryForDisable(const EffectEntry& entry) const;
+        Result<void, PostProcessingError> validateSymmetryForDisable(const EffectEntry& entry) const;
 
         // ── Data members ───────────────────────────────────────────────────────
 

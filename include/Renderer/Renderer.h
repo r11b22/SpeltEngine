@@ -66,8 +66,8 @@ namespace Spelt {
 
         void addShaderProgram(std::string name, std::unique_ptr<ShaderProgram> shaderPrograms);
 
-        EffectHandle addPostProcessingEffect(PostProcessingEffect effect);
-        EffectHandle addPostProcessingEffect(PostProcessingGroup& effect);
+        Result<EffectHandle, PostProcessingError> addPostProcessingEffect(PostProcessingEffect effect);
+        Result<EffectHandle, PostProcessingError> addPostProcessingEffect(PostProcessingGroup& effect);
         void enableEffect(EffectHandle handle);
         void disableEffect(EffectHandle handle);
 

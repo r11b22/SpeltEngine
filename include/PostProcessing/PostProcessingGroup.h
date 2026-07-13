@@ -7,11 +7,13 @@
 #include <stdexcept>
 #include <vector>
 
+#include "PostProcessing/PostProcessingError.h"
 #include "PostProcessingEffect.h"
 #include "PostProcessingPipeline.h"
 
 
 namespace Spelt {
+
     /**
     * Base class for a named collection of post-processing effects that are
     * submitted to the pipeline as a unit and can be toggled with a single handle.
@@ -43,7 +45,7 @@ namespace Spelt {
         * and returns a single EffectHandle that represents the whole group.
         * May only be called once; throws on a second call.
         */
-        EffectHandle apply(PostProcessingPipeline& pipeline);
+         Result<EffectHandle, PostProcessingError> apply(PostProcessingPipeline& pipeline);
 
     protected:
         /**

@@ -12,6 +12,7 @@
 #include "Asset/AssetManager.hpp"
 #include "Buffer/Buffer.h"
 #include "FrameBuffer/MultisampledFrameBuffer.h"
+#include "PostProcessing/PostProcessingError.h"
 #include "Renderer/Instancing/InstanceData.hpp"
 #include "Renderer/Instancing/InstanceRenderer.hpp"
 #include "Renderer/RenderCommand.h"
@@ -82,11 +83,11 @@ namespace Spelt {
         mInstanceRenderer = new InstanceRenderer(3);
     }
 
-    EffectHandle Renderer::addPostProcessingEffect(PostProcessingEffect effect) {
+    Result<EffectHandle, PostProcessingError> Renderer::addPostProcessingEffect(PostProcessingEffect effect) {
         return mPostProcessingPipeline->addEffect(std::move(effect));
     }
 
-    EffectHandle Renderer::addPostProcessingEffect(PostProcessingGroup& effect) {
+    Result<EffectHandle, PostProcessingError> Renderer::addPostProcessingEffect(PostProcessingGroup& effect) {
         return effect.apply(*mPostProcessingPipeline);
     }
 
@@ -95,7 +96,7 @@ namespace Spelt {
     }
 
     void Renderer::disableEffect(EffectHandle handle) {
-        mPostProcessingPipeline->disableEffect(handle);
+        mPostProcessingPipeline->disableEffect(handle).panicOnError("It is not allowed to disable the requested effect!");
     }
 
 
@@ -173,7 +174,34 @@ namespace Spelt {
     void Renderer::renderToScreen() {
         ZoneScoped;
         Texture* output = nullptr;
-        mPostProcessingPipeline->process();
+        mPostProcessingPipeline->process().match(
+                [](){},
+                [](PostProcessingError error){
+                    switch (error) {
+                        case PostProcessingError::TextureCountMismatch:
+                            fatalPanic("Post-processing pipeline texture count mismatch: Expected and provided texture counts do not align.");
+                            break;
+                        case PostProcessingError::WrongInitialEntry:
+                            fatalPanic("Post-processing failure: The pipeline was initialized with an invalid or unexpected initial entry texture.");
+                            break;
+                        case PostProcessingError::MultipleApplies:
+                            fatalPanic("Post-processing pipeline error: Detected multiple apply attempts on the same frame state.");
+                            break;
+                        case PostProcessingError::NoEffect:
+                            fatalPanic("Post-processing execution failed: The active pipeline has no functional effects bound.");
+                            break;
+                        case PostProcessingError::InvalidPassIndex:
+                            fatalPanic("Post-processing bounds error: Attempted to execute an out-of-bounds or invalid pass index.");
+                            break;
+                        case PostProcessingError::NoPasses:
+                            fatalPanic("Post-processing structural error: The pipeline cannot execute because zero rendering passes are defined.");
+                            break;
+                        case PostProcessingError::Unprepared:
+                            fatalPanic("Post-processing state error: The pipeline attempted to process data before being properly allocated or prepared.");
+                            break;
+                    }
+                }
+            );
         output = mPostProcessingPipeline->getOutput();
 
         glDisable(GL_DEPTH_TEST);
