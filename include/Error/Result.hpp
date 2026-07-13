@@ -5,6 +5,7 @@
 #include <string>
 #include <type_traits>
 #include <variant>
+#include "Error/Panic.hpp"
 #include "Utilities/VariantVisitHelper.hpp"
 
 
@@ -55,23 +56,23 @@ namespace Spelt {
         /**
          * Throws an exception if result is error
          */
-        constexpr V& value() {
+        constexpr V& value(std::source_location loc = std::source_location::current()) {
             if (auto* val = std::get_if<V>(&mData)) [[likely]] {
                 return *val;
             }
 
-            throw ResultError("Tried to get value on Result containing error");
+            fatalPanic("Tried to get value on Result containing error", loc);
         }
 
         /**
          * Throws an exception if result is error
          */
-        constexpr const V& value() const {
+        constexpr const V& value(std::source_location loc = std::source_location::current()) const {
             if (const auto* val = std::get_if<V>(&mData)) [[likely]] {
                 return *val;
             }
 
-            throw ResultError("Tried to get const value on Result containing error");
+            fatalPanic("Tried to get const value on Result containing error", loc);
         }
 
         /**
@@ -92,23 +93,23 @@ namespace Spelt {
         /**
          * Throws an excpetion if result is value
          */
-        constexpr E& error() {
+        constexpr E& error(std::source_location loc = std::source_location::current()) {
             if (auto* err = std::get_if<E>(&mData)) [[likely]] {
                 return *err;
             }
 
-            throw ResultError("Tried to get error on Result containing value");
+            fatalPanic("Tried to get error on Result containing value", loc);
         }
 
         /**
          * Throws an excpetion if result is value
          */
-        constexpr const E& error() const {
+        constexpr const E& error(std::source_location loc = std::source_location::current()) const {
             if (const auto* err = std::get_if<E>(&mData)) [[likely]] {
                 return *err;
             }
 
-            throw ResultError("Tried to get const error on Result containing value");
+            fatalPanic("Tried to get const error on Result containing value", loc);
         }
 
         /**
@@ -185,15 +186,15 @@ namespace Spelt {
             }, mData);
         }
 
-        constexpr void throwOnError() const {
+        constexpr void panicOnError(std::source_location loc = std::source_location::current()) const {
             if (isError()) [[unlikely]] {
-                throw std::runtime_error("An unexpected error occurred");
+                fatalPanic("An unexpected error occurred", loc);
             }
         }
 
-        void throwOnError(const std::string& str) const {
+        void panicOnError(const std::string& str, std::source_location loc = std::source_location::current()) const {
             if (isError()) [[unlikely]] {
-                throw std::runtime_error(std::format("An unexpected error occurred: {}", str));
+                fatalPanic(std::format("An unexpected error occurred: {}", str), loc);
             }
         }
     };
@@ -230,19 +231,19 @@ namespace Spelt {
             return mResult.isError();
         }
 
-        constexpr void value() const {
+        constexpr void value(std::source_location loc = std::source_location::current()) const {
             if (mResult.isValue()) [[likely]] {
                 return;
             }
-            throw ResultError("Tried to get value on Result containing error");
+            fatalPanic("Tried to get value on Result containing error", loc);
         }
 
-        constexpr E& error() {
-            return mResult.error();
+        constexpr E& error(std::source_location loc = std::source_location::current()) {
+            return mResult.error(loc);
         }
 
-        constexpr const E& error() const {
-            return mResult.error();
+        constexpr const E& error(std::source_location loc = std::source_location::current()) const {
+            return mResult.error(loc);
         }
 
         /**
@@ -295,12 +296,13 @@ namespace Spelt {
         }
 
 
-        constexpr void throwOnError() const {
-            mResult.throwOnError();
+
+        constexpr void throwOnError(std::source_location loc = std::source_location::current()) const {
+            mResult.panicOnError(loc);
         }
 
-        void throwOnError(const std::string& str) const {
-            mResult.throwOnError(str);
+        void throwOnError(const std::string& str, std::source_location loc = std::source_location::current()) const {
+            mResult.panicOnError(str, loc);
         }
     };
 

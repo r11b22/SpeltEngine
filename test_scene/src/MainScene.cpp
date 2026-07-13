@@ -9,6 +9,8 @@
 
 #include "Asset/AssetLoader.hpp"
 #include "Defaults/Objects/TransformableObject.h"
+#include "Error/Option.hpp"
+#include "Error/Result.hpp"
 #include "Mesh/MeshLoader.hpp"
 #include "Mesh/MeshReference.hpp"
 #include "Renderer/RenderPass.hpp"
@@ -28,6 +30,7 @@
 #include "Utilities/Random.h"
 #include <algorithm>
 #include <memory>
+#include "Error/Panic.hpp"
 
 #include "Assets/Texture_1PNG.h"
 
@@ -47,10 +50,6 @@ MainScene::MainScene() {
 
 void MainScene::onLoad(Spelt::Renderer &renderer, Spelt::Window &window) {
     window.setVSYNC(false);
-
-
-
-
 
     inputManager = new Spelt::InputManager(window);
 

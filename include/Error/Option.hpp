@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <string>
 #include <type_traits>
-
+#include "Error/Panic.hpp"
 
 namespace Spelt {
     class OptionError : public std::runtime_error {
@@ -125,9 +125,9 @@ namespace Spelt {
             return std::forward<FuncN>(noneFunc)();
         }
 
-        constexpr void throwOnNone() const {
+        constexpr void panicOnNone(std::source_location loc = std::source_location::current()) const {
             if (isNone()) [[unlikely]] {
-                throw std::runtime_error("Expected a value but Option was empty");
+                fatalPanic("Option that should not be none was none!", loc);
             }
         }
     };
@@ -200,6 +200,10 @@ namespace Spelt {
                 return std::forward<FuncV>(valFunc)(mUnderlying.value().get());
             }
             return std::forward<FuncN>(noneFunc)();
+        }
+
+        constexpr void panicOnNone(std::source_location loc = std::source_location::current()) const {
+            mUnderlying.panicOnNone(loc);
         }
     };
 }

@@ -103,6 +103,8 @@ set(ENGINE_SOURCES
         src/Defaults/PostProcessing/Bloom.cpp
         src/Defaults/PostProcessing/Blur.cpp
 
+        src/Error/Panic.cpp
+
         src/FileReader.cpp
 
         src/FrameBuffer/MultisampledFrameBuffer.cpp
@@ -193,6 +195,7 @@ set(ENGINE_HEADERS
 
         include/Error/Result.hpp
         include/Error/Option.hpp
+        include/Error/Panic.hpp
 
         include/FileReader.h
 
