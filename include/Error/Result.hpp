@@ -1,8 +1,9 @@
 #pragma once
 
-
 #include <format>
 #include <stdexcept>
+#include <string>
+#include <type_traits>
 #include <variant>
 #include "Utilities/VariantVisitHelper.hpp"
 
@@ -19,28 +20,43 @@ namespace Spelt {
     class [[nodiscard]] Result {
     private:
         std::variant<V, E> mData;
+
+        constexpr Result(std::in_place_index_t<0>, V value)
+            noexcept(std::is_nothrow_move_constructible_v<V>)
+            : mData(std::in_place_index<0>, std::move(value))
+        {}
+
+        constexpr Result(std::in_place_index_t<1>, E error)
+            noexcept(std::is_nothrow_move_constructible_v<E>)
+            : mData(std::in_place_index<1>, std::move(error))
+        {}
+
     public:
-        static Result<V, E> createValue(V value){
-            return Result<V, E>(std::move(value));
+        static constexpr Result<V, E> createValue(V value)
+            noexcept(std::is_nothrow_move_constructible_v<V>)
+        {
+            return Result<V, E>(std::in_place_index<0>, std::move(value));
         }
 
-        static Result<V, E> createError(E error){
-            return Result<V, E>(std::move(error));
+        static constexpr Result<V, E> createError(E error)
+            noexcept(std::is_nothrow_move_constructible_v<E>)
+        {
+            return Result<V, E>(std::in_place_index<1>, std::move(error));
         }
 
-        bool isValue() const{
+        [[nodiscard]] constexpr bool isValue() const noexcept {
             return std::holds_alternative<V>(mData);
         }
 
-        bool isError() const{
+        [[nodiscard]] constexpr bool isError() const noexcept {
             return std::holds_alternative<E>(mData);
         }
 
         /**
          * Throws an exception if result is error
          */
-        V& value() {
-            if (auto* val = std::get_if<V>(&mData)) {
+        constexpr V& value() {
+            if (auto* val = std::get_if<V>(&mData)) [[likely]] {
                 return *val;
             }
 
@@ -50,8 +66,8 @@ namespace Spelt {
         /**
          * Throws an exception if result is error
          */
-        const V& value() const{
-            if (const auto* val = std::get_if<V>(&mData)) {
+        constexpr const V& value() const {
+            if (const auto* val = std::get_if<V>(&mData)) [[likely]] {
                 return *val;
             }
 
@@ -62,8 +78,11 @@ namespace Spelt {
          * Returns a copy of the value
          * If the result is an Error it returns a default value
          */
-        V valueOr(V other) const{
-            if (const auto* val = std::get_if<V>(&mData)) {
+        constexpr V valueOr(V other) const
+            noexcept(std::is_nothrow_copy_constructible_v<V> &&
+                     std::is_nothrow_move_constructible_v<V>)
+        {
+            if (const auto* val = std::get_if<V>(&mData)) [[likely]] {
                 return *val;
             }
 
@@ -73,8 +92,8 @@ namespace Spelt {
         /**
          * Throws an excpetion if result is value
          */
-        E& error() {
-            if (auto* err = std::get_if<E>(&mData)) {
+        constexpr E& error() {
+            if (auto* err = std::get_if<E>(&mData)) [[likely]] {
                 return *err;
             }
 
@@ -84,8 +103,8 @@ namespace Spelt {
         /**
          * Throws an excpetion if result is value
          */
-        const E& error() const {
-            if (const auto* err = std::get_if<E>(&mData)) {
+        constexpr const E& error() const {
+            if (const auto* err = std::get_if<E>(&mData)) [[likely]] {
                 return *err;
             }
 
@@ -93,7 +112,10 @@ namespace Spelt {
         }
 
         template <typename FuncV, typename FuncE>
-        auto match(FuncV&& valFunc, FuncE&& errFunc) {
+        constexpr auto match(FuncV&& valFunc, FuncE&& errFunc)
+            noexcept(std::is_nothrow_invocable_v<FuncV, V&> &&
+                     std::is_nothrow_invocable_v<FuncE, E&>)
+        {
             static_assert(std::is_invocable_v<FuncV, V&>,
                 "Spelt::Result::match Error: The value lambda must accept 'V&' (or a compatible type).");
 
@@ -113,7 +135,10 @@ namespace Spelt {
         }
 
         template <typename FuncV, typename FuncE>
-        auto match(FuncV&& valFunc, FuncE&& errFunc) const {
+        constexpr auto match(FuncV&& valFunc, FuncE&& errFunc) const
+            noexcept(std::is_nothrow_invocable_v<FuncV, const V&> &&
+                     std::is_nothrow_invocable_v<FuncE, const E&>)
+        {
             static_assert(std::is_invocable_v<FuncV, const V&>,
                 "Spelt::Result::match Error: The value lambda must accept 'const V&' (or a compatible type).");
 
@@ -132,83 +157,93 @@ namespace Spelt {
             }, mData);
         }
 
-        void throwOnError() const{
-            if (isError()){
+        constexpr void throwOnError() const {
+            if (isError()) [[unlikely]] {
                 throw std::runtime_error("An unexpected error occurred");
             }
         }
 
-        void throwOnError(const std::string& str) const{
-            if (isError()){
+        void throwOnError(const std::string& str) const {
+            if (isError()) [[unlikely]] {
                 throw std::runtime_error(std::format("An unexpected error occurred: {}", str));
             }
         }
-
-    private:
-        Result(std::variant<V, E> data)
-            : mData(std::move(data))
-        {}
     };
 
 
     template <typename E>
     class [[nodiscard]] Result<void, E> {
     private:
-        // We use std::monostate as a dummy placeholder type for "success with no data"
         Result<std::monostate, E> mResult;
 
-        Result(Result<std::monostate, E> result) : mResult(std::move(result)) {}
+        constexpr explicit Result(Result<std::monostate, E> result)
+            noexcept(std::is_nothrow_move_constructible_v<Result<std::monostate, E>>)
+            : mResult(std::move(result))
+        {}
 
     public:
-        static Result<void, E> createValue() {
+        static constexpr Result<void, E> createValue()
+            noexcept(noexcept(Result<std::monostate, E>::createValue(std::monostate{})))
+        {
             return Result<void, E>(Result<std::monostate, E>::createValue(std::monostate{}));
         }
 
-        static Result<void, E> createError(E error) {
-            return Result<void, E>(Result<std::monostate, E>::createError(error));
+        static constexpr Result<void, E> createError(E error)
+            noexcept(std::is_nothrow_move_constructible_v<E>)
+        {
+            return Result<void, E>(Result<std::monostate, E>::createError(std::move(error)));
         }
 
-        bool isValue() const {
+        [[nodiscard]] constexpr bool isValue() const noexcept {
             return mResult.isValue();
         }
 
-        bool isError() const {
+        [[nodiscard]] constexpr bool isError() const noexcept {
             return mResult.isError();
         }
 
-        // value() returns void now, and just acts as an assertion/throw check
-        void value() const {
-            if (mResult.isValue()) {
+        constexpr void value() const {
+            if (mResult.isValue()) [[likely]] {
                 return;
             }
             throw ResultError("Tried to get value on Result containing error");
         }
 
-        E& error() {
+        constexpr E& error() {
             return mResult.error();
         }
 
-        const E& error() const {
+        constexpr const E& error() const {
             return mResult.error();
         }
 
         // Match method variations updated because the success lambda takes no arguments
         template <typename FuncV, typename FuncE>
-        auto match(FuncV&& valFunc, FuncE&& errFunc) {
-            return mResult.match([&](std::monostate) { return std::forward<FuncV>(valFunc)(); }, std::forward<FuncE>(errFunc));
+        constexpr auto match(FuncV&& valFunc, FuncE&& errFunc)
+            noexcept(std::is_nothrow_invocable_v<FuncV> &&
+                     std::is_nothrow_invocable_v<FuncE, E&>)
+        {
+            return mResult.match(
+                [&](std::monostate) { return std::forward<FuncV>(valFunc)(); },
+                std::forward<FuncE>(errFunc));
         }
 
         template <typename FuncV, typename FuncE>
-        auto match(FuncV&& valFunc, FuncE&& errFunc) const {
-            return mResult.match([&](std::monostate) { return std::forward<FuncV>(valFunc)(); }, std::forward<FuncE>(errFunc));
+        constexpr auto match(FuncV&& valFunc, FuncE&& errFunc) const
+            noexcept(std::is_nothrow_invocable_v<FuncV> &&
+                     std::is_nothrow_invocable_v<FuncE, const E&>)
+        {
+            return mResult.match(
+                [&](std::monostate) { return std::forward<FuncV>(valFunc)(); },
+                std::forward<FuncE>(errFunc));
         }
 
 
-        void throwOnError() const{
+        constexpr void throwOnError() const {
             mResult.throwOnError();
         }
 
-        void throwOnError(const std::string& str) const{
+        void throwOnError(const std::string& str) const {
             mResult.throwOnError(str);
         }
     };
