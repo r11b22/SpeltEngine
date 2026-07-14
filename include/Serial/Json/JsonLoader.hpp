@@ -5,6 +5,17 @@
 #include <filesystem>
 
 namespace Spelt {
+    enum class JsonLoaderError{
+        MissingOpeningQoute,
+        UnterminatedString,
+        InvalidLiteralVariant,
+        UnexpectedCharacter,
+        UnterminatedArray,
+        MissingKey,
+        MissingSeperator,
+        UnclosedBraces,
+    };
+
     class JsonLoader {
         private:
             std::string mContents;
@@ -13,9 +24,9 @@ namespace Spelt {
             void readFile(const std::filesystem::path& path);
             void readRaw(EmbeddedAsset asset);
 
-            Json createJson();
+            Result<Json, JsonLoaderError> createJson();
 
-            Json fromString(std::string json);
+            Result<Json, JsonLoaderError> fromString(std::string json);
         private:
 
     };

@@ -17,7 +17,8 @@ namespace Spelt {
     class Scene;
 
     enum class ObjectError {
-        NoScene
+        NoScene,
+        NotLoaded
     };
 
     /**

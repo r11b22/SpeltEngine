@@ -44,8 +44,8 @@ MainScene::MainScene() {
     addAsset(tigerTest);
 
     createRenderPass();
-    getRenderPass(1).setProjectionType(Spelt::ProjectionType::Orthographic);
-    getRenderPass(1).setCameraType(Spelt::CameraType::UI);
+    getRenderPass(1).value().setProjectionType(Spelt::ProjectionType::Orthographic);
+    getRenderPass(1).value().setCameraType(Spelt::CameraType::UI);
 }
 
 void MainScene::onLoad(Spelt::Renderer &renderer, Spelt::Window &window) {
@@ -57,11 +57,11 @@ void MainScene::onLoad(Spelt::Renderer &renderer, Spelt::Window &window) {
     camera->setPosition(glm::vec3{10.0f, 5.0f, 30.0f});
 
 
-    Spelt::Material tigerMaterial = {"tigerMaterial", getAssetManager().getAssetByName<Spelt::Texture>("tiger")};
+    Spelt::Material tigerMaterial = {"tigerMaterial", getAssetManager().value().getAssetByName<Spelt::Texture>("tiger")};
 
 
     // use get by name to test the system
-    mTigerMesh = getAssetManager().getAssetByName<Spelt::Mesh>("tiger");
+    mTigerMesh = getAssetManager().value().getAssetByName<Spelt::Mesh>("tiger");
 
     Spelt::ObjectReference<Spelt::Defaults::TransformableObject> testParent = createObject<Spelt::Defaults::TransformableObject>("parent");
     testParent->setPosition(glm::vec3{5.0f});
@@ -115,7 +115,7 @@ void MainScene::testUIRenderPass(){
     quad.setVertices(vertices);
     quad.setIndices(indices);
 
-    Spelt::MeshReference quadRef = getAssetManager().addAsset(std::move(quad));
+    Spelt::MeshReference quadRef = getAssetManager().value().addAsset(std::move(quad));
 
     Spelt::ObjectReference<Spelt::Defaults::MeshObject> obj = createObject<Spelt::Defaults::MeshObject>("testQuad", quadRef, Spelt::Material{"test", glm::vec3{1.0f}});
     obj->setScale(glm::vec3{100.0f});
@@ -140,12 +140,12 @@ void MainScene::testRemoveAsset(){
     quad.setVertices(vertices);
     quad.setIndices(indices);
 
-    Spelt::MeshReference quadRef = getAssetManager().addAsset(std::move(quad));
+    Spelt::MeshReference quadRef = getAssetManager().value().addAsset(std::move(quad));
 
-    getAssetManager().removeAsset(quadRef).panicOnError("Failed to delete asset due to missing asset");
+    getAssetManager().value().removeAsset(quadRef).panicOnError("Failed to delete asset due to missing asset");
 
 
-    Spelt::Mesh* result = getAssetManager().getAsset(quadRef);
+    Spelt::Mesh* result = getAssetManager().value().getAsset(quadRef);
     if (result != nullptr){
         std::cout << "Asset not deleted" << std::endl;
     }else{

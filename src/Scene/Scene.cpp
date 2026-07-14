@@ -4,6 +4,7 @@
 
 #include "Scene/Scene.hpp"
 #include "Asset/AssetManager.hpp"
+#include "Error/Option.hpp"
 #include "Lighting/ILight.h"
 #include "Lighting/LightData.h"
 #include "Mesh/MeshAsset.hpp"
@@ -191,11 +192,19 @@ namespace Spelt {
 
 
 
-    AssetManager& Scene::getAssetManager() {
+    Result<AssetManager&, SceneError> Scene::getAssetManager() {
         if(mAssetManager){
-            return *mAssetManager;
+            return Result<AssetManager&, SceneError>::createValue(*mAssetManager);
         }else{
-            throw std::runtime_error("The Scene was not yet loaded! Changing assets can only be done after the scene is loaded!");
+            return Error(SceneError::NotLoaded);
+        }
+    }
+
+    Result<const AssetManager&, SceneError> Scene::getAssetManager() const{
+        if(mAssetManager){
+            return Result<const AssetManager&, SceneError>::createValue(*mAssetManager);
+        }else{
+            return Error(SceneError::NotLoaded);
         }
     }
 
@@ -214,11 +223,11 @@ namespace Spelt {
         return mRenderPasses.size();
     }
 
-    RenderPass& Scene::getRenderPass(size_t idx){
+    Option<RenderPass&> Scene::getRenderPass(size_t idx){
         if(idx >= renderPassCount()){
-            throw std::out_of_range(std::format("No render pass with index: {}", idx));
+            return None{};
         }
 
-        return mRenderPasses[idx];
+        return Option<RenderPass&>::createValue(mRenderPasses[idx]);
     }
 }

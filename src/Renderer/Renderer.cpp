@@ -11,6 +11,7 @@
 
 #include "Asset/AssetManager.hpp"
 #include "Buffer/Buffer.h"
+#include "Error/Panic.hpp"
 #include "FrameBuffer/MultisampledFrameBuffer.h"
 #include "PostProcessing/PostProcessingError.h"
 #include "Renderer/Instancing/InstanceData.hpp"
@@ -38,8 +39,7 @@ namespace Spelt {
     {
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         {
-            std::cout << "Failed to initialize GLAD" << std::endl;
-            throw std::runtime_error("Could not initialize GLAD");
+            fatalPanic("Could not initialize GLAD");
         }
 
         glEnable(GL_CULL_FACE);

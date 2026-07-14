@@ -32,6 +32,10 @@
 namespace Spelt {
     class Renderer;
 
+    enum class SceneError{
+        NotLoaded
+    };
+
     class Scene {
     private:
         ObjectRepository mObjects;
@@ -294,8 +298,8 @@ namespace Spelt {
 
         void setAssetManager(AssetManager* assetManager);
 
-        AssetManager& getAssetManager();
-        const AssetManager& getAssetManager() const;
+        Result<AssetManager&, SceneError> getAssetManager();
+        Result<const AssetManager&, SceneError> getAssetManager() const;
 
         template<typename T>
         void addAsset(AssetLoadInfo<T> toLoad){
@@ -307,7 +311,7 @@ namespace Spelt {
         void createRenderPass();
         size_t renderPassCount();
 
-        RenderPass& getRenderPass(size_t idx);
+        Option<RenderPass&> getRenderPass(size_t idx);
 
     private:
 

@@ -1,5 +1,6 @@
 #include "Serial/Json/JsonLoader.hpp"
 #include "Asset/EmbeddedAsset.hpp"
+#include "Error/Result.hpp"
 #include "FileReader.h"
 #include "Serial/Json/Json.hpp"
 
@@ -13,7 +14,7 @@ namespace Spelt {
         mContents = embeddedAssetToString(asset);
     }
 
-    Json JsonLoader::createJson(){
+    Result<Json, JsonLoaderError> JsonLoader::createJson(){
         return fromString(mContents);
     }
 
@@ -26,13 +27,13 @@ namespace Spelt {
         }
 
         // Mutual recursion forward declarations
-        JsonData parseValue(std::string_view json, size_t& index);
-        Json parseObject(std::string_view json, size_t& index);
-        JsonArray parseArray(std::string_view json, size_t& index);
+        Result<JsonData, JsonLoaderError> parseValue(std::string_view json, size_t& index);
+        Result<Json, JsonLoaderError> parseObject(std::string_view json, size_t& index);
+        Result<JsonArray, JsonLoaderError> parseArray(std::string_view json, size_t& index);
 
-        std::string parseString(std::string_view json, size_t& index) {
+        Result<std::string, JsonLoaderError> parseString(std::string_view json, size_t& index) {
             if (index >= json.size() || json[index] != '"') {
-                throw std::runtime_error("Expected opening quote for string");
+                return Error(JsonLoaderError::MissingOpeningQoute);
             }
             index++; // Skip opening '"'
 
@@ -45,15 +46,15 @@ namespace Spelt {
             }
 
             if (index >= json.size()) {
-                throw std::runtime_error("Unterminated string inside JSON metadata");
+                return Error(JsonLoaderError::UnterminatedString);
             }
 
             std::string result(json.substr(start, index - start));
             index++; // Skip closing '"'
-            return result;
+            return Value(result);
         }
 
-        double parseNumber(std::string_view json, size_t& index) {
+        Result<double, JsonLoaderError> parseNumber(std::string_view json, size_t& index) {
             size_t start = index;
             if (index < json.size() && json[index] == '-') {
                 index++;
@@ -65,57 +66,61 @@ namespace Spelt {
             }
 
             std::string numStr(json.substr(start, index - start));
-            return std::stod(numStr);
+            return Value(std::stod(numStr));
         }
 
-        bool parseBool(std::string_view json, size_t& index) {
+        Result<bool, JsonLoaderError> parseBool(std::string_view json, size_t& index) {
             if (json.substr(index, 4) == "true") {
                 index += 4;
-                return true;
+                return Value(true);
             } else if (json.substr(index, 5) == "false") {
                 index += 5;
-                return false;
+                return Value(false);
             }
-            throw std::runtime_error("Invalid literal variant conversion to boolean value");
+            return Error(JsonLoaderError::InvalidLiteralVariant);
         }
 
-        std::monostate parseNull(std::string_view json, size_t& index) {
+        Result<std::monostate, JsonLoaderError> parseNull(std::string_view json, size_t& index) {
             if (json.substr(index, 4) == "null") {
                 index += 4;
-                return std::monostate{};
+                return Value(std::monostate{});
             }
-            throw std::runtime_error("Invalid signature token during null check");
+            return Error(JsonLoaderError::InvalidLiteralVariant);
         }
 
-        JsonArray parseArray(std::string_view json, size_t& index) {
+        Result<JsonArray, JsonLoaderError> parseArray(std::string_view json, size_t& index) {
             JsonArray arrayResult;
             index++; // Skip '['
 
             skipWhitespace(json, index);
             if (index < json.size() && json[index] == ']') {
                 index++; // Handle completely empty arrays []
-                return arrayResult;
+                return Value(arrayResult);
             }
 
             while (index < json.size()) {
                 // Evaluates structural objects, primitives, or nested arrays directly
-                JsonData value = parseValue(json, index);
-                arrayResult.addData(std::move(value));
+                auto value = parseValue(json, index);
+                if(value.isError()){
+                    return Error(value.error());
+                }
+
+                arrayResult.addData(std::move(value.value()));
 
                 skipWhitespace(json, index);
                 if (index < json.size() && json[index] == ']') {
                     index++;
-                    return arrayResult;
+                    return Value(arrayResult);
                 } else if (index < json.size() && json[index] == ',') {
                     index++;
                 } else {
-                    throw std::runtime_error("Expected a trailing ',' or ']' bracket marker in array sequence");
+                    return Error(JsonLoaderError::UnexpectedCharacter);
                 }
             }
-            throw std::runtime_error("Unterminated sequence layout inside nested array structure");
+            return Error(JsonLoaderError::UnterminatedArray);
         }
 
-        Json parseObject(std::string_view json, size_t& index) {
+        Result<Json, JsonLoaderError> parseObject(std::string_view json, size_t& index) {
             Json objResult;
             index++; // Skip '{'
 
@@ -123,38 +128,46 @@ namespace Spelt {
                 skipWhitespace(json, index);
                 if (json[index] == '}') {
                     index++;
-                    return objResult;
+                    return Value(objResult);
                 }
 
                 if (json[index] != '"') {
-                    throw std::runtime_error("Expected a valid double-quoted string key sequence inside dictionary item");
+                    return Error(JsonLoaderError::MissingKey);
                 }
 
-                std::string key = parseString(json, index);
+                auto key = parseString(json, index);
+                if(key.isError()){
+                    return Error(key.error());
+                }
+
                 skipWhitespace(json, index);
 
                 if (index >= json.size() || json[index] != ':') {
-                    throw std::runtime_error("Expected structural colon dividing target key from value block");
+                    return Error(JsonLoaderError::MissingSeperator);
                 }
                 index++; // Skip ':'
 
-                JsonData val = parseValue(json, index);
-                objResult.addData(key, std::move(val));
+                auto val = parseValue(json, index);
+                if(val.isError()){
+                    return Error(val.error());
+                }
+
+                objResult.addData(key.value(), std::move(val.value()));
 
                 skipWhitespace(json, index);
                 if (json[index] == '}') {
                     index++;
-                    return objResult;
+                    return Value(objResult);
                 } else if (json[index] == ',') {
                     index++;
                 } else {
-                    throw std::runtime_error("Expected element tracking separator or enclosing key terminal bracket '}'");
+                    return Error(JsonLoaderError::UnclosedBraces);
                 }
             }
-            throw std::runtime_error("Parsing error: reached file tail with unclosed terminal braces");
+            return Error(JsonLoaderError::UnclosedBraces);
         }
 
-        JsonData parseValue(std::string_view json, size_t& index) {
+        Result<JsonData, JsonLoaderError> parseValue(std::string_view json, size_t& index) {
             skipWhitespace(json, index);
             if (index >= json.size()) {
                 throw std::runtime_error("Unexpected end of streaming chunk data encountered prematurely");
@@ -162,24 +175,48 @@ namespace Spelt {
 
             char c = json[index];
             if (c == '{') {
-                return parseObject(json, index);
+                auto obj = parseObject(json, index);
+                if (obj.isError()){
+                    return Error(obj.error());
+                }
+                return Value(obj.value());
             } else if (c == '[') {
-                return parseArray(json, index);
+                auto arr = parseArray(json, index);
+                if (arr.isError()){
+                    return Error(arr.error());
+                }
+                return Value(arr.value());
             } else if (c == '"') {
-                return parseString(json, index);
+                auto str = parseString(json, index);
+                if (str.isError()){
+                    return Error(str.error());
+                }
+                return Value(str.value());
             } else if (c == 't' || c == 'f') {
-                return parseBool(json, index);
+                auto b = parseBool(json, index);
+                if (b.isError()){
+                    return Error(b.error());
+                }
+                return Value(b.value());
             } else if (c == 'n') {
-                return parseNull(json, index);
+                auto n = parseNull(json, index);
+                if (n.isError()){
+                    return Error(n.error());
+                }
+                return Value(n.value());
             } else if (std::isdigit(static_cast<unsigned char>(c)) || c == '-') {
-                return parseNumber(json, index);
+                auto num = parseNumber(json, index);
+                if (num.isError()){
+                    return Error(num.error());
+                }
+                return Value(num.value());
             }
 
-            throw std::runtime_error(std::string("Encountered unexpected character token: ") + c);
+            return Error(JsonLoaderError::UnexpectedCharacter);
         }
     }
 
-    Json JsonLoader::fromString(std::string json) {
+    Result<Json, JsonLoaderError> JsonLoader::fromString(std::string json) {
         size_t index = 0;
         std::string_view jsonView(json);
 

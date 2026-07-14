@@ -255,17 +255,12 @@ namespace Spelt {
 
         for (const auto& entry : mEntries) {
             if (entry.effect.getPassCount() == 0) {
-                throw std::runtime_error(
-                    "PostProcessingPipeline: effect with handle " +
-                    std::to_string(entry.handle) +
-                    " has no committed passes. Call commitPass() at least once on every effect.");
+                return false;
             }
         }
 
         if (mEntries.back().effect.getOutputCount() != 1) {
-            throw std::runtime_error(
-                "PostProcessingPipeline: the last effect must produce exactly 1 output texture, "
-                "but produces " + std::to_string(mEntries.back().effect.getOutputCount()) + ".");
+            return false;
         }
 
         return true;

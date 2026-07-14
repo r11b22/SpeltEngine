@@ -2,6 +2,7 @@
 
 
 #include "Serial/Json/Json.hpp"
+#include "Error/Option.hpp"
 #include <format>
 #include <optional>
 #include <stdexcept>
@@ -18,78 +19,69 @@ namespace Spelt {
         return mElements[index];
     }
 
-    bool JsonArray::getBool(size_t index) const {
-        const JsonData& variantData = getValidData(index);
-        if (const auto* val = std::get_if<bool>(&variantData)) {
-            return *val;
+    Option<bool> JsonArray::getBool(size_t index) const {
+        auto variantData = getValidData(index);
+        if(variantData.isNone()){
+            return None{};
         }
-        throw std::out_of_range(std::format("Element at index {} exists but is not a boolean.", index));
-    }
 
-    double JsonArray::getNumber(size_t index) const {
-        const JsonData& variantData = getValidData(index);
-        if (const auto* val = std::get_if<double>(&variantData)) {
-            return *val;
+        if (const auto* val = std::get_if<bool>(&variantData.value())) {
+            return Value(*val);
         }
-        throw std::out_of_range(std::format("Element at index {} exists but is not a number.", index));
+        return None{};
     }
 
-    const std::string& JsonArray::getString(size_t index) const {
-        const JsonData& variantData = getValidData(index);
-        if (const auto* val = std::get_if<std::string>(&variantData)) {
-            return *val;
+    Option<double> JsonArray::getNumber(size_t index) const {
+        auto variantData = getValidData(index);
+        if(variantData.isNone()){
+            return None{};
         }
-        throw std::out_of_range(std::format("Element at index {} exists but is not a string.", index));
-    }
 
-    const JsonArray& JsonArray::getArray(size_t index) const {
-        const JsonData& variantData = getValidData(index);
-        if (const auto* val = std::get_if<JsonArray>(&variantData)) {
-            return *val;
+        if (const auto* val = std::get_if<double>(&variantData.value())) {
+            return Value(*val);
         }
-        throw std::out_of_range(std::format("Element at index {} exists but is not an array.", index));
+        return None{};
     }
 
-    const Json& JsonArray::getObject(size_t index) const {
-        const JsonData& variantData = getValidData(index);
-        if (const auto* val = std::get_if<Json>(&variantData)) {
-            return *val;
+    Option<const std::string&> JsonArray::getString(size_t index) const {
+        auto variantData = getValidData(index);
+        if(variantData.isNone()){
+            return None{};
         }
-        throw std::out_of_range(std::format("Element at index {} exists but is not an object.", index));
-    }
 
-    std::optional<JsonData> JsonArray::tryGetData(size_t index) const {
-        if (index < mElements.size()) {
-            return mElements[index];
+        if (const auto* val = std::get_if<std::string>(&variantData.value())) {
+            return Option<const std::string&>::createValue(*val);
         }
-        return std::nullopt;
+        return None{};
     }
 
-    std::optional<bool> JsonArray::tryGetBool(size_t index) const {
-        return tryGet<bool>(index);
+    Option<const JsonArray&> JsonArray::getArray(size_t index) const {
+        Option<const JsonData&> variantData = getValidData(index);
+        if (variantData.isNone()){
+            return None{};
+        }
+        if (const auto* val = std::get_if<JsonArray>(&variantData.value())) {
+            return Option<const JsonArray&>::createValue(*val);
+        }
+        return None{};
     }
 
-    std::optional<double> JsonArray::tryGetNumber(size_t index) const {
-        return tryGet<double>(index);
+    Option<const Json&> JsonArray::getObject(size_t index) const {
+        Option<const JsonData&> variantData = getValidData(index);
+        if (variantData.isNone()){
+            return None{};
+        }
+        if (const auto* val = std::get_if<Json>(&variantData.value())) {
+            return Option<const Json&>::createValue(*val);
+        }
+        return None{};
     }
 
-    std::optional<std::string> JsonArray::tryGetString(size_t index) const {
-        return tryGet<std::string>(index);
-    }
-
-    std::optional<JsonArray> JsonArray::tryGetArray(size_t index) const {
-        return tryGet<JsonArray>(index);
-    }
-
-    std::optional<Json> JsonArray::tryGetObject(size_t index) const {
-        return tryGet<Json>(index);
-    }
-
-    const JsonData& JsonArray::getValidData(size_t index) const {
+    Option<const JsonData&> JsonArray::getValidData(size_t index) const {
         if (index >= mElements.size()) {
-            throw std::out_of_range(std::format("Index {} is out of bounds for array size {}.", index, mElements.size()));
+            throw None{};
         }
-        return mElements[index];
+        return Option<const JsonData&>::createValue(mElements[index]);
     }
 
     size_t JsonArray::size() const {
@@ -106,83 +98,73 @@ namespace Spelt {
         return it->second;
     }
 
-    bool Json::getBool(const std::string& key) const {
-        const JsonData& variantData = getValidData(key);
-        if (const auto* val = std::get_if<bool>(&variantData)) {
-            return *val;
+    Option<bool> Json::getBool(const std::string& key) const {
+        auto variantData = getValidData(key);
+        if(variantData.isNone()){
+            return None{};
         }
-        throw std::out_of_range(std::format("Key '{}' exists but is not a boolean.", key));
-    }
 
-    double Json::getNumber(const std::string& key) const {
-        const JsonData& variantData = getValidData(key);
-        if (const auto* val = std::get_if<double>(&variantData)) {
-            return *val;
+        if (const auto* val = std::get_if<bool>(&variantData.value())) {
+            return Value(*val);
         }
-        throw std::out_of_range(std::format("Key '{}' exists but is not a number.", key));
+        throw None{};
     }
 
-    const std::string& Json::getString(const std::string& key) const {
-        const JsonData& variantData = getValidData(key);
-        if (const auto* val = std::get_if<std::string>(&variantData)) {
-            return *val;
+    Option<double> Json::getNumber(const std::string& key) const {
+        auto variantData = getValidData(key);
+        if(variantData.isNone()){
+            return None{};
         }
-        throw std::out_of_range(std::format("Key '{}' exists but is not a string.", key));
-    }
 
-    const JsonArray& Json::getArray(const std::string& key) const {
-        const JsonData& variantData = getValidData(key);
-        if (const auto* val = std::get_if<JsonArray>(&variantData)) {
-            return *val;
+        if (const auto* val = std::get_if<double>(&variantData.value())) {
+            return Value(*val);
         }
-        throw std::out_of_range(std::format("Key '{}' exists but is not an array.", key));
+        return None{};
     }
 
-    const Json& Json::getObject(const std::string& key) const {
-        const JsonData& variantData = getValidData(key);
-        if (const auto* val = std::get_if<Json>(&variantData)) {
-            return *val;
+    Option<const std::string&> Json::getString(const std::string& key) const {
+        auto variantData = getValidData(key);
+        if(variantData.isNone()){
+            return None{};
         }
-        throw std::out_of_range(std::format("Key '{}' exists but is not an object.", key));
-    }
 
-
-    std::optional<JsonData> Json::tryGetData(const std::string& key) const {
-        auto it = mData.find(key);
-        if (it != mData.end()){
-            return it->second;
+        if (const auto* val = std::get_if<std::string>(&variantData.value())) {
+            return Option<const std::string&>::createValue(*val);
         }
-        return std::nullopt;
+        return None{};
     }
 
-    std::optional<bool> Json::tryGetBool(const std::string& key) const {
-        return tryGet<bool>(key);
+    Option<const JsonArray&> Json::getArray(const std::string& key) const {
+        auto variantData = getValidData(key);
+        if(variantData.isNone()){
+            return None{};
+        }
+
+        if (const auto* val = std::get_if<JsonArray>(&variantData.value())) {
+            return Option<const JsonArray&>::createValue(*val);
+        }
+        return None{};
     }
 
-    std::optional<double> Json::tryGetNumber(const std::string& key) const {
-        return tryGet<double>(key);
+    Option<const Json&> Json::getObject(const std::string& key) const {
+        auto variantData = getValidData(key);
+        if(variantData.isNone()){
+            return None{};
+        }
+
+        if (const auto* val = std::get_if<Json>(&variantData.value())) {
+            return Option<const Json&>::createValue(*val);
+        }
+        return None{};
     }
 
-    std::optional<std::string> Json::tryGetString(const std::string& key) const {
-        return tryGet<std::string>(key);
-    }
-
-    std::optional<JsonArray> Json::tryGetArray(const std::string& key) const {
-        return tryGet<JsonArray>(key);
-    }
-
-    std::optional<Json> Json::tryGetObject(const std::string& key) const {
-        return tryGet<Json>(key);
-    }
-
-
-    const JsonData& Json::getValidData(const std::string& key) const {
+    Option<const JsonData&> Json::getValidData(const std::string& key) const {
         auto it = mData.find(key);
 
         if(it == mData.end()){
-            throw std::out_of_range(std::format("Could not find data with key: {}", key));
+            return None{};
         }
 
-        return it->second;
+        return Option<const JsonData&>::createValue(it->second);
     }
 }

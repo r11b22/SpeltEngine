@@ -71,7 +71,7 @@ namespace Spelt {
             return Result<AssetManager&, ObjectError>::createError(ObjectError::NoScene);
         }
 
-        return Result<AssetManager&, ObjectError>::createValue(mScene->getAssetManager());
+        return mScene->getAssetManager().replaceError(ObjectError::NotLoaded);
     }
 
     Result<const AssetManager&, ObjectError> Object::getAssetManager() const{
@@ -79,6 +79,8 @@ namespace Spelt {
             return Result<const AssetManager&, ObjectError>::createError(ObjectError::NoScene);
         }
 
-        return Result<const AssetManager&, ObjectError>::createValue(mScene->getAssetManager());
+        // We want to get the const version fo asset manager
+        const Scene* constScene = mScene;
+        return constScene->getAssetManager().replaceError(ObjectError::NotLoaded);
     }
 }

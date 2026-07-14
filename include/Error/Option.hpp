@@ -2,17 +2,14 @@
 
 #include <functional>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <type_traits>
+#include "Result.hpp"
 #include "Error/Panic.hpp"
 
 namespace Spelt {
-    class OptionError : public std::runtime_error {
-    public:
-        explicit OptionError(const std::string& message)
-            : std::runtime_error(message) {}
-    };
+
+    struct None{};
 
     template <typename T>
     class [[nodiscard]] Option {
@@ -25,6 +22,17 @@ namespace Spelt {
         {}
 
     public:
+        template <typename  V2>
+        constexpr Option(Value<V2> val)
+            noexcept(std::is_nothrow_constructible_v<T, V2&&>)
+            : mData(std::move(val.value))
+        {}
+
+        constexpr Option(None)
+            noexcept(std::is_nothrow_move_constructible_v<T>)
+            : mData(std::move(std::nullopt))
+        {}
+
         static constexpr Option<T> createValue(T value)
             noexcept(std::is_nothrow_move_constructible_v<T>)
         {
@@ -170,6 +178,10 @@ namespace Spelt {
             : mUnderlying(underlying) {}
 
     public:
+        constexpr Option(None)
+            : mUnderlying(None{})
+        {}
+
         static constexpr Option<T&> createValue(T& value) noexcept {
             return Option<T&>(Option<std::reference_wrapper<T>>::createValue(std::ref(value)));
         }
