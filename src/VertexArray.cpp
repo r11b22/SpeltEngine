@@ -4,6 +4,7 @@
 
 
 #include "VertexArray.h"
+#include "Error/Panic.hpp"
 
 #include <stdexcept>
 
@@ -15,7 +16,7 @@ namespace Spelt {
         glGenVertexArrays(1, &mId);
 
         if (mId == 0) {
-            throw std::runtime_error("Could not create Vertex Array!");
+            fatalPanic("Could not create Vertex Array!");
         }
 
         // Bind the element buffer to this VAO

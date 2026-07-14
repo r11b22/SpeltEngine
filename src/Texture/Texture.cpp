@@ -4,6 +4,8 @@
 
 #include "Texture/Texture.h"
 #include "Asset/Asset.hpp"
+#include "Error/Panic.hpp"
+#include "Error/Result.hpp"
 
 #include <iostream>
 #include <ostream>
@@ -18,7 +20,7 @@ namespace Spelt {
         glGenTextures(1, &mId);
 
         if (mId == 0) {
-            throw std::runtime_error("Failed to create new texture!");
+            fatalPanic("Failed to create new texture!");
         }
     }
 
@@ -38,7 +40,7 @@ namespace Spelt {
         setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        setPixelData(texData, width, height, channelCount);
+        setPixelData(texData, width, height, channelCount).panicOnError(std::format("Unsupported channelcount: {}", channelCount));
     }
 
     Texture::Texture(std::string name, int width, int height, GLenum format, GLenum internalFormat, GLenum datatype)
@@ -133,35 +135,35 @@ namespace Spelt {
     }
 
 
-    GLenum Texture::getFormat() const {
+    Result<GLenum, TextureError> Texture::getFormat() const {
         if (!mHasData){
-            throw std::runtime_error("Tried to get format for a texture that has no attached data");
+            return Error(TextureError::NoAttachedData);
         }
-        return mFormat;
+        return Value(mFormat);
     }
 
-    GLenum Texture::getDatatype() const {
+    Result<GLenum, TextureError> Texture::getDatatype() const {
         if (!mHasData){
-            throw std::runtime_error("Tried to get datatype for a texture that has no attached data");
+            return Error(TextureError::NoAttachedData);
         }
-        return mDatatype;
+        return Value(mDatatype);
     }
 
-    int Texture::getWidth() const {
+    Result<int, TextureError> Texture::getWidth() const {
         if (!mHasData){
-            throw std::runtime_error("Tried to get width for a texture that has no attached data");
+            return Error(TextureError::NoAttachedData);
         }
-        return mWidth;
+        return Value(mWidth);
     }
 
-    int Texture::getHeight() const {
+    Result<int, TextureError> Texture::getHeight() const {
         if (!mHasData){
-            throw std::runtime_error("Tried to get height for a texture that has no attached data");
+            return Error(TextureError::NoAttachedData);
         }
-        return mHeight;
+        return Value(mHeight);
     }
 
-    void Texture::setPixelData(const unsigned char *texData, int width, int height, int channelCount){
+    Result<void, TextureError> Texture::setPixelData(const unsigned char *texData, int width, int height, int channelCount){
         bind();
 
         mHasData = true;
@@ -169,8 +171,10 @@ namespace Spelt {
         mHeight = height;
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        setupChannelCount(channelCount);
-
+        auto result = setupChannelCount(channelCount);
+        if(result.isError()){
+            return Error(result.error());
+        }
 
         if (channelCount == 4) {
             std::cout << "Texture uploaded in alpha mode" << std::endl;
@@ -181,10 +185,11 @@ namespace Spelt {
 
         glTexImage2D(mTextureType, 0, mInternalFormat, mWidth, mHeight, 0, mFormat, mDatatype, texData);
         glGenerateMipmap(mTextureType);
+        return Success{};
     }
 
 
-    void Texture::setupChannelCount(int channelCount) {
+    Result<void, TextureError> Texture::setupChannelCount(int channelCount) {
         mDatatype = GL_UNSIGNED_BYTE;
 
         switch (channelCount) {
@@ -209,7 +214,8 @@ namespace Spelt {
                 break;
 
             default:
-                throw std::runtime_error("Unsupported channel count: " + std::to_string(channelCount));
+            return Error(TextureError::UnsupportedChannelCount);
         }
+        return Success{};
     }
 }

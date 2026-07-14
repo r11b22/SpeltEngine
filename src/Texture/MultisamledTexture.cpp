@@ -1,5 +1,6 @@
 
 
+#include "Error/Panic.hpp"
 #include "Texture/MultisampledTexture.h"
 #include <iostream>
 #include <stdexcept>
@@ -11,7 +12,7 @@ namespace Spelt {
     {
         glGenTextures(1, &mId);
         if (mId == 0) {
-            throw std::runtime_error("Failed to create new texture!");
+            fatalPanic("Failed to create new texture!");
         }
 
         bind();

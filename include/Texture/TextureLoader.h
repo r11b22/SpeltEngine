@@ -8,13 +8,18 @@
 #include "Asset/EmbeddedAsset.hpp"
 
 namespace Spelt {
+    enum class TextureLoaderError{
+        FileNotFound,
+        LoadingFailed
+    };
+
     class TextureLoader {
         private:
             TextureData mData;
         public:
             ~TextureLoader();
-            void readFile(const std::filesystem::path& path, bool flipVertical = false);
-            void readRaw(const unsigned char* binary, unsigned int size, bool flipVertical = false);
+            Result<void, TextureLoaderError> readFile(const std::filesystem::path& path, bool flipVertical = false);
+            Result<void, TextureLoaderError> readRaw(const unsigned char* binary, unsigned int size, bool flipVertical = false);
 
             Texture createTexture(std::string name);
         private:
@@ -66,11 +71,11 @@ namespace Spelt {
 
             if (std::holds_alternative<TexturePathLoadSource>(asset.source)) {
                 const auto& pathSrc = std::get<TexturePathLoadSource>(asset.source);
-                loader.readFile(pathSrc.path, asset.flipped);
+                loader.readFile(pathSrc.path, asset.flipped).panicOnError(std::format("Could not find file at: {}", pathSrc.path.c_str()));
             }
             else if (std::holds_alternative<TextureRawLoadSource>(asset.source)) {
                 const auto& rawSrc = std::get<TextureRawLoadSource>(asset.source);
-                loader.readRaw(rawSrc.binaryData, rawSrc.binarySize, asset.flipped);
+                loader.readRaw(rawSrc.binaryData, rawSrc.binarySize, asset.flipped).panicOnError("Could not load texture form embedded binary!");
             }
 
             Texture texture = loader.createTexture(asset.name);

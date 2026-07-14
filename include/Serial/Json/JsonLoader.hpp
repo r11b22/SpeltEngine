@@ -14,6 +14,8 @@ namespace Spelt {
         MissingKey,
         MissingSeperator,
         UnclosedBraces,
+        UnexpectedStreamEnd,
+        MissingRootBraces
     };
 
     class JsonLoader {

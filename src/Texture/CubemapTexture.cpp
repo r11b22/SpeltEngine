@@ -30,7 +30,7 @@ namespace Spelt {
 
         mWidth = width;
         mHeight = height;
-        setupChannelCount(channelCount);
+        setupChannelCount(channelCount).panicOnError(std::format("Unsupported channelcount: {}", channelCount));
 
 
         bind();

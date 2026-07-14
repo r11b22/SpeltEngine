@@ -6,10 +6,16 @@
 
 
 #include "Asset/Asset.hpp"
+#include "Error/Result.hpp"
 #include "Texture/TextureData.h"
 #include "glad/glad.h"
 
 namespace Spelt {
+    enum class TextureError{
+        NoAttachedData,
+        UnsupportedChannelCount
+    };
+
     class Texture : public Asset {
     protected:
         int mWidth, mHeight;
@@ -45,16 +51,16 @@ namespace Spelt {
 
         void resize(int widht, int height);
 
-        GLenum getFormat() const;
-        GLenum getDatatype() const;
+        Result<GLenum, TextureError> getFormat() const;
+        Result<GLenum, TextureError> getDatatype() const;
 
-        int getWidth() const;
-        int getHeight() const;
+        Result<int, TextureError> getWidth() const;
+        Result<int, TextureError> getHeight() const;
 
-        void setPixelData(const unsigned char *texData, int width, int height, int channelCount);
+        Result<void, TextureError> setPixelData(const unsigned char *texData, int width, int height, int channelCount);
 
     protected:
-        void setupChannelCount(int channelCount);
+        Result<void, TextureError> setupChannelCount(int channelCount);
 
 
     private:

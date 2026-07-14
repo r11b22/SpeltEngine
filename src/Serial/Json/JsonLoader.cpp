@@ -170,7 +170,7 @@ namespace Spelt {
         Result<JsonData, JsonLoaderError> parseValue(std::string_view json, size_t& index) {
             skipWhitespace(json, index);
             if (index >= json.size()) {
-                throw std::runtime_error("Unexpected end of streaming chunk data encountered prematurely");
+                return Error(JsonLoaderError::UnexpectedStreamEnd);
             }
 
             char c = json[index];
@@ -222,7 +222,7 @@ namespace Spelt {
 
         skipWhitespace(jsonView, index);
         if (jsonView.empty() || jsonView[index] != '{') {
-            throw std::runtime_error("Root element context layer must parse strictly down into a dictionary object '{}'");
+            return Error(JsonLoaderError::MissingRootBraces);
         }
 
         return parseObject(jsonView, index);

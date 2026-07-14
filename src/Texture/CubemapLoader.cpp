@@ -1,4 +1,5 @@
 #include "Texture/CubemapLoader.hpp"
+#include "Error/Result.hpp"
 #include "Texture/CubemapTexture.hpp"
 
 #define STB_IMAGE_STATIC
@@ -25,13 +26,13 @@ namespace Spelt {
         return std::move(texture);
     }
 
-    void CubmapLoader::readFile(CubeFace face, const std::filesystem::path& path, bool flipVertical) {
+    Result<void, CubemapLoaderError> CubmapLoader::readFile(CubeFace face, const std::filesystem::path& path, bool flipVertical) {
         stbi_set_flip_vertically_on_load(flipVertical);
         int texWidth, texHeight, channelCount;
         unsigned char* texData = stbi_load(path.string().c_str(), &texWidth, &texHeight, &channelCount, 0);
 
         if (!texData) {
-            throw std::runtime_error("Could not load cubemap at: " + path.string());
+            return Error(CubemapLoaderError::FileNotFound);
         }
 
         switch (face) {
@@ -72,6 +73,6 @@ namespace Spelt {
                 mFront = {texData, texWidth, texHeight, channelCount};
                 break;
         }
-
+        return Success{};
     }
 }

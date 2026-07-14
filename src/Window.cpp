@@ -3,6 +3,7 @@
 //
 
 #include "Window.h"
+#include "Error/Panic.hpp"
 
 #include <stdexcept>
 
@@ -11,12 +12,12 @@ namespace Spelt {
         : mWindow(nullptr), mContext(), mWidth(width), mHeight(height)
     {
         glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
-        if (!glfwInit()) throw std::runtime_error("Failed to initialize glfw!");
+        if (!glfwInit()) fatalPanic("Failed to initialize glfw!");
 
         mWindow = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
         if (!mWindow) {
             glfwTerminate();
-            throw std::runtime_error("Could not create window!");
+            fatalPanic("Could not create window!");
         }
         mContext.window = this;
 

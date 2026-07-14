@@ -3,6 +3,7 @@
 //
 
 #include "Shader/ShaderProgram.h"
+#include "Error/Panic.hpp"
 #include <stdexcept>
 
 
@@ -12,7 +13,7 @@ namespace Spelt {
         mId = glCreateProgram();
 
         if (mId == 0) {
-            throw std::runtime_error("Could create new shaders program!");
+            fatalPanic("Could create new shaders program!");
         }
     }
 
@@ -73,7 +74,7 @@ namespace Spelt {
                                         (type == GL_FRAGMENT_SHADER) ? "FRAGMENT" :
                                         (type == GL_COMPUTE_SHADER)  ? "COMPUTE" : "UNKNOWN";
 
-            throw std::runtime_error("ERROR::SHADER::" + shaderTypeStr + "::COMPILATION_FAILED\n" + infoLog);
+            fatalPanic("ERROR::SHADER::" + shaderTypeStr + "::COMPILATION_FAILED\n" + infoLog);
         }
 
         // Only attach and track if compilation succeeded
@@ -156,9 +157,6 @@ namespace Spelt {
     GLint ShaderProgram::getUniformLocation(const std::string &name) const{
         const GLint location = glGetUniformLocation(mId, name.c_str());
 
-        if (location == -1) {
-            //throw std::runtime_error("Could not find uniform: " + name);
-        }
         return location;
     }
 
