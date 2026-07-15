@@ -42,6 +42,23 @@ namespace Spelt {
     struct Success {};
 
     template <typename V, typename E>
+    class Result;
+
+    namespace detail {
+        template <typename T>
+        struct is_result : std::false_type {};
+
+        template <typename V2, typename E2>
+        struct is_result<Result<V2, E2>> : std::true_type {
+            using ValueType = V2;
+            using ErrorType = E2;
+        };
+
+        template <typename T>
+        inline constexpr bool is_result_v = is_result<T>::value;
+    }
+
+    template <typename V, typename E>
     class [[nodiscard]] Result {
     private:
         std::variant<V, E> mData;
@@ -220,6 +237,62 @@ namespace Spelt {
             return Result<V, NewE>::createValue(value());
         }
 
+        /**
+         * If this Result contains a value, invokes func with that value and returns the
+         * resulting Result<U, E>. If this Result contains an error, short-circuits and
+         * forwards the error into a Result<U, E> without invoking func.
+         * The lambda must return a Spelt::Result<U, E> with the same error type E.
+         */
+        template <typename Func>
+        constexpr auto andThen(Func&& func)
+            noexcept(std::is_nothrow_invocable_v<Func, V&> &&
+                     std::is_nothrow_copy_constructible_v<E>)
+        {
+            static_assert(std::is_invocable_v<Func, V&>,
+                "Spelt::Result::andThen Error: The lambda must accept 'V&' (or a compatible type).");
+
+            using ReturnType = std::invoke_result_t<Func, V&>;
+
+            static_assert(detail::is_result_v<ReturnType>,
+                "Spelt::Result::andThen Error: The lambda must return a Spelt::Result<U, E>.");
+
+            static_assert(std::is_same_v<typename detail::is_result<ReturnType>::ErrorType, E>,
+                "Spelt::Result::andThen Error: The lambda's returned Result must have the same error type E as this Result.");
+
+            if (auto* val = std::get_if<V>(&mData)) [[likely]] {
+                return std::forward<Func>(func)(*val);
+            }
+            return ReturnType::createError(error());
+        }
+
+        /**
+         * If this Result contains a value, invokes func with that value and returns the
+         * resulting Result<U, E>. If this Result contains an error, short-circuits and
+         * forwards the error into a Result<U, E> without invoking func.
+         * The lambda must return a Spelt::Result<U, E> with the same error type E.
+         */
+        template <typename Func>
+        constexpr auto andThen(Func&& func) const
+            noexcept(std::is_nothrow_invocable_v<Func, const V&> &&
+                     std::is_nothrow_copy_constructible_v<E>)
+        {
+            static_assert(std::is_invocable_v<Func, const V&>,
+                "Spelt::Result::andThen Error: The lambda must accept 'const V&' (or a compatible type).");
+
+            using ReturnType = std::invoke_result_t<Func, const V&>;
+
+            static_assert(detail::is_result_v<ReturnType>,
+                "Spelt::Result::andThen Error: The lambda must return a Spelt::Result<U, E>.");
+
+            static_assert(std::is_same_v<typename detail::is_result<ReturnType>::ErrorType, E>,
+                "Spelt::Result::andThen Error: The lambda's returned Result must have the same error type E as this Result.");
+
+            if (const auto* val = std::get_if<V>(&mData)) [[likely]] {
+                return std::forward<Func>(func)(*val);
+            }
+            return ReturnType::createError(error());
+        }
+
         template <typename FuncV, typename FuncE>
         constexpr auto match(FuncV&& valFunc, FuncE&& errFunc)
             noexcept(std::is_nothrow_invocable_v<FuncV, V&> &&
@@ -380,7 +453,62 @@ namespace Spelt {
             return Result<void, NewE>::createValue();
         }
 
-        // Match method variations updated because the success lambda takes no arguments
+        /**
+         * If this Result is a success, invokes func with no arguments and returns the
+         * resulting Result<U, E>. If this Result contains an error, short-circuits and
+         * forwards the error into a Result<U, E> without invoking func.
+         * The lambda must return a Spelt::Result<U, E> with the same error type E.
+         */
+        template <typename Func>
+        constexpr auto andThen(Func&& func)
+            noexcept(std::is_nothrow_invocable_v<Func> &&
+                     std::is_nothrow_copy_constructible_v<E>)
+        {
+            static_assert(std::is_invocable_v<Func>,
+                "Spelt::Result::andThen Error: The lambda must accept no arguments.");
+
+            using ReturnType = std::invoke_result_t<Func>;
+
+            static_assert(detail::is_result_v<ReturnType>,
+                "Spelt::Result::andThen Error: The lambda must return a Spelt::Result<U, E>.");
+
+            static_assert(std::is_same_v<typename detail::is_result<ReturnType>::ErrorType, E>,
+                "Spelt::Result::andThen Error: The lambda's returned Result must have the same error type E as this Result.");
+
+            if (mResult.isValue()) [[likely]] {
+                return std::forward<Func>(func)();
+            }
+            return ReturnType::createError(error());
+        }
+
+        /**
+         * If this Result is a success, invokes func with no arguments and returns the
+         * resulting Result<U, E>. If this Result contains an error, short-circuits and
+         * forwards the error into a Result<U, E> without invoking func.
+         * The lambda must return a Spelt::Result<U, E> with the same error type E.
+         */
+        template <typename Func>
+        constexpr auto andThen(Func&& func) const
+            noexcept(std::is_nothrow_invocable_v<Func> &&
+                     std::is_nothrow_copy_constructible_v<E>)
+        {
+            static_assert(std::is_invocable_v<Func>,
+                "Spelt::Result::andThen Error: The lambda must accept no arguments.");
+
+            using ReturnType = std::invoke_result_t<Func>;
+
+            static_assert(detail::is_result_v<ReturnType>,
+                "Spelt::Result::andThen Error: The lambda must return a Spelt::Result<U, E>.");
+
+            static_assert(std::is_same_v<typename detail::is_result<ReturnType>::ErrorType, E>,
+                "Spelt::Result::andThen Error: The lambda's returned Result must have the same error type E as this Result.");
+
+            if (mResult.isValue()) [[likely]] {
+                return std::forward<Func>(func)();
+            }
+            return ReturnType::createError(error());
+        }
+
         template <typename FuncV, typename FuncE>
         constexpr auto match(FuncV&& valFunc, FuncE&& errFunc)
             noexcept(std::is_nothrow_invocable_v<FuncV> &&
@@ -504,6 +632,64 @@ namespace Spelt {
                 return Result<V&, NewE>::createError(std::move(newErr));
             }
             return Result<V&, NewE>::createValue(value());
+        }
+
+        /**
+         * If this Result contains a value, invokes func with that value (a true lvalue
+         * reference) and returns the resulting Result<U, E>. If this Result contains an
+         * error, short-circuits and forwards the error into a Result<U, E> without
+         * invoking func. The lambda must return a Spelt::Result<U, E> with the same
+         * error type E.
+         */
+        template <typename Func>
+        constexpr auto andThen(Func&& func)
+            noexcept(std::is_nothrow_invocable_v<Func, V&> &&
+                     std::is_nothrow_copy_constructible_v<E>)
+        {
+            static_assert(std::is_invocable_v<Func, V&>,
+                "Spelt::Result::andThen Error: The lambda must accept 'V&' (or a compatible type).");
+
+            using ReturnType = std::invoke_result_t<Func, V&>;
+
+            static_assert(detail::is_result_v<ReturnType>,
+                "Spelt::Result::andThen Error: The lambda must return a Spelt::Result<U, E>.");
+
+            static_assert(std::is_same_v<typename detail::is_result<ReturnType>::ErrorType, E>,
+                "Spelt::Result::andThen Error: The lambda's returned Result must have the same error type E as this Result.");
+
+            if (mResult.isValue()) [[likely]] {
+                return std::forward<Func>(func)(value());
+            }
+            return ReturnType::createError(error());
+        }
+
+        /**
+         * If this Result contains a value, invokes func with that value (a true lvalue
+         * reference) and returns the resulting Result<U, E>. If this Result contains an
+         * error, short-circuits and forwards the error into a Result<U, E> without
+         * invoking func. The lambda must return a Spelt::Result<U, E> with the same
+         * error type E.
+         */
+        template <typename Func>
+        constexpr auto andThen(Func&& func) const
+            noexcept(std::is_nothrow_invocable_v<Func, const V&> &&
+                     std::is_nothrow_copy_constructible_v<E>)
+        {
+            static_assert(std::is_invocable_v<Func, const V&>,
+                "Spelt::Result::andThen Error: The lambda must accept 'const V&' (or a compatible type).");
+
+            using ReturnType = std::invoke_result_t<Func, const V&>;
+
+            static_assert(detail::is_result_v<ReturnType>,
+                "Spelt::Result::andThen Error: The lambda must return a Spelt::Result<U, E>.");
+
+            static_assert(std::is_same_v<typename detail::is_result<ReturnType>::ErrorType, E>,
+                "Spelt::Result::andThen Error: The lambda's returned Result must have the same error type E as this Result.");
+
+            if (mResult.isValue()) [[likely]] {
+                return std::forward<Func>(func)(value());
+            }
+            return ReturnType::createError(error());
         }
 
         template <typename FuncV, typename FuncE>

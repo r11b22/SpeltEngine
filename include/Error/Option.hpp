@@ -12,6 +12,20 @@ namespace Spelt {
     struct None{};
 
     template <typename T>
+    class Option;
+
+    namespace detail {
+        template <typename T>
+        struct is_option : std::false_type {};
+
+        template <typename T>
+        struct is_option<Option<T>> : std::true_type {};
+
+        template <typename T>
+        inline constexpr bool is_option_v = is_option<T>::value;
+    }
+
+    template <typename T>
     class [[nodiscard]] Option {
     private:
         std::optional<T> mData;
@@ -155,6 +169,52 @@ namespace Spelt {
             return std::forward<FuncN>(noneFunc)();
         }
 
+        /**
+         * If this Option contains a value, invokes func with that value and returns the
+         * resulting Option<U>. If this Option is empty, short-circuits and returns an
+         * empty Option<U> without invoking func.
+         */
+        template <typename Func>
+        constexpr auto andThen(Func&& func)
+            noexcept(std::is_nothrow_invocable_v<Func, T&>)
+        {
+            static_assert(std::is_invocable_v<Func, T&>,
+                "Spelt::Option::andThen Error: The lambda must accept 'T&' (or a compatible type).");
+
+            using ReturnType = std::invoke_result_t<Func, T&>;
+
+            static_assert(detail::is_option_v<ReturnType>,
+                "Spelt::Option::andThen Error: The lambda must return a Spelt::Option<U>.");
+
+            if (mData.has_value()) [[likely]] {
+                return std::forward<Func>(func)(*mData);
+            }
+            return ReturnType::createNone();
+        }
+
+        /**
+         * If this Option contains a value, invokes func with that value and returns the
+         * resulting Option<U>. If this Option is empty, short-circuits and returns an
+         * empty Option<U> without invoking func.
+         */
+        template <typename Func>
+        constexpr auto andThen(Func&& func) const
+            noexcept(std::is_nothrow_invocable_v<Func, const T&>)
+        {
+            static_assert(std::is_invocable_v<Func, const T&>,
+                "Spelt::Option::andThen Error: The lambda must accept 'const T&' (or a compatible type).");
+
+            using ReturnType = std::invoke_result_t<Func, const T&>;
+
+            static_assert(detail::is_option_v<ReturnType>,
+                "Spelt::Option::andThen Error: The lambda must return a Spelt::Option<U>.");
+
+            if (mData.has_value()) [[likely]] {
+                return std::forward<Func>(func)(*mData);
+            }
+            return ReturnType::createNone();
+        }
+
         constexpr void panicOnNone(std::source_location loc = std::source_location::current()) const {
             if (isNone()) [[unlikely]] {
                 fatalPanic("Option that should not be none was none!", loc);
@@ -242,6 +302,48 @@ namespace Spelt {
                 return std::forward<FuncV>(valFunc)(mUnderlying.value().get());
             }
             return std::forward<FuncN>(noneFunc)();
+        }
+
+        /**
+         * If this Option contains a value, invokes func with that value and returns the
+         * resulting Option<U>. If this Option is empty, short-circuits and returns an
+         * empty Option<U> without invoking func.
+         */
+        template <typename Func>
+        constexpr auto andThen(Func&& func) {
+            static_assert(std::is_invocable_v<Func, T&>,
+                "Spelt::Option::andThen Error: The lambda must accept 'T&' (or a compatible type).");
+
+            using ReturnType = std::invoke_result_t<Func, T&>;
+
+            static_assert(detail::is_option_v<ReturnType>,
+                "Spelt::Option::andThen Error: The lambda must return a Spelt::Option<U>.");
+
+            if (mUnderlying.isValue()) [[likely]] {
+                return std::forward<Func>(func)(mUnderlying.value().get());
+            }
+            return ReturnType::createNone();
+        }
+
+        /**
+         * If this Option contains a value, invokes func with that value and returns the
+         * resulting Option<U>. If this Option is empty, short-circuits and returns an
+         * empty Option<U> without invoking func.
+         */
+        template <typename Func>
+        constexpr auto andThen(Func&& func) const {
+            static_assert(std::is_invocable_v<Func, const T&>,
+                "Spelt::Option::andThen Error: The lambda must accept 'const T&' (or a compatible type).");
+
+            using ReturnType = std::invoke_result_t<Func, const T&>;
+
+            static_assert(detail::is_option_v<ReturnType>,
+                "Spelt::Option::andThen Error: The lambda must return a Spelt::Option<U>.");
+
+            if (mUnderlying.isValue()) [[likely]] {
+                return std::forward<Func>(func)(mUnderlying.value().get());
+            }
+            return ReturnType::createNone();
         }
 
         constexpr void panicOnNone(std::source_location loc = std::source_location::current()) const {

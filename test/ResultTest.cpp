@@ -69,3 +69,23 @@ TEST_CASE("Result valueOr"){
 
     REQUIRE(errorResult.valueOr(1) == 1);
 }
+
+
+TEST_CASE("Result::andThen chains on a value and forwards the error", "[Result][andThen]") {
+    Result<int, std::string> ok = Value(10);
+    Result<int, std::string> err = Error(std::string("bad input"));
+
+    SECTION("invokes func and returns its Result when there is a value") {
+        auto result = ok.andThen([](int& v) { return Result<int, std::string>::createValue(v / 2); });
+
+        REQUIRE(result.isValue());
+        REQUIRE(result.value() == 5);
+    }
+
+    SECTION("short-circuits and forwards the original error without invoking func") {
+        auto result = err.andThen([](int& v) { return Result<int, std::string>::createValue(v / 2); });
+
+        REQUIRE(result.isError());
+        REQUIRE(result.error() == "bad input");
+    }
+}

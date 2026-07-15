@@ -107,7 +107,7 @@ namespace Spelt {
         if (const auto* val = std::get_if<bool>(&variantData.value())) {
             return Value(*val);
         }
-        throw None{};
+        return None{};
     }
 
     Option<double> Json::getNumber(const std::string& key) const {

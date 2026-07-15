@@ -42,3 +42,27 @@ TEST_CASE("Option valueOr"){
     Option<int> noneOption = Option<int>::createNone();
     REQUIRE(noneOption.valueOr(1) == 1);
 }
+
+TEST_CASE("Option::andThen chains on a value and short-circuits on none", "[Option][andThen]") {
+    Option<int> value = Value(4);
+    Option<int> none = None{};
+
+    SECTION("invokes func and returns its Option when there is a value") {
+        auto result = value.andThen([](int& v) { return Option<int>::createValue(v * 2); });
+
+        REQUIRE(result.isValue());
+        REQUIRE(result.value() == 8);
+    }
+
+    SECTION("short-circuits to an empty Option without invoking func") {
+        auto result = none.andThen([](int& v) { return Option<int>::createValue(v * 2); });
+
+        REQUIRE(result.isNone());
+    }
+
+    SECTION("a chained func can itself produce None") {
+        auto result = value.andThen([](int&) { return Option<int>::createNone(); });
+
+        REQUIRE(result.isNone());
+    }
+}
