@@ -135,6 +135,9 @@ set(ENGINE_SOURCES
         src/Object/Object.cpp
         src/Object/ObjectRepository.cpp
 
+        src/OpenGL/BindTracker.cpp
+        src/OpenGL/TextureBindTracker.cpp
+
         src/Serial/Json/Json.cpp
         src/Serial/Json/JsonLoader.cpp
 
@@ -219,6 +222,9 @@ set(ENGINE_HEADERS
         include/Object/ObjectID.h
         include/Object/ObjectType.h
         include/Object/ObjectRepository.h
+
+        include/OpenGL/BindTracker.hpp
+        include/OpenGL/TextureBindTracker.hpp
 
         include/PostProcessing/PostProcessingComputeUnit.h
         include/PostProcessing/PostProcessingEffect.h

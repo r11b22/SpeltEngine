@@ -7,6 +7,7 @@
 #include "Buffer/BufferMap.h"
 #include "Error/Panic.hpp"
 #include "Error/Result.hpp"
+#include "OpenGL/BindTracker.hpp"
 #include "Window.h"
 
 #include <stdexcept>
@@ -49,10 +50,16 @@ namespace Spelt {
     }
 
     void Buffer::bind(){
-        glBindBuffer(mType, mId);
+        if (!BindTracker::getInstance().isBound(BindType::Buffer, mId)){
+            glBindBuffer(mType, mId);
+            BindTracker::getInstance().bind(BindType::Buffer, mId);
+        }
     }
 
     void Buffer::bindBase(int location) {
+        if (!BindTracker::getInstance().isBound(BindType::Buffer, mId)){
+            BindTracker::getInstance().bind(BindType::Buffer, mId);
+        }
         glBindBufferBase(mType, location, mId);
     }
 

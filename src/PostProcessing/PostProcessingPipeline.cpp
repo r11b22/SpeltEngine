@@ -6,6 +6,7 @@
 #include "Error/Panic.hpp"
 #include "Error/Result.hpp"
 #include "FrameBuffer/MultisampledFrameBuffer.h"
+#include "OpenGL/TextureBindTracker.hpp"
 #include "PostProcessing/PostProcessingComputeUnit.h"
 #include "PostProcessing/PostProcessingError.h"
 
@@ -47,8 +48,6 @@ namespace Spelt {
     // ─── Binding ──────────────────────────────────────────────────────────────────
 
     void PostProcessingPipeline::bind() {
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, 0);
         mSceneFrameBuffer.bind();
     }
 

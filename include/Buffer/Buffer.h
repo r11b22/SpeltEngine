@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "Error/Result.hpp"
+#include "OpenGL/BindTracker.hpp"
 #include "glad/glad.h"
 #include "glm/glm.hpp"
 

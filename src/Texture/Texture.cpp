@@ -6,6 +6,7 @@
 #include "Asset/Asset.hpp"
 #include "Error/Panic.hpp"
 #include "Error/Result.hpp"
+#include "OpenGL/TextureBindTracker.hpp"
 
 #include <iostream>
 #include <ostream>
@@ -67,9 +68,11 @@ namespace Spelt {
     }
 
     void Texture::bind(int unit){
-        glActiveTexture(GL_TEXTURE0 + unit);
-
-        glBindTexture(mTextureType, mId);
+        if(!TextureBindTracker::getInstance().isBound(unit, mId)){
+            glActiveTexture(GL_TEXTURE0 + unit);
+            glBindTexture(GL_TEXTURE_2D, mId);
+            TextureBindTracker::getInstance().bind(unit, mId);
+        }
     }
 
     void Texture::imageBind(int location, GLenum rwType){

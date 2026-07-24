@@ -11,6 +11,7 @@
 
 #include "Error/Panic.hpp"
 #include "Error/Result.hpp"
+#include "OpenGL/BindTracker.hpp"
 #include "Texture/Texture.h"
 #include "Window.h"
 #include "glad/glad.h"
@@ -52,6 +53,7 @@ namespace Spelt {
                 fatalPanic("Failed to create FrameBuffer depth buffer!");
             }
 
+            // No checking for bind state as this should be a new buffer
             glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffer);
             glBindRenderbuffer(GL_RENDERBUFFER, mRenderBuffer);
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, mWidth, mHeight);
@@ -136,27 +138,47 @@ namespace Spelt {
         }
 
         void bind() {
-            glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffer);
+            if(!BindTracker::getInstance().isBound(BindType::FrameBufferRead, mFrameBuffer) || !BindTracker::getInstance().isBound(BindType::FrameBufferDraw, mFrameBuffer)){
+                glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffer);
+                BindTracker::getInstance().bind(BindType::FrameBufferRead, mFrameBuffer);
+                BindTracker::getInstance().bind(BindType::FrameBufferDraw, mFrameBuffer);
+            }
         }
 
         void bindRead() {
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, mFrameBuffer);
+            if(!BindTracker::getInstance().isBound(BindType::FrameBufferRead, mFrameBuffer)){
+                glBindFramebuffer(GL_READ_FRAMEBUFFER, mFrameBuffer);
+                BindTracker::getInstance().bind(BindType::FrameBufferRead, mFrameBuffer);
+            }
         }
 
         void bindDraw() {
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFrameBuffer);
+            if(!BindTracker::getInstance().isBound(BindType::FrameBufferDraw, mFrameBuffer)){
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFrameBuffer);
+                BindTracker::getInstance().bind(BindType::FrameBufferDraw, mFrameBuffer);
+            }
         }
 
         void unbind() {
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            if(BindTracker::getInstance().isBound(BindType::FrameBufferRead, mFrameBuffer) || BindTracker::getInstance().isBound(BindType::FrameBufferDraw, mFrameBuffer)){
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                BindTracker::getInstance().unbind(BindType::FrameBufferRead, mFrameBuffer);
+                BindTracker::getInstance().unbind(BindType::FrameBufferDraw, mFrameBuffer);
+            }
         }
 
         void unbindRead() {
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+            if(BindTracker::getInstance().isBound(BindType::FrameBufferRead, mFrameBuffer)){
+                glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+                BindTracker::getInstance().unbind(BindType::FrameBufferRead, mFrameBuffer);
+            }
         }
 
         void unbindDraw() {
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+            if(BindTracker::getInstance().isBound(BindType::FrameBufferDraw, mFrameBuffer)){
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+                BindTracker::getInstance().unbind(BindType::FrameBufferDraw, mFrameBuffer);
+            }
         }
 
         void attachTexture(Texture *tex, GLenum attachment) {

@@ -1,6 +1,7 @@
 
 
 #include "Error/Panic.hpp"
+#include "OpenGL/TextureBindTracker.hpp"
 #include "Texture/MultisampledTexture.h"
 #include <iostream>
 #include <stdexcept>
@@ -53,8 +54,11 @@ namespace Spelt {
     }
 
     void MultisampledTexture::bind(int unit){
-        glActiveTexture(GL_TEXTURE0 + unit);
-        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, mId);
+        if(!TextureBindTracker::getInstance().isBound(unit, mId)){
+            glActiveTexture(GL_TEXTURE0 + unit);
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, mId);
+            TextureBindTracker::getInstance().bind(unit, mId);
+        }
     }
 
     void MultisampledTexture::attachToFramebuffer(GLenum attachment) {

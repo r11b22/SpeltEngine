@@ -213,9 +213,6 @@ namespace Spelt {
         output->bind(0);
         mScreenQuad->draw(*mScreenShader);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
         glEnable(GL_DEPTH_TEST);
 
     }
