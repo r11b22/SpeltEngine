@@ -95,7 +95,7 @@ namespace Spelt {
                         return repoRef.getAsset(std::move(ref));
                     },
                     [](){
-                        return static_cast<T*>(nullptr);
+                        return static_cast<const T*>(nullptr);
                     });
             }
 
