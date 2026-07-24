@@ -2,11 +2,11 @@
 #include "Error/Panic.hpp"
 #include "Error/Result.hpp"
 #include "FrameBuffer/FrameBuffer.h"
+#include "OpenGL/BindTracker.hpp"
 #include "Texture/MultisampledTexture.h"
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
-
 
 namespace Spelt {
     MultisampledFrameBuffer::MultisampledFrameBuffer(Window *window, int samples)
@@ -44,7 +44,6 @@ namespace Spelt {
     MultisampledFrameBuffer::~MultisampledFrameBuffer(){
         cleanup();
     }
-
 
     MultisampledFrameBuffer::MultisampledFrameBuffer(MultisampledFrameBuffer&& other) noexcept
         : mWidth(other.mWidth),
@@ -110,28 +109,49 @@ namespace Spelt {
     }
 
     void MultisampledFrameBuffer::bind() {
-        glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffer);
+        if (!BindTracker::getInstance().isBound(BindType::FrameBufferRead, mFrameBuffer) ||
+            !BindTracker::getInstance().isBound(BindType::FrameBufferDraw, mFrameBuffer)) {
+            glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffer);
+            BindTracker::getInstance().bind(BindType::FrameBufferRead, mFrameBuffer);
+            BindTracker::getInstance().bind(BindType::FrameBufferDraw, mFrameBuffer);
+        }
     }
 
     void MultisampledFrameBuffer::bindRead() {
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, mFrameBuffer);
+        if (!BindTracker::getInstance().isBound(BindType::FrameBufferRead, mFrameBuffer)) {
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, mFrameBuffer);
+            BindTracker::getInstance().bind(BindType::FrameBufferRead, mFrameBuffer);
+        }
     }
 
     void MultisampledFrameBuffer::bindDraw() {
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFrameBuffer);
-    }
-
-
-    void MultisampledFrameBuffer::unbindRead() {
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-    }
-
-    void MultisampledFrameBuffer::unbindDraw() {
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        if (!BindTracker::getInstance().isBound(BindType::FrameBufferDraw, mFrameBuffer)) {
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFrameBuffer);
+            BindTracker::getInstance().bind(BindType::FrameBufferDraw, mFrameBuffer);
+        }
     }
 
     void MultisampledFrameBuffer::unbind() {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        if (BindTracker::getInstance().isBound(BindType::FrameBufferRead, mFrameBuffer) ||
+            BindTracker::getInstance().isBound(BindType::FrameBufferDraw, mFrameBuffer)) {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            BindTracker::getInstance().unbind(BindType::FrameBufferRead, mFrameBuffer);
+            BindTracker::getInstance().unbind(BindType::FrameBufferDraw, mFrameBuffer);
+        }
+    }
+
+    void MultisampledFrameBuffer::unbindRead() {
+        if (BindTracker::getInstance().isBound(BindType::FrameBufferRead, mFrameBuffer)) {
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+            BindTracker::getInstance().unbind(BindType::FrameBufferRead, mFrameBuffer);
+        }
+    }
+
+    void MultisampledFrameBuffer::unbindDraw() {
+        if (BindTracker::getInstance().isBound(BindType::FrameBufferDraw, mFrameBuffer)) {
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+            BindTracker::getInstance().unbind(BindType::FrameBufferDraw, mFrameBuffer);
+        }
     }
 
     void MultisampledFrameBuffer::attachTexture(MultisampledTexture *tex, GLenum attachment){
@@ -172,7 +192,6 @@ namespace Spelt {
         return mHeight;
     }
 
-
     void MultisampledFrameBuffer::cleanup() {
         if (mCallbackId != -1 && mWindow != nullptr) {
             mWindow->removeResizeCallback(mCallbackId);
@@ -187,6 +206,7 @@ namespace Spelt {
             mRenderBuffer = 0;
         }
     }
+
     void MultisampledFrameBuffer::resize(int width, int height) {
         mWidth = width;
         mHeight = height;
@@ -200,6 +220,7 @@ namespace Spelt {
         glBindRenderbuffer(GL_RENDERBUFFER, mRenderBuffer);
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, mSamples, GL_DEPTH24_STENCIL8, mWidth, mHeight);
     }
+
     Result<void, FrameBufferError> MultisampledFrameBuffer::checkCompleteness() {
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE) {

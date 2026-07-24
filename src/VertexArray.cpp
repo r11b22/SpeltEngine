@@ -5,6 +5,7 @@
 
 #include "VertexArray.h"
 #include "Error/Panic.hpp"
+#include "OpenGL/BindTracker.hpp"
 
 #include <stdexcept>
 
@@ -75,6 +76,9 @@ namespace Spelt {
     }
 
     void VertexArray::bind() {
-        glBindVertexArray(mId);
+        if(!BindTracker::getInstance().isBound(BindType::VertexArray, mId)){
+            glBindVertexArray(mId);
+            BindTracker::getInstance().bind(BindType::VertexArray, mId);
+        }
     }
 }

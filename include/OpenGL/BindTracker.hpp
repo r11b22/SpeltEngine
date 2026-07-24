@@ -8,6 +8,7 @@ namespace Spelt {
         Texture,
         FrameBufferDraw,
         FrameBufferRead,
+        VertexArray,
         // Any new members must be added BEFORE Count
 
         Count // Automatically tracks the number of elements
