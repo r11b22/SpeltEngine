@@ -78,7 +78,7 @@ namespace Spelt {
 
                 return result.match(
                     [](const T* asset){ return asset; },
-                    []() { return nullptr; }
+                    []() { return static_cast<const T*>(nullptr); }
                 );
             }
 
