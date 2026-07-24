@@ -21,7 +21,7 @@ ComputeShader compute = ComputeShader::createFromPath("compute.glsl", 16, 16, 1)
 Now we will start using the compute shader. Assume the following input
 
 ```glsl
-layout(rgb8, binding = 0) writeonly uniform image2D output;
+layout(rgba8, binding = 0) writeonly uniform image2D result;
 ```
 
 We will use a texture to serve as the output datatype. Make sure to prime the compute shader before setting any form of state
