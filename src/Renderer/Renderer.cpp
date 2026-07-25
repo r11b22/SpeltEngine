@@ -169,7 +169,7 @@ namespace Spelt {
         }
 
         mInputFrameBuffer->unbind();
-        mPostProcessingPipeline->blitToInput(*mInputFrameBuffer);
+        blitToPostProcessingInput(*mInputFrameBuffer);
     }
 
 
@@ -245,6 +245,10 @@ namespace Spelt {
         }else{
             glDisable(setting);
         }
+    }
+
+    void Renderer::blitToPostProcessingInput(MultisampledFrameBuffer& toBlit){
+        mPostProcessingPipeline->blitToInput(toBlit);
     }
 
     void Renderer::executeRenderCommand(const RenderCommand& command, const Camera& camera, const std::vector<LightData>& lights) {

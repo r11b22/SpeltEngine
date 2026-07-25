@@ -9,6 +9,7 @@
 #include "OpenGL/TextureBindTracker.hpp"
 #include "PostProcessing/PostProcessingComputeUnit.h"
 #include "PostProcessing/PostProcessingError.h"
+#include "Texture/Texture.h"
 
 #include <algorithm>
 #include <limits>

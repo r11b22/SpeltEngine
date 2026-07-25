@@ -23,6 +23,7 @@
 #include "Shader/ShaderProgram.h"
 #include "Lighting/LightManager.h"
 #include "Texture/MultisampledTexture.h"
+#include "Texture/Texture.h"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_float4x4.hpp"
 #include "glm/ext/vector_float4.hpp"
@@ -83,6 +84,8 @@ namespace Spelt {
         void setAssetManager(AssetManager* assetManager);
 
         void setSetting(GLenum setting, bool value);
+
+        void blitToPostProcessingInput(MultisampledFrameBuffer& toBlit);
 
     private:
         void executeRenderPass(const RenderPass& pass, const Camera& camera, const std::vector<LightData>& lights);
