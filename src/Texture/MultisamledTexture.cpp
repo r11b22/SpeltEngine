@@ -61,6 +61,18 @@ namespace Spelt {
         }
     }
 
+    void MultisampledTexture::imageBind(int location, GLenum rwType){
+        glBindImageTexture(
+            location,
+            mId,
+            0,
+            GL_FALSE,
+            0,
+            rwType,
+            mInternalFormat
+        );
+    }
+
     void MultisampledTexture::attachToFramebuffer(GLenum attachment) {
         glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, mId, 0);
     }

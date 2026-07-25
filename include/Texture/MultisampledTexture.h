@@ -23,6 +23,7 @@ namespace Spelt {
             MultisampledTexture& operator=(MultisampledTexture&& other) noexcept;
 
             void bind(int unit = 0);
+            void imageBind(int location, GLenum rwType);
 
             /**
             * Make sure the applicable framebuffer is bound
