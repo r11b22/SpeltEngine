@@ -66,7 +66,7 @@ namespace Spelt {
             location,
             mId,
             0,
-            GL_FALSE,
+            GL_TRUE,
             0,
             rwType,
             mInternalFormat
