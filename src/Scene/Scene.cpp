@@ -59,7 +59,7 @@ namespace Spelt {
     // Drawables / lights / camera
     // ---------------------------------------------------------------------------
 
-    const std::vector<RenderPass>& Scene::getRenderPasses() {
+    const std::vector<RenderPass>& Scene::getRenderPasses(){
         ZoneScoped;
         // TODO move this to somewhere else
 
@@ -229,5 +229,13 @@ namespace Spelt {
         }
 
         return Option<RenderPass&>::createValue(mRenderPasses[idx]);
+    }
+
+    void Scene::setDrawn(bool drawn){
+        mDrawn = drawn;
+    }
+
+    bool Scene::isDrawn(){
+        return mDrawn;
     }
 }

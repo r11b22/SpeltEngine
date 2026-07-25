@@ -56,7 +56,11 @@ namespace Spelt {
 
                 mCurrentScene->onUpdate(mRenderer, mWindow, mDeltaT);
                 mCurrentScene->updateObjects(mDeltaT);
-                mRenderer.draw(mCurrentScene->getRenderPasses(), *mCurrentScene->getCamera(), mCurrentScene->getLightData());
+
+                if(mCurrentScene->isDrawn()){
+                    mRenderer.drawPass(mCurrentScene->getRenderPasses(), *mCurrentScene->getCamera(), mCurrentScene->getLightData());
+                }
+                mRenderer.renderToScreen();
 
                 mWindow.swapBuffers();
                 mWindow.pollEvents();

@@ -73,7 +73,8 @@ namespace Spelt {
 
         void prepare();
 
-        void draw(const std::vector<RenderPass>& passes, const Camera& camera, const std::vector<LightData>& lights);
+        void drawPass(const std::vector<RenderPass>& passes, const Camera& camera, const std::vector<LightData>& lights);
+        void renderToScreen();
 
         void setClearBits(GLbitfield bits);
 
@@ -85,8 +86,7 @@ namespace Spelt {
 
     private:
         void executeRenderPass(const RenderPass& pass, const Camera& camera, const std::vector<LightData>& lights);
-        void drawPass(const std::vector<RenderPass>& passes, const Camera& camera, const std::vector<LightData>& lights);
-        void renderToScreen();
+
 
         void executeRenderCommand(const RenderCommand& command, const Camera& camera, const std::vector<LightData>& lights);
         void executeDrawCommand(const DrawCommand& command, const Camera& camera, const std::vector<LightData>& lights);

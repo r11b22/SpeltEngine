@@ -156,6 +156,8 @@ namespace Spelt {
     }
 
     void Renderer::drawPass(const std::vector<RenderPass>& passes, const Camera& camera, const std::vector<LightData>& lights) {
+        ZoneScoped;
+
         mInputFrameBuffer->bind();
         glClearColor(mScreenClearColor.x, mScreenClearColor.y, mScreenClearColor.z, mScreenClearColor.a);
         glClear(mClearBitField);
@@ -223,14 +225,6 @@ namespace Spelt {
         program.setUniformVec3("uCameraPos", mCameraPosition);
 
         mLightManager.applyLightData(program, lights);
-    }
-
-
-    void Renderer::draw(const std::vector<RenderPass>& passes, const Camera& camera, const std::vector<LightData>& lights) {
-        ZoneScoped;
-
-        drawPass(passes, camera, lights);
-        renderToScreen();
     }
 
     void Renderer::setClearBits(const GLbitfield bits) {

@@ -57,7 +57,7 @@ namespace Spelt {
 
         std::vector<std::unique_ptr<ILoadRequest>> mAssets = {};
 
-
+        bool mDrawn = true;
     public:
         Scene();
         virtual ~Scene() = default;
@@ -76,7 +76,7 @@ namespace Spelt {
 
 
         /**
-        * Get a list of all objects in the scene that can draw
+        * Get a list of all render passes, these render passes contain all the objects that need to be drawn
         */
         const std::vector<RenderPass>& getRenderPasses();
 
@@ -312,6 +312,9 @@ namespace Spelt {
         size_t renderPassCount();
 
         Option<RenderPass&> getRenderPass(size_t idx);
+
+        void setDrawn(bool drawn);
+        bool isDrawn();
 
     private:
 
