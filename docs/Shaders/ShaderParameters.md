@@ -62,3 +62,12 @@ variables:
 * diffuse: the diffuse factor
 * specular: the specular factor
 * shininess: the shininess factor
+
+
+## Lighting
+
+### Ambient light
+
+```glsl
+uniform vec3 uAmbient;
+```
