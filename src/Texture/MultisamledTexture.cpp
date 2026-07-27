@@ -3,6 +3,7 @@
 #include "Error/Panic.hpp"
 #include "OpenGL/TextureBindTracker.hpp"
 #include "Texture/MultisampledTexture.h"
+#include "Window.h"
 #include <iostream>
 #include <stdexcept>
 
@@ -66,7 +67,7 @@ namespace Spelt {
             location,
             mId,
             0,
-            GL_TRUE,
+            GL_FALSE,
             0,
             rwType,
             mInternalFormat
