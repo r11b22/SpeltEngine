@@ -18,6 +18,14 @@ namespace Spelt {
         static ComputeShader createFromSource(const std::string& source, int groupXSize, int groupYSize, int groupZSize);
         static ComputeShader createFromPath(const std::filesystem::path& path, int groupXSize, int groupYSize, int groupZSize);
 
+        // --- Move Semantics ---
+        ComputeShader(ComputeShader&&) noexcept = default;
+        ComputeShader& operator=(ComputeShader&&) noexcept = default;
+
+        // --- Disable Copy Semantics ---
+        ComputeShader(const ComputeShader&) = delete;
+        ComputeShader& operator=(const ComputeShader&) = delete;
+
         /**
         * Dispatches the compute shader == executes it shader
         * @param xElements The x dimension of your elements e.g. length of an array
