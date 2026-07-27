@@ -63,6 +63,13 @@ namespace Spelt {
         glBindBufferBase(mType, location, mId);
     }
 
+    void Buffer::bindBaseShaderStorage(int location) {
+        if (!BindTracker::getInstance().isBound(BindType::Buffer, mId)){
+            BindTracker::getInstance().bind(BindType::Buffer, mId);
+        }
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, location, mId);
+    }
+
     void Buffer::setData(const void* data, size_t bytes) {
         bind();
         glBufferData(mType, bytes, data, mUsageType);

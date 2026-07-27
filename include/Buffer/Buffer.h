@@ -39,6 +39,7 @@ namespace Spelt {
 
         void bind();
         void bindBase(int location);
+        void bindBaseShaderStorage(int location);
 
         // float setters
         void setDataF(const std::vector<float>& data);

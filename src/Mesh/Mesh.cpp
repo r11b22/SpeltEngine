@@ -44,4 +44,12 @@ namespace Spelt {
         mVAO.getElementBuffer().setDataUI(indices);
         mVertexCount = indices.size();
     }
+
+    void Mesh::bindBaseShaderStorageVertexBuffer(int location) {
+        mVertexBuffer.bindBaseShaderStorage(location);
+    }
+
+    void Mesh::bindBaseShaderStorageIndexBuffer(int location){
+        mVAO.getElementBuffer().bindBaseShaderStorage(location);
+    }
 }

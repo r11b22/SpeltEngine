@@ -36,6 +36,15 @@ namespace Spelt {
         void setVertices(std::vector<float> vertices);
         void setIndices(std::vector<unsigned int> indices);
 
+        /**
+         * Binds the vertex buffer as a shader storage buffer
+         */
+        void bindBaseShaderStorageVertexBuffer(int location);
+        /**
+         * Binds the index buffer as a shader storage buffer
+         */
+        void bindBaseShaderStorageIndexBuffer(int location);
+
     private:
     };
 
