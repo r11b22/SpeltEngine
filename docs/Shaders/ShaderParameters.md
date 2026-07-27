@@ -71,3 +71,22 @@ variables:
 ```glsl
 uniform vec3 uAmbient;
 ```
+
+### Directional Light
+
+```glsl
+struct DirectionalLight{
+    vec3 direction;
+    vec3 diffuse;
+    vec3 specular;
+};
+
+uniform DirectionalLight uDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
+uniform int uNumDirectionalLights;
+```
+
+variables:
+* direction: the direction of the light
+* diffuse: the diffuse factor
+* specular: the specular factor
+* uNumDirectionalLights: the amount of directional lights 
