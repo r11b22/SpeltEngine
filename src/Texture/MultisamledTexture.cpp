@@ -38,17 +38,25 @@ namespace Spelt {
     }
 
     MultisampledTexture::MultisampledTexture(MultisampledTexture&& other) noexcept
-        : mId(other.mId), mWidth(other.mWidth), mHeight(other.mHeight) {
+        : mId(other.mId),
+          mWidth(other.mWidth),
+          mHeight(other.mHeight),
+          mInternalFormat(other.mInternalFormat),
+          mSamples(other.mSamples)
+    {
         other.mId = 0;
     }
-
     // Move Assignment
     MultisampledTexture& MultisampledTexture::operator=(MultisampledTexture&& other) noexcept {
         if (this != &other) {
-            glDeleteTextures(1, &mId);
+            if (mId != 0) {
+                glDeleteTextures(1, &mId);
+            }
             mId = other.mId;
             mWidth = other.mWidth;
             mHeight = other.mHeight;
+            mInternalFormat = other.mInternalFormat;
+            mSamples = other.mSamples;
             other.mId = 0;
         }
         return *this;
