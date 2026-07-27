@@ -5,6 +5,7 @@
 #include "PostProcessing/PostProcessingPipeline.h"
 #include "Error/Panic.hpp"
 #include "Error/Result.hpp"
+#include "FrameBuffer/FrameBuffer.h"
 #include "FrameBuffer/MultisampledFrameBuffer.h"
 #include "OpenGL/TextureBindTracker.hpp"
 #include "PostProcessing/PostProcessingComputeUnit.h"

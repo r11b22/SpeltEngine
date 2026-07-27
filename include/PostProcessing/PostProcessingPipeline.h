@@ -137,6 +137,22 @@ namespace Spelt {
         */
         void blitToInput(MultisampledFrameBuffer& msaaFBO);
 
+        template <typename T>
+        void blitToInput(FrameBuffer<T>& msaaFBO){
+            msaaFBO.bindRead();
+            mSceneFrameBuffer.bindDraw();
+
+            glBlitFramebuffer(
+                0, 0, msaaFBO.getWidth(), msaaFBO.getHeight(),
+                0, 0, mSceneFrameBuffer.getWidth(), mSceneFrameBuffer.getHeight(),
+                GL_COLOR_BUFFER_BIT,
+                GL_NEAREST
+            );
+
+            msaaFBO.unbindRead();
+            mSceneFrameBuffer.unbindDraw();
+        }
+
         /**
         * Unbind the input texture for this pipeline.
         */

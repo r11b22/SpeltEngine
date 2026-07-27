@@ -10,6 +10,7 @@
 
 #include "../Camera.h"
 #include "Asset/AssetManager.hpp"
+#include "FrameBuffer/FrameBuffer.h"
 #include "FrameBuffer/MultisampledFrameBuffer.h"
 #include "RenderStateManager.h"
 #include "Mesh/Mesh.h"
@@ -86,6 +87,11 @@ namespace Spelt {
         void setSetting(GLenum setting, bool value);
 
         void blitToPostProcessingInput(MultisampledFrameBuffer& toBlit);
+
+        template <typename T>
+        void blitToPostProcessingInput(FrameBuffer<T>& toBlit){
+            mPostProcessingPipeline->blitToInput(toBlit);
+        }
 
     private:
         void executeRenderPass(const RenderPass& pass, const Camera& camera, const std::vector<LightData>& lights);
