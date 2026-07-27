@@ -45,6 +45,10 @@ namespace Spelt {
         mVertexCount = indices.size();
     }
 
+    unsigned int Mesh::getVertexCount() const{
+        return mVertexCount;
+    }
+
     void Mesh::bindBaseShaderStorageVertexBuffer(int location) {
         mVertexBuffer.bindBaseShaderStorage(location);
     }
