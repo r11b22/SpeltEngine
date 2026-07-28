@@ -13,7 +13,10 @@
 namespace Spelt {
     enum class BufferError{
         AlreadyMapped,
-        NotMapped
+        NotMapped,
+        NotEnoughSpace,
+        OffsetOutOfBounds,
+        InvalidArgument
     };
 
     template <typename T>
@@ -27,6 +30,9 @@ namespace Spelt {
         GLenum mUsageType;
 
         bool mMapped = false;
+
+        size_t mSize = 0;
+        size_t mReserved = 0;
     public:
         Buffer(GLenum type, GLenum usage = GL_STATIC_DRAW);
         ~Buffer();
@@ -37,9 +43,22 @@ namespace Spelt {
         Buffer(Buffer&& other) noexcept;
         Buffer& operator=(Buffer&& other) noexcept;
 
+        size_t getSize() const;
+        size_t getReserved() const;
+
         void bind();
+        void bindCopyRead();
+        void bindCopyWrite();
         void bindBase(int location);
         void bindBaseShaderStorage(int location);
+
+        /**
+         * Copy the contents of the given buffer into this buffer
+         */
+        Result<void, BufferError> copy(Buffer& toCopy, size_t writeOffset = 0, size_t readOffset = 0);
+        Result<void, BufferError> append(Buffer& toCopy);
+
+        Result<void, BufferError> reserve(size_t bytes);
 
         // float setters
         void setDataF(const std::vector<float>& data);

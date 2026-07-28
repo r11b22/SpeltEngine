@@ -10,6 +10,7 @@
 #include "OpenGL/BindTracker.hpp"
 #include "Window.h"
 
+#include <cstddef>
 #include <stdexcept>
 
 namespace Spelt {
@@ -49,11 +50,27 @@ namespace Spelt {
         return *this;
     }
 
+    size_t Buffer::getSize() const {
+        return mSize;
+    }
+
+    size_t Buffer::getReserved() const {
+        return mReserved;
+    }
+
     void Buffer::bind(){
         if (!BindTracker::getInstance().isBound(BindType::Buffer, mId)){
             glBindBuffer(mType, mId);
             BindTracker::getInstance().bind(BindType::Buffer, mId);
         }
+    }
+
+    void Buffer::bindCopyRead() {
+        glBindBuffer(GL_COPY_READ_BUFFER, mId);
+    }
+
+    void Buffer::bindCopyWrite() {
+        glBindBuffer(GL_COPY_WRITE_BUFFER, mId);
     }
 
     void Buffer::bindBase(int location) {
@@ -70,9 +87,68 @@ namespace Spelt {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, location, mId);
     }
 
+    Result<void, BufferError> Buffer::copy(Buffer& toCopy, size_t writeOffset, size_t readOffset){
+        if (this == &toCopy) return Error{BufferError::InvalidArgument};
+
+        if(writeOffset > getReserved()) return Error{BufferError::OffsetOutOfBounds};
+        if(readOffset > toCopy.getSize()) return Error{BufferError::OffsetOutOfBounds};
+
+        if(getReserved() - writeOffset < toCopy.getSize() - readOffset) return Error{BufferError::NotEnoughSpace};
+
+        bindCopyWrite();
+        toCopy.bindCopyRead();
+
+        glCopyBufferSubData(
+            GL_COPY_READ_BUFFER,
+            GL_COPY_WRITE_BUFFER,
+            readOffset, // readOffset
+            writeOffset, // writeOffset
+            toCopy.getSize() - readOffset // size in bytes
+        );
+
+        return Success{};
+    }
+
+    Result<void, BufferError> Buffer::append(Buffer& toCopy){
+        return copy(toCopy, getSize(), 0);
+    }
+
+    Result<void, BufferError> Buffer::reserve(size_t newCapacity) {
+        if (newCapacity <= mReserved) {
+            return Success{};
+        }
+
+        if (mMapped) {
+            return Error{BufferError::AlreadyMapped};
+        }
+
+        Buffer tempBuffer(mType, mUsageType);
+
+        tempBuffer.bind();
+        glBufferData(tempBuffer.mType, newCapacity, nullptr, tempBuffer.mUsageType);
+        tempBuffer.mReserved = newCapacity;
+
+        if (mId != 0 && mSize > 0) {
+            auto copyResult = tempBuffer.copy(*this, 0, 0);
+            if (!copyResult.isValue()) {
+                return copyResult;
+            }
+        }
+
+        size_t currentSize = mSize;
+
+        *this = std::move(tempBuffer);
+
+        mSize = currentSize;
+
+        return Success{};
+    }
+
     void Buffer::setData(const void* data, size_t bytes) {
         bind();
+        mReserved = bytes;
         glBufferData(mType, bytes, data, mUsageType);
+        mSize = bytes;
     }
 
     void Buffer::setDataF(const std::vector<float>& data) {
@@ -142,10 +218,15 @@ namespace Spelt {
     void Buffer::setDataAndOrphan(const void* data, size_t bytes){
         bind();
 
+
         glBufferData(mType, bytes, nullptr, mUsageType);
+        mSize = bytes;
         glBufferSubData(mType, 0, bytes, data);
+        mReserved = bytes;
     }
 
+
+    // TODO track size
     Result<BufferMap<float>, BufferError> Buffer::mapDataFloat(GLenum accessType) {
         if (mMapped) {
             return Result<BufferMap<float>, BufferError>::createError(BufferError::AlreadyMapped);
