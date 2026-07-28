@@ -49,6 +49,10 @@ namespace Spelt {
         void bindBaseShaderStorageIndexBuffer(int location);
 
 
+        Buffer& getVertexBuffer();
+        Buffer& getIndexBuffer();
+
+
     private:
     };
 

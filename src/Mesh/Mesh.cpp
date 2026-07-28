@@ -56,4 +56,12 @@ namespace Spelt {
     void Mesh::bindBaseShaderStorageIndexBuffer(int location){
         mVAO.getElementBuffer().bindBaseShaderStorage(location);
     }
+
+    Buffer& Mesh::getVertexBuffer() {
+        return mVertexBuffer;
+    }
+
+    Buffer& Mesh::getIndexBuffer() {
+        return mVAO.getElementBuffer();
+    }
 }

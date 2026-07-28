@@ -144,6 +144,20 @@ namespace Spelt {
         return Success{};
     }
 
+    Result<void, BufferError> Buffer::clear() {
+        if (mMapped) {
+            return Error{BufferError::AlreadyMapped};
+        }
+
+        if (mReserved > 0) {
+            bind();
+            glBufferData(mType, mReserved, nullptr, mUsageType);
+        }
+
+        mSize = 0;
+        return Success{};
+    }
+
     void Buffer::setData(const void* data, size_t bytes) {
         bind();
         mReserved = bytes;

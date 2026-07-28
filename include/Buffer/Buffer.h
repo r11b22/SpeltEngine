@@ -59,6 +59,10 @@ namespace Spelt {
         Result<void, BufferError> append(Buffer& toCopy);
 
         Result<void, BufferError> reserve(size_t bytes);
+        /**
+         * Does not resize the buffer just removes all data
+         */
+        Result<void, BufferError> clear();
 
         // float setters
         void setDataF(const std::vector<float>& data);
