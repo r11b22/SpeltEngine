@@ -17,10 +17,10 @@ namespace Spelt {
 
 
     Buffer::Buffer(GLenum type, GLenum usage)
-        : mType(type), mId(0), mUsageType(usage)
+        : mType(type), mId(0), mUsageType(usage),
+        mSize(0), mReserved(0), mMapped(false)
     {
         glGenBuffers(1, &mId);
-
         if (mId == 0) {
             fatalPanic("Failed to create new buffer!");
         }
@@ -32,20 +32,35 @@ namespace Spelt {
     }
 
     Buffer::Buffer(Buffer&& other) noexcept
-        : mId(other.mId), mType(other.mType), mUsageType(other.mUsageType), mMapped(other.mMapped)
+        : mId(other.mId),
+          mType(other.mType),
+          mUsageType(other.mUsageType),
+          mMapped(other.mMapped),
+          mSize(other.mSize),
+          mReserved(other.mReserved)
     {
         other.mId = 0;
+        other.mSize = 0;
+        other.mReserved = 0;
+        other.mMapped = false;
     }
 
     Buffer& Buffer::operator=(Buffer&& other) noexcept {
         if (this != &other) {
             if (mId != 0)
                 glDeleteBuffers(1, &mId);
-            mId   = other.mId;
-            mType = other.mType;
-            mMapped = other.mMapped;
+
+            mId        = other.mId;
+            mType      = other.mType;
             mUsageType = other.mUsageType;
-            other.mId = 0;
+            mMapped    = other.mMapped;
+            mSize      = other.mSize;
+            mReserved  = other.mReserved;
+
+            other.mId       = 0;
+            other.mSize     = 0;
+            other.mReserved = 0;
+            other.mMapped   = false;
         }
         return *this;
     }
@@ -93,7 +108,8 @@ namespace Spelt {
         if(writeOffset > getReserved()) return Error{BufferError::OffsetOutOfBounds};
         if(readOffset > toCopy.getSize()) return Error{BufferError::OffsetOutOfBounds};
 
-        if(getReserved() - writeOffset < toCopy.getSize() - readOffset) return Error{BufferError::NotEnoughSpace};
+        size_t copyBytes = toCopy.getSize() - readOffset;
+        if (getReserved() - writeOffset < copyBytes) return Error{BufferError::NotEnoughSpace};
 
         bindCopyWrite();
         toCopy.bindCopyRead();
@@ -105,6 +121,8 @@ namespace Spelt {
             writeOffset, // writeOffset
             toCopy.getSize() - readOffset // size in bytes
         );
+
+        mSize = std::max(mSize, writeOffset + copyBytes);
 
         return Success{};
     }
